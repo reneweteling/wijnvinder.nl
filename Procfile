@@ -1,3 +1,3 @@
 web: pnpm --filter web start
 worker: pnpm --filter web worker
-release: pnpm db:fresh && pnpm db:seed && pnpm scrape --all 
+release: pnpm db:fresh && pnpm scrape --all

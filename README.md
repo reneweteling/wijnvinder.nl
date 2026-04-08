@@ -42,39 +42,61 @@ git push dokku main:main
 
 ## Wine Shops
 
-| Shop | URL | Scraping | Affiliate |
-|------|-----|----------|-----------|
-| Gall & Gall | gall.nl | ✅ | ❌ |
-| Wijnvoordeel | wijnvoordeel.nl | ✅ | ❌ |
-| Wijnbeurs | wijnbeurs.nl | ✅ | ❌ |
-| HunWijn | hunwijn.nl | ❌ | ❌ |
-| DrankDozijn | drankdozijn.nl | ❌ | ❌ |
-| Grandcruwijnen | grandcruwijnen.nl | ❌ | ❌ |
-| Abelswijnen | abelswijnen.nl | ❌ | ❌ |
-| Wijnservice | wijnservice.nl | ❌ | ❌ |
-| Vinify | vinify.nl | ❌ | ❌ |
-| Wijnbroeders | wijnbroeders.nl | ❌ | ❌ |
-| Valkwijn | valkwijn.nl | ❌ | ❌ |
-| Wijnjuweel | wijnjuweel.nl | ❌ | ❌ |
-| Favorietewijn | favorietewijn.nl | ❌ | ❌ |
-| Flesjewijn | flesjewijn.com | ❌ | ❌ |
-| Albert Heijn | ah.nl | ❌ | ❌ |
-| Jumbo | jumbo.com | ❌ | ❌ |
-| Bergovino | bergovino.nl | ❌ | ❌ |
-| Wijnspecialist | wijnspecialist.nl | ❌ | ❌ |
-| Colaris | colaris.nl | ❌ | ❌ |
-| Grapedistrict | grapedistrict.nl | ❌ | ❌ |
-| Henri Bloem | henribloem.nl | ❌ | ❌ |
-| Perfectewijn | perfectewijn.nl | ❌ | ❌ |
-| Mondovino | mondovino.nl | ❌ | ❌ |
-| Budgetwijnen | budgetwijnen.nl | ❌ | ❌ |
-| Bovino | bovino.nl | ❌ | ❌ |
-| Dirck3 | dirck3.nl | ❌ | ❌ |
-| Biowijnclub | biowijnclub.nl | ❌ | ❌ |
-| VinoPura | vinopura.nl | ❌ | ❌ |
-| Wijnbox | wijnbox.nl | ❌ | ❌ |
-| Taste Club | tasteclub.nl | ❌ | ❌ |
-| Baltazar | baltazar.nl | ❌ | ❌ |
+| Shop           | URL               | Scraping | Affiliate | Network                                     |
+| -------------- | ----------------- | -------- | --------- | ------------------------------------------- |
+| Gall & Gall    | gall.nl           | ✅        | ✅         | Awin / direct (€1/order, €20 new customer)  |
+| Wijnvoordeel   | wijnvoordeel.nl   | ✅        | ✅         | TradeTracker (4.55%, 30d cookie)             |
+| Wijnbeurs      | wijnbeurs.nl      | ✅        | ✅         | TradeTracker / LinkPizza                     |
+| DrankDozijn    | drankdozijn.nl    | ❌        | ✅         | TradeTracker                                 |
+| Albert Heijn   | ah.nl             | ❌        | ✅         | Partnerize (own program)                     |
+| Viavina        | viavina.nl        | ❌        | ✅         | TradeTracker / LinkPizza                     |
+| Fanster        | fanster.nl        | ❌        | ✅         | TradeTracker                                 |
+| Topdrinks      | topdrinks.nl      | ❌        | ✅         | TradeTracker / LinkPizza                     |
+| DrankKoning    | drankkoning.nl    | ❌        | ✅         | TradeTracker (7.70%, 100d cookie)            |
+| Bulwijn        | bulwijn.nl        | ❌        | ✅         | Direct (own program)                         |
+| WijnSpijs      | wijnspijs.nl      | ❌        | ✅         | Direct (own program)                         |
+| Drink Heroes   | drinkheroes.nl    | ❌        | ✅         | LinkPizza                                    |
+| De Wijngoeroe  | dewijngoeroe.nl   | ❌        | ✅         | LinkPizza                                    |
+| HunWijn        | hunwijn.nl        | ❌        | ❌         |                                              |
+| Grandcruwijnen | grandcruwijnen.nl | ❌        | ❌         |                                              |
+| Abelswijnen    | abelswijnen.nl    | ❌        | ❌         |                                              |
+| Wijnservice    | wijnservice.nl    | ❌        | ❌         |                                              |
+| Vinify         | vinify.nl         | ❌        | ❌         |                                              |
+| Wijnbroeders   | wijnbroeders.nl   | ❌        | ❌         |                                              |
+| Valkwijn       | valkwijn.nl       | ❌        | ❌         |                                              |
+| Wijnjuweel     | wijnjuweel.nl     | ❌        | ❌         |                                              |
+| Favorietewijn  | favorietewijn.nl  | ❌        | ❌         |                                              |
+| Flesjewijn     | flesjewijn.com    | ❌        | ❌         |                                              |
+| Jumbo          | jumbo.com         | ❌        | ❌         |                                              |
+| Bergovino      | bergovino.nl      | ❌        | ❌         |                                              |
+| Wijnspecialist | wijnspecialist.nl | ❌        | ❌         |                                              |
+| Colaris        | colaris.nl        | ❌        | ❌         |                                              |
+| Grapedistrict  | grapedistrict.nl  | ❌        | ❌         |                                              |
+| Henri Bloem    | henribloem.nl     | ❌        | ❌         |                                              |
+| Perfectewijn   | perfectewijn.nl   | ❌        | ❌         |                                              |
+| Mondovino      | mondovino.nl      | ❌        | ❌         |                                              |
+| Budgetwijnen   | budgetwijnen.nl   | ❌        | ❌         |                                              |
+| Bovino         | bovino.nl         | ❌        | ❌         |                                              |
+| Dirck3         | dirck3.nl         | ❌        | ❌         |                                              |
+| Biowijnclub    | biowijnclub.nl    | ❌        | ❌         |                                              |
+| VinoPura       | vinopura.nl       | ❌        | ❌         |                                              |
+| Wijnbox        | wijnbox.nl        | ❌        | ❌         |                                              |
+| Taste Club     | tasteclub.nl      | ❌        | ❌         |                                              |
+| Baltazar       | baltazar.nl       | ❌        | ❌         |                                              |
+
+### Affiliate networks
+
+**TradeTracker** is the main network for Dutch wine/drinks shops. One publisher account covers Wijnvoordeel, Wijnbeurs, DrankDozijn, Viavina, Fanster, Topdrinks, and DrankKoning under the "Eten en drinken" category. Sign up at tradetracker.com and search campaigns for "wijn". Commissions are typically 4-8% with 30-100 day cookies.
+
+**LinkPizza** aggregates 4,800+ affiliate programs including wine shops like Wijnbeurs, Viavina, Topdrinks, Drink Heroes, and De Wijngoeroe. Useful as a secondary network to cover shops not directly on TradeTracker.
+
+**Awin** covers Gall & Gall. Their partner program is also available directly at gall.nl/partnerprogramma (contact: affiliate_marketing@gall.nl). Fixed €1 per order, €20 for new customers.
+
+**Partnerize** is used by Albert Heijn for their own affiliate program. Sign up at signup.partnerize.com/signup/nl/albertheijn. Commission is a percentage of basket value, scaling with order size.
+
+**Direct programs**: Bulwijn and WijnSpijs run their own affiliate programs without a network middleman.
+
+Note: Many smaller shops (marked ❌) may still have unlisted programs — check their footers for "affiliate" or "partnerprogramma" links, or contact them directly. The affiliate landscape changes frequently; verify current availability on the network portals.
 
 ## TODO / Roadmap
 
