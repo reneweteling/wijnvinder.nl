@@ -1,4 +1,4 @@
-# wijn.weteling.nl — WijnWijzer
+# WijnVinder.nl
 
 Dutch wine recommendation platform. Create a taste profile, get personalized wine suggestions with price comparison across 10+ Dutch wine shops.
 
@@ -42,6 +42,8 @@ git push dokku main:main
 ```
 
 ## Wine Shops
+
+TradeTracker - Luuc bellen wanneer hij live staat
 
 | Shop           | URL               | Scraping | Affiliate | Network                                     |
 | -------------- | ----------------- | -------- | --------- | ------------------------------------------- |

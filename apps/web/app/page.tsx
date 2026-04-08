@@ -4,6 +4,8 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { db } from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const shopCount = await db.shop.count({ where: { enabled: true } });
 

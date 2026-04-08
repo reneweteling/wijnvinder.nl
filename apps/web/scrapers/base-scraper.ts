@@ -13,7 +13,8 @@ import { db } from '@/lib/db/client'
 import type { ScrapedWine, ShopConfig } from '@/lib/types'
 import { normalizeWineName } from './normalize'
 import { matchOrCreate } from '@/lib/wine-matcher'
-import { fetchProductPage } from './fetch-description'
+import { QueueClient } from '@/lib/queue/client'
+import { JobType } from '@/lib/queue/types'
 
 /** Known badge/award image patterns that should never be used as wine bottle images */
 const BADGE_IMAGE_PATTERNS = [
@@ -72,9 +73,17 @@ export abstract class BaseScraper {
 
     console.log(`[${this.config.slug}] ScrapeJob ${job.id} started`)
 
+    // Pre-fetch existing listings for change detection
+    const existingListings = await db.shopListing.findMany({
+      where: { shopId: this.shopId },
+      select: { url: true, rawName: true, price: true, description: true },
+    })
+    const existingByUrl = new Map(existingListings.map(l => [l.url, l]))
+
     const seenUrls = new Set<string>()
     let listingsFound = 0
     let listingsMatched = 0
+    let enrichQueued = 0
 
     try {
       for await (const scraped of this.scrapeAll()) {
@@ -127,40 +136,21 @@ export abstract class BaseScraper {
             },
           })
 
-          // Update canonical wine with rating, description, and high-res image
+          // Update canonical wine with rating, thumbnail, and any scraped description
           const canonical = await db.canonicalWine.findUnique({
             where: { id: canonicalWineId },
-            select: { vivinoScore: true, description: true },
+            select: { imageUrl: true, vivinoScore: true, description: true },
           })
           const updates: Record<string, unknown> = {}
 
-          // Set vivinoScore from tasting panel rating only when no Vivino score exists yet
           if (scraped.rating != null && canonical?.vivinoScore == null) {
             updates.vivinoScore = scraped.rating
           }
-
-          // Always fetch product page for high-res image and description
-          const page = await fetchProductPage(scraped.url)
-
-          if (page.imageUrl) {
-            updates.imageUrl = page.imageUrl
-            await db.shopListing.update({
-              where: { shopId_url: { shopId: this.shopId, url: scraped.url } },
-              data: { imageUrl: page.imageUrl },
-            })
-          } else if (validImageUrl) {
+          if (validImageUrl && !canonical?.imageUrl) {
             updates.imageUrl = validImageUrl
           }
-
-          const description = page.description ?? scraped.description ?? null
-          if (description) {
-            await db.shopListing.update({
-              where: { shopId_url: { shopId: this.shopId, url: scraped.url } },
-              data: { description },
-            })
-            if (!canonical?.description) {
-              updates.description = description
-            }
+          if (scraped.description && !canonical?.description) {
+            updates.description = scraped.description
           }
 
           if (Object.keys(updates).length > 0) {
@@ -168,6 +158,28 @@ export abstract class BaseScraper {
               where: { id: canonicalWineId },
               data: updates,
             })
+          }
+
+          // Enqueue enrichment job if listing is new/changed and needs detail page data
+          if (!scraped.description) {
+            const existing = existingByUrl.get(scraped.url)
+            const isNew = !existing
+            const hasChanged = existing && (existing.rawName !== scraped.name || existing.price !== scraped.price)
+            const needsEnrichment = !canonical?.description || !canonical?.imageUrl || canonical.imageUrl.includes('unsplash.com')
+
+            if (isNew || hasChanged || needsEnrichment) {
+              await QueueClient.enqueue(
+                JobType.ENRICH_LISTING,
+                {
+                  shopSlug: this.config.slug,
+                  shopId: this.shopId,
+                  listingUrl: scraped.url,
+                  canonicalWineId,
+                },
+                { singletonKey: scraped.url, retryLimit: 2 },
+              )
+              enrichQueued++
+            }
           }
 
           console.log(
@@ -195,7 +207,7 @@ export abstract class BaseScraper {
       })
 
       console.log(
-        `[${this.config.slug}] Job ${job.id} completed: ${listingsFound} found, ${listingsMatched} matched`,
+        `[${this.config.slug}] Job ${job.id} completed: ${listingsFound} found, ${listingsMatched} matched, ${enrichQueued} enrichment jobs queued`,
       )
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err)

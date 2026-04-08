@@ -1,138 +1,134 @@
 /**
- * Scraper for drankdozijn.nl (Vue.js SPA backed by custom API).
+ * Scraper for drankdozijn.nl (Elasticsearch JSON API).
  *
- * NOTE: DrankDozijn loads product data client-side via Vue.js app.
- * The server-rendered HTML at /groep/wijn contains empty containers.
- * This scraper may need Playwright for full JS rendering.
+ * DrankDozijn is a Vue.js SPA that loads products from es-api.drankdozijn.nl.
+ * We call the API directly — no HTML parsing needed.
  *
- * Observed structure (2026-04):
- * - Wine category URL: /groep/wijn
- * - Products rendered via Vue.js with data from es-api.drankdozijn.nl
- * - Product tiles have: .product class with name, price, image, URL
- * - Pagination: ?page=1&limit=48
+ * API: GET https://es-api.drankdozijn.nl/products?group=wijn&lang=nl-nl&listLength=100&pagina=1
+ * Returns: JSON array of product objects with rich metadata (name, brand, country, grape, vintage, price, images).
  */
 
-import type { ScrapedWine } from '@/lib/types'
+import type { ScrapedWine, WineType } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
-import { CheerioScraper } from '../cheerio-scraper'
-import { normalizeCountry } from '../country-map'
+import { BaseScraper } from '../base-scraper'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'drankdozijn')!
 
-const PAGE_SIZE = 48
+const API_URL = 'https://es-api.drankdozijn.nl/products'
+const PAGE_SIZE = 100
+const IMAGE_BASE = 'https://res.cloudinary.com/boozeboodcdn/image/upload/f_auto,q_auto/v1/products'
 
-export class DrankDozijnScraper extends CheerioScraper {
+interface DrankDozijnProduct {
+  description: string
+  alias: string
+  price: number
+  salePrice: number | null
+  availability: string
+  brandDescription: string
+  images: string[]
+  features: { alias: string; value: { alias: string; description: string } }[]
+}
+
+function getFeature(product: DrankDozijnProduct, featureAlias: string): string | undefined {
+  return product.features.find((f) => f.alias === featureAlias)?.value?.description
+}
+
+function inferWineType(category: string | undefined): WineType | undefined {
+  if (!category) return undefined
+  const lower = category.toLowerCase()
+  if (lower.includes('rood') || lower.includes('rode')) return 'red'
+  if (lower.includes('wit')) return 'white'
+  if (lower.includes('rosé') || lower.includes('rose')) return 'rose'
+  if (lower.includes('mousse') || lower.includes('champagne') || lower.includes('cava') || lower.includes('prosecco')) return 'sparkling'
+  if (lower.includes('port') || lower.includes('dessert') || lower.includes('sherry')) return 'dessert'
+  return undefined
+}
+
+export class DrankDozijnScraper extends BaseScraper {
   constructor() {
     super(CONFIG)
   }
 
   async *scrapeAll(): AsyncGenerator<ScrapedWine> {
     let page = 1
+    const seenAliases = new Set<string>()
 
     while (true) {
-      const url = `${CONFIG.baseUrl}/groep/wijn?page=${page}&limit=${PAGE_SIZE}`
-      console.log(`[drankdozijn] Fetching page ${page}: ${url}`)
+      const url = `${API_URL}?group=wijn&lang=nl-nl&listLength=${PAGE_SIZE}&pagina=${page}`
+      console.log(`[drankdozijn] Fetching API page ${page}`)
 
-      let $
+      let products: DrankDozijnProduct[]
       try {
-        $ = await this.fetchPage(url)
-      } catch (err) {
-        console.error(`[drankdozijn] Failed to fetch page ${page}:`, err)
-        break
-      }
-
-      // NOTE: DrankDozijn is a Vue.js SPA. The server-rendered HTML may not
-      // contain product data. If no products are found, this scraper will
-      // need to be upgraded to use Playwright for JS rendering.
-      const items = $('div.product, article.product, .product-item, .product-card')
-
-      if (items.length === 0) {
-        // Try to find product data in embedded JSON or script tags
-        const scriptData = $('script').filter((_i, el) => {
-          const text = $(el).text()
-          return text.includes('products') || text.includes('GProducts')
+        const response = await fetch(url, {
+          headers: {
+            'Origin': 'https://drankdozijn.nl',
+            'Referer': 'https://drankdozijn.nl/groep/wijn',
+            'Accept': 'application/json',
+          },
         })
 
-        if (scriptData.length === 0) {
-          console.log(
-            `[drankdozijn] No products found on page ${page}. ` +
-            `Site requires JavaScript rendering (Vue.js SPA). ` +
-            `Consider upgrading to Playwright.`
-          )
+        if (!response.ok) {
+          console.error(`[drankdozijn] API returned ${response.status}`)
           break
         }
 
-        // Try to extract product data from script tags
-        for (let i = 0; i < scriptData.length; i++) {
-          const scriptText = $(scriptData[i]).text()
-          // Look for JSON product arrays in the script
-          const jsonMatch = scriptText.match(/products\s*[:=]\s*(\[[\s\S]*?\])\s*[,;}\n]/)
-          if (jsonMatch) {
-            try {
-              const products = JSON.parse(jsonMatch[1])
-              for (const product of products) {
-                if (!product.name || !product.price) continue
-                const productUrl = product.url?.startsWith('http')
-                  ? product.url
-                  : `${CONFIG.baseUrl}${product.url || ''}`
-
-                yield {
-                  name: product.name,
-                  url: productUrl,
-                  imageUrl: product.image || product.imageUrl,
-                  price: typeof product.price === 'number' ? product.price : parseFloat(product.price),
-                  country: product.country ? normalizeCountry(product.country) : undefined,
-                  vintage: product.vintage ? parseInt(String(product.vintage), 10) : undefined,
-                  producer: product.brand || product.producer,
-                }
-              }
-            } catch {
-              // JSON parsing failed, continue
-            }
-          }
-        }
+        products = await response.json() as DrankDozijnProduct[]
+      } catch (err) {
+        console.error(`[drankdozijn] Failed to fetch API page ${page}:`, err)
         break
       }
 
-      for (let i = 0; i < items.length; i++) {
-        const el = items.eq(i)
+      if (products.length === 0) {
+        console.log(`[drankdozijn] No products on page ${page}, stopping`)
+        break
+      }
 
-        const name = el.find('.product-name, .product-title, h3, h4').first().text().trim()
-        if (!name) continue
+      // Detect API wraparound: if all products on this page were already seen, stop
+      const newProducts = products.filter((p) => !seenAliases.has(p.alias))
+      if (newProducts.length === 0) {
+        console.log(`[drankdozijn] Page ${page} contains only duplicates, stopping`)
+        break
+      }
 
-        const relativeUrl = el.find('a').first().attr('href') ?? ''
-        const productUrl = relativeUrl.startsWith('http')
-          ? relativeUrl
-          : `${CONFIG.baseUrl}${relativeUrl}`
-        if (!productUrl || productUrl === CONFIG.baseUrl) continue
+      for (const product of products) {
+        if (seenAliases.has(product.alias)) continue
+        seenAliases.add(product.alias)
+        if (!product.description || !product.alias) continue
+        if (product.availability !== 'available') continue
 
-        // Price
-        const priceText = el.find('.product-price, .price').first().text().trim()
-        const priceMatch = priceText.match(/(\d+)[,.](\d{2})/)
-        const price = priceMatch
-          ? parseFloat(`${priceMatch[1]}.${priceMatch[2]}`)
-          : NaN
-        if (isNaN(price) || price <= 0) continue
+        const price = product.salePrice ?? product.price
+        if (!price || price <= 0) continue
 
-        // Image
-        const imageUrl = el.find('img').first().attr('src')
-          ?? el.find('img').first().attr('data-src')
-          ?? undefined
+        const originalPrice = product.salePrice != null && product.price > product.salePrice
+          ? product.price : undefined
 
-        // Country
-        const countryText = el.find('.country, .product-country').text().trim()
-        const country = countryText ? normalizeCountry(countryText) : undefined
+        const imageUrl = product.images?.[0]
+          ? `${IMAGE_BASE}/${product.images[0]}`
+          : undefined
+
+        const category = getFeature(product, 'categorie')
+        const country = getFeature(product, 'land')
+        const grape = getFeature(product, 'druif')
+        const region = getFeature(product, 'regio')
+        const vintageStr = getFeature(product, 'vintage')
+        const vintage = vintageStr ? parseInt(vintageStr.replace(/\D/g, ''), 10) || undefined : undefined
 
         yield {
-          name,
-          url: productUrl,
+          name: product.description,
+          producer: product.brandDescription || undefined,
+          url: `${CONFIG.baseUrl}/artikel/${product.alias}`,
           imageUrl,
           price,
-          country,
+          originalPrice,
+          country: country || undefined,
+          region: region || undefined,
+          grape: grape || undefined,
+          vintage,
+          type: inferWineType(category),
         }
       }
 
-      if (items.length < PAGE_SIZE) {
+      if (products.length < PAGE_SIZE) {
         break
       }
 

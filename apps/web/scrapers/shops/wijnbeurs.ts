@@ -155,7 +155,7 @@ export class WijnbeursScraper extends CheerioScraper {
       const hasNextPage = $('a.action.next').length > 0
         || $(`link[rel="next"]`).length > 0
 
-      if (!hasNextPage || items.length < perPage) {
+      if (!hasNextPage) {
         break
       }
 

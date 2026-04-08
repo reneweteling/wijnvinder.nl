@@ -144,9 +144,11 @@ function AanbevelingenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [profile, setProfile] = useState<WineProfileData | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
     setProfile(readProfileCookie());
+    setProfileLoaded(true);
   }, []);
 
   // Pure URL-driven: /aanbevelingen = no filters, params = filters
@@ -213,8 +215,8 @@ function AanbevelingenContent() {
   }, [filters, profile]);
 
   useEffect(() => {
-    loadWines();
-  }, [loadWines]);
+    if (profileLoaded) loadWines();
+  }, [profileLoaded, loadWines]);
 
   const hasMore = scoredWines.length < total;
 

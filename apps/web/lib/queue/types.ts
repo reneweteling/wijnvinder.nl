@@ -2,11 +2,19 @@ import { z } from "zod";
 
 export enum JobType {
   SCRAPE_SHOP = "scrape-shop",
+  ENRICH_LISTING = "enrich-listing",
   ENRICH_VIVINO = "enrich-vivino",
 }
 
 export const scrapeShopPayloadSchema = z.object({
   shopSlug: z.string(),
+});
+
+export const enrichListingPayloadSchema = z.object({
+  shopSlug: z.string(),
+  shopId: z.string(),
+  listingUrl: z.string(),
+  canonicalWineId: z.string(),
 });
 
 export const enrichVivinoPayloadSchema = z.object({
@@ -15,14 +23,17 @@ export const enrichVivinoPayloadSchema = z.object({
 
 export const jobSchemas: Record<JobType, z.ZodSchema> = {
   [JobType.SCRAPE_SHOP]: scrapeShopPayloadSchema,
+  [JobType.ENRICH_LISTING]: enrichListingPayloadSchema,
   [JobType.ENRICH_VIVINO]: enrichVivinoPayloadSchema,
 };
 
 export type JobPayload<T extends JobType> = T extends JobType.SCRAPE_SHOP
   ? z.infer<typeof scrapeShopPayloadSchema>
-  : T extends JobType.ENRICH_VIVINO
-    ? z.infer<typeof enrichVivinoPayloadSchema>
-    : never;
+  : T extends JobType.ENRICH_LISTING
+    ? z.infer<typeof enrichListingPayloadSchema>
+    : T extends JobType.ENRICH_VIVINO
+      ? z.infer<typeof enrichVivinoPayloadSchema>
+      : never;
 
 export interface JobOptions {
   startAfter?: number | Date;
@@ -30,4 +41,5 @@ export interface JobOptions {
   retryLimit?: number;
   retryDelay?: number;
   expireInSeconds?: number;
+  singletonKey?: string;
 }

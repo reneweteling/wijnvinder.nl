@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ProfileWizard } from "@/components/profile/profile-wizard";
 import { db } from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Maak je Smaakprofiel – WijnVinder",
   description:

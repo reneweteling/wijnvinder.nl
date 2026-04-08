@@ -27,6 +27,8 @@ export class QueueClient {
     if (options?.retryDelay != null) sendOptions.retryDelay = options.retryDelay;
     if (options?.expireInSeconds != null)
       sendOptions.expireInSeconds = options.expireInSeconds;
+    if (options?.singletonKey != null)
+      sendOptions.singletonKey = options.singletonKey;
 
     return boss.send(jobType, validated, sendOptions);
   }

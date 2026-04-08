@@ -3,6 +3,8 @@ import { timeAgo } from "@/lib/time";
 import { ExternalLink, Store, Wine } from "lucide-react";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Winkels — WijnVinder",
   description:

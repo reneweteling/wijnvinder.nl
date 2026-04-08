@@ -8,13 +8,13 @@
     "start": "next start",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "worker": "node $(test -f .env.local && echo '--env-file=.env.local') --import tsx lib/queue/worker.ts",
-    "worker:dev": "node --env-file=.env.local --watch --import tsx lib/queue/worker.ts",
+    "worker": "node --import tsx lib/queue/worker.ts",
+    "worker:dev": "node --watch --import tsx lib/queue/worker.ts",
     "generate": "zen generate --schema lib/db/schema.zmodel",
     "db:push": "zen db push --schema lib/db/schema.zmodel",
-    "db:seed": "node $(test -f .env.local && echo '--env-file=.env.local') --import tsx lib/db/seed.ts",
-    "db:fresh": "zen db push --schema lib/db/schema.zmodel --force-reset && node $(test -f .env.local && echo '--env-file=.env.local') --import tsx lib/db/seed.ts",
-    "scrape": "node $(test -f .env.local && echo '--env-file=.env.local') --import tsx scrapers/run-scrape.ts",
+    "db:seed": "node --import tsx lib/db/seed.ts",
+    "db:fresh": "echo \"import pg from 'pg';const p=new pg.Pool({connectionString:process.env.DATABASE_URL});await p.query('DROP SCHEMA IF EXISTS pgboss CASCADE');console.log('pgboss schema dropped');await p.end()\" | node --import tsx --input-type=module && zen db push --schema lib/db/schema.zmodel --force-reset && node --import tsx lib/db/seed.ts",
+    "scrape": "node --import tsx scrapers/run-scrape.ts",
     "postinstall": "zen generate --schema lib/db/schema.zmodel"
   },
   "zenstack": {
@@ -35,6 +35,7 @@
     "pg-boss": "^12.14.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "resend": "^6.10.0",
     "string-similarity-js": "^2.1.4",
     "zod": "^4.3.6"
   },

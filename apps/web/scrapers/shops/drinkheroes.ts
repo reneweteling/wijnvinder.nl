@@ -13,7 +13,7 @@
 
 import type { ScrapedWine, WineType } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
-import { CheerioScraper } from '../cheerio-scraper'
+import { BaseScraper } from '../base-scraper'
 import { normalizeCountry } from '../country-map'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'drinkheroes')!
@@ -100,7 +100,7 @@ function inferWineType(name: string): WineType | undefined {
   return undefined
 }
 
-export class DrinkHeroesScraper extends CheerioScraper {
+export class DrinkHeroesScraper extends BaseScraper {
   constructor() {
     super(CONFIG)
   }

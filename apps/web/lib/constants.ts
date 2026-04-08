@@ -101,7 +101,7 @@ export const SHOP_CONFIGS: ShopConfig[] = [
     slug: 'gall',
     name: 'Gall & Gall',
     baseUrl: 'https://www.gall.nl',
-    enabled: true,
+    enabled: false, // Disabled — scraper needs maintenance
     description: 'De bekendste slijterij van Nederland met ruim 600 winkels. Groot assortiment wijn, bier en sterke drank.',
   },
   {
@@ -122,7 +122,7 @@ export const SHOP_CONFIGS: ShopConfig[] = [
     slug: 'fanster',
     name: 'Fanster',
     baseUrl: 'https://www.fanster.nl',
-    enabled: true,
+    enabled: false, // Site unreachable / anti-scraping protection
     description: 'Meer dan 800 wijnen van over de hele wereld onder één dak. Alle wijnen in huis voor snelle levering.',
   },
   {
@@ -136,7 +136,7 @@ export const SHOP_CONFIGS: ShopConfig[] = [
     slug: 'drinkheroes',
     name: 'Drink Heroes',
     baseUrl: 'https://www.drinkheroes.nl',
-    enabled: true,
+    enabled: false, // GraphQL API returns 0 prices — needs Playwright
     description: 'Gepassioneerde wijnspecialist met topwijnen in rood, wit, rosé, mousserende en alcoholvrij.',
   },
   {
