@@ -111,3 +111,9 @@ Note: Many smaller shops (marked ❌) may still have unlisted programs — check
 - [ ] **Scrape pagination**: Wijnvoordeel/Wijnbeurs currently only scrape page 1 (~18 wines each). Need to handle multi-page pagination.
 - [ ] **Privacy/about/contact pages**: Currently placeholder links.
 - [ ] **Email templates**: Branded HTML verification emails.
+
+
+## Credentials
+Resend - info@wijnvinder.nl
+https://linkpizza.com/ - rene@weteling.com
+https://affiliate.tradetracker.com/ - reneweteling
