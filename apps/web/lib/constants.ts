@@ -5,6 +5,7 @@ export const WINE_TYPES: { value: WineType; label: string }[] = [
   { value: 'white', label: 'Wit' },
   { value: 'rose', label: 'Ros\u00e9' },
   { value: 'sparkling', label: 'Mousserende' },
+  { value: 'dessert', label: 'Dessert & Port' },
 ]
 
 export const GRAPES = [
