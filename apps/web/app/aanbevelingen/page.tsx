@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { WineGrid } from "@/components/wines/wine-grid";
@@ -133,6 +133,14 @@ function scoreOrWrap(
 }
 
 export default function AanbevelingenPage() {
+  return (
+    <Suspense>
+      <AanbevelingenContent />
+    </Suspense>
+  );
+}
+
+function AanbevelingenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [profile, setProfile] = useState<WineProfileData | null>(null);
