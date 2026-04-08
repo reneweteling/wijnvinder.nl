@@ -66,11 +66,11 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col items-center gap-3 text-center">
-          <p className="text-white/40 text-sm">
+          <p className="text-white/60 text-sm">
             &copy; {new Date().getFullYear()} WijnVinder. Alle rechten
             voorbehouden.
           </p>
-          <p className="text-white/30 text-xs">
+          <p className="text-white/50 text-xs">
             WijnVinder.nl is een geregistreerde handelsnaam van{" "}
             <a href="https://www.weteling.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 underline">
               Felobo B.V.

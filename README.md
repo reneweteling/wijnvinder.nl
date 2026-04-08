@@ -39,6 +39,8 @@ dokku ps:scale wijnvinder web=1 worker=1
 # Locally
 git remote add dokku dokku@weteling.com:wijnvinder
 git push dokku main:main
+
+# dokku postgres:expose wijnvinder-db 5400
 ```
 
 ## Wine Shops

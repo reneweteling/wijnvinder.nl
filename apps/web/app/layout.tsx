@@ -8,6 +8,7 @@ import { FavoritesProvider } from "@/lib/favorites-context";
 import { CookieConsent } from "@/components/cookie-consent";
 
 const GTM_ID = "GTM-PL683HW8";
+const isProd = process.env.NODE_ENV === "production";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -39,6 +40,13 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@wijnvinder",
+  },
+  alternates: {
+    canonical: "https://wijnvinder.nl",
+  },
 };
 
 export default function RootLayout({
@@ -47,38 +55,55 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nl" className={`${playfair.variable} ${inter.variable}`}>
-      <head>
-        {/* Set consent defaults before GTM loads */}
-        <Script id="gtm-consent-default" strategy="beforeInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('consent', 'default', {
-            'ad_storage': 'denied',
-            'ad_user_data': 'denied',
-            'ad_personalization': 'denied',
-            'analytics_storage': 'denied',
-            'wait_for_update': 500,
-          });
-        `}</Script>
-        <Script id="gtm" strategy="afterInteractive">{`
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','${GTM_ID}');
-        `}</Script>
-      </head>
+    <html lang="nl" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
+      {isProd && (
+        <head>
+          <Script id="gtm-consent-default" strategy="beforeInteractive">{`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              'ad_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied',
+              'analytics_storage': 'denied',
+              'wait_for_update': 500,
+            });
+          `}</Script>
+          <Script id="gtm" strategy="afterInteractive">{`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${GTM_ID}');
+          `}</Script>
+        </head>
+      )}
       <body className="font-body antialiased">
-        <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} height="0" width="0" style={{display:'none',visibility:'hidden'}} /></noscript>
+        {isProd && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} height="0" width="0" style={{display:'none',visibility:'hidden'}} /></noscript>}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "WijnVinder",
+              "url": "https://wijnvinder.nl",
+              "description": "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
+              "inLanguage": "nl",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://wijnvinder.nl/aanbevelingen?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }) }}
+          />
           <FavoritesProvider>
             <Header />
-            <div className="pt-16">
+            <main className="pt-16">
               {children}
-            </div>
+            </main>
             <Footer />
           </FavoritesProvider>
-          <CookieConsent />
+          {isProd && <CookieConsent />}
         </body>
     </html>
   );

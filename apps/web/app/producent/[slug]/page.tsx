@@ -17,10 +17,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Producent niet gevonden | WijnVinder" };
   }
 
+  const title = `${producer.name} — Alle wijnen | WijnVinder`;
+  const description = producer.description
+    ?? `Bekijk alle wijnen van ${producer.name} bij Nederlandse wijnwinkels en vergelijk prijzen.`;
+
   return {
-    title: `${producer.name} — Alle wijnen | WijnVinder`,
-    description: producer.description
-      ?? `Bekijk alle wijnen van ${producer.name} bij Nederlandse wijnwinkels en vergelijk prijzen.`,
+    title,
+    description,
+    alternates: {
+      canonical: `https://wijnvinder.nl/producent/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
   };
 }
 

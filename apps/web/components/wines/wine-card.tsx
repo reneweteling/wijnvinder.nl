@@ -28,6 +28,7 @@ type WineCardProps = {
   wine: WineCardWine;
   matchPercentage?: number;
   index?: number;
+  priority?: boolean;
 };
 
 function WineTypeBadge({ type }: { type: string }) {
@@ -36,7 +37,7 @@ function WineTypeBadge({ type }: { type: string }) {
 
   const colorMap: Record<string, string> = {
     red: "bg-burgundy text-white",
-    white: "bg-gold-light text-gold",
+    white: "bg-gold-light text-amber-700",
     rose: "bg-pink-100 text-pink-700",
     sparkling: "bg-blue-50 text-blue-700",
   };
@@ -76,7 +77,7 @@ function RatingStars({ score }: { score: number }) {
   );
 }
 
-export function WineCard({ wine, matchPercentage, index = 0 }: WineCardProps) {
+export function WineCard({ wine, matchPercentage, index = 0, priority = false }: WineCardProps) {
   const onSale =
     wine.originalPrice != null &&
     wine.bestPrice != null &&
@@ -114,7 +115,8 @@ export function WineCard({ wine, matchPercentage, index = 0 }: WineCardProps) {
                 src={wine.imageUrl}
                 alt={wine.name}
                 fill
-                unoptimized
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                priority={priority}
                 className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
@@ -132,9 +134,9 @@ export function WineCard({ wine, matchPercentage, index = 0 }: WineCardProps) {
 
             {/* Name & Producer */}
             <div>
-              <h3 className="font-heading font-semibold text-foreground leading-tight line-clamp-2 group-hover:text-burgundy transition-colors">
+              <h2 className="font-heading font-semibold text-foreground text-base leading-tight line-clamp-2 group-hover:text-burgundy transition-colors">
                 {wine.name}
-              </h3>
+              </h2>
               {wine.producer && (
                 <p className="text-sm text-text-light mt-0.5">{wine.producer}</p>
               )}
@@ -160,7 +162,7 @@ export function WineCard({ wine, matchPercentage, index = 0 }: WineCardProps) {
             {wine.vivinoScore != null && (
               <div className="flex items-center gap-2">
                 <RatingStars score={wine.vivinoScore} />
-                <span className="text-xs font-medium text-gold">
+                <span className="text-xs font-medium text-amber-700">
                   {wine.vivinoScore.toFixed(1)}
                 </span>
               </div>

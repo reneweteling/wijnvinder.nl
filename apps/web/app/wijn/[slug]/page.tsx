@@ -14,19 +14,44 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const wine = await db.canonicalWine.findUnique({ where: { slug }, include: { producer: true } });
+  const wine = await db.canonicalWine.findUnique({
+    where: { slug },
+    include: {
+      producer: true,
+      listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
+    },
+  });
 
   if (!wine) {
     return { title: "Wijn niet gevonden | WijnVinder" };
   }
 
   const titleParts = [wine.producer?.name, wine.name, wine.vintage].filter(Boolean);
+  const title = `${titleParts.join(" ")} | WijnVinder`;
+
+  const bestPrice = wine.listings[0]?.price ?? null;
+  const baseDescription = wine.description
+    ? wine.description.slice(0, 120)
+    : `Bekijk prijzen en details van ${wine.name} bij Nederlandse wijnwinkels.`;
+  const description = bestPrice
+    ? `Vanaf €${bestPrice.toFixed(2)} - Vergelijk prijzen voor ${wine.name} bij Nederlandse wijnwinkels. ${baseDescription}`.slice(0, 160)
+    : baseDescription;
+
+  const canonicalUrl = `https://wijnvinder.nl/wijn/${slug}`;
 
   return {
-    title: `${titleParts.join(" ")} | WijnVinder`,
-    description: wine.description
-      ? wine.description.slice(0, 160)
-      : `Bekijk prijzen en details van ${wine.name} bij Nederlandse wijnwinkels.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: canonicalUrl,
+      ...(wine.imageUrl ? { images: [{ url: wine.imageUrl }] } : {}),
+    },
   };
 }
 
@@ -71,6 +96,55 @@ export default async function WijnDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": [wine.producer?.name, wine.name, wine.vintage].filter(Boolean).join(" "),
+          "description": wine.description || `${wine.name} - vergelijk prijzen bij Nederlandse wijnwinkels`,
+          ...(wine.imageUrl ? { "image": wine.imageUrl } : {}),
+          ...(wine.producer?.name ? { "brand": { "@type": "Brand", "name": wine.producer.name } } : {}),
+          ...(wine.vivinoScore ? {
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": wine.vivinoScore,
+              "bestRating": 5,
+              "worstRating": 1,
+              ...(wine.vivinoScoreCount ? { "ratingCount": wine.vivinoScoreCount } : {}),
+            }
+          } : {}),
+          ...(availableListings.length > 0 ? {
+            "offers": {
+              "@type": "AggregateOffer",
+              "priceCurrency": "EUR",
+              "lowPrice": availableListings[0].price,
+              "highPrice": availableListings[availableListings.length - 1].price,
+              "offerCount": availableListings.length,
+              "offers": availableListings.map(l => ({
+                "@type": "Offer",
+                "url": l.url,
+                "price": l.price,
+                "priceCurrency": "EUR",
+                "seller": { "@type": "Organization", "name": l.shop.name },
+                "availability": "https://schema.org/InStock",
+              })),
+            }
+          } : {}),
+        }) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://wijnvinder.nl" },
+            { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": "https://wijnvinder.nl/aanbevelingen" },
+            { "@type": "ListItem", "position": 3, "name": [wine.producer?.name, wine.name].filter(Boolean).join(" ") },
+          ]
+        }) }}
+      />
       {/* Breadcrumb */}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <Link

@@ -16,6 +16,22 @@ import { matchOrCreate } from '@/lib/wine-matcher'
 import { QueueClient } from '@/lib/queue/client'
 import { JobType } from '@/lib/queue/types'
 
+/** Product name patterns that indicate a non-wine product (gift cards, accessories, tasting packs, etc.) */
+const NON_WINE_PATTERNS = [
+  'cadeaubon', 'cadeaukaart', 'giftcard', 'gift card', 'tegoedbon',
+  'proefpakket', 'proeverij', 'wijnpakket', 'mystery box', 'verrassingspakket',
+  'kurkentrekker', 'decanteer', 'wijnkoeler', 'karaf', 'wijnrek',
+  'wijnglas', 'glazen set', 'wine glass', 'opener', 'dropstopper', 'vacuümpomp',
+  'wijnkist', 'geschenkdoos', 'geschenkverpakking',
+  'borrelpakket', 'tapas',
+]
+
+/** Returns true if the product name matches a known non-wine pattern */
+function isNonWineProduct(name: string): boolean {
+  const lower = name.toLowerCase()
+  return NON_WINE_PATTERNS.some(p => lower.includes(p))
+}
+
 /** Known badge/award image patterns that should never be used as wine bottle images */
 const BADGE_IMAGE_PATTERNS = [
   'proefpanelpunten', 'hamersma', 'trophy', 'catavinum', 'berliner',
@@ -89,6 +105,14 @@ export abstract class BaseScraper {
       for await (const scraped of this.scrapeAll()) {
         listingsFound++
         seenUrls.add(scraped.url)
+
+        // Skip non-wine products (gift cards, accessories, tasting packs, etc.)
+        if (isNonWineProduct(scraped.name)) {
+          console.log(
+            `[${this.config.slug}] Skipped non-wine product: ${scraped.name}`,
+          )
+          continue
+        }
 
         try {
           const normalized = normalizeWineName(scraped.name)

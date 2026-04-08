@@ -79,12 +79,13 @@ export function WineGrid({
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {wines.map((scored) => (
+        {wines.map((scored, i) => (
           <WineCard
             key={scored.wine.id as string}
             wine={scored.wine as WineCardWine}
             matchPercentage={showMatchPercentage ? scored.matchPercentage : undefined}
-            index={0}
+            index={i}
+            priority={i < 3}
           />
         ))}
       </div>
