@@ -26,9 +26,11 @@ const WINE_CATEGORIES: { path: string; type: WineType }[] = [
   { path: '/witte-wijn-witte-wijnen', type: 'white' },
   { path: '/de-mooiste-rose-wijnen-en-de-beste-rose-wijn-koop-je-online', type: 'rose' },
   { path: '/mousserende-wijn-cava-champagne-prosecco-cremant', type: 'sparkling' },
+  { path: '/port-vintage-port-versterkte-wijn-en-andere-portachtige-wijnen', type: 'dessert' },
 ]
 
-const PER_PAGE = 96
+// Fanster returns 12 products per page regardless of product_list_limit parameter
+const PER_PAGE = 12
 
 export class FansterScraper extends CheerioScraper {
   constructor() {
@@ -48,7 +50,7 @@ export class FansterScraper extends CheerioScraper {
     let page = 1
 
     while (true) {
-      const url = `${CONFIG.baseUrl}${categoryPath}?product_list_limit=${PER_PAGE}&p=${page}`
+      const url = `${CONFIG.baseUrl}${categoryPath}?p=${page}`
       console.log(`[fanster] Fetching ${wineType} page ${page}: ${url}`)
 
       let $

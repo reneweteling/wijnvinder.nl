@@ -175,11 +175,11 @@ function FilterPanel({
         </div>
       </div>
 
-      {/* Min Vivino score */}
+      {/* Min score */}
       <div>
         <Slider
           id="min-rating"
-          label="Minimale Vivino score"
+          label="Minimale score"
           displayValue={`${filters.minRating.toFixed(1)}`}
           min={1}
           max={5}

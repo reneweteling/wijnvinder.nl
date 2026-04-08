@@ -32,7 +32,7 @@ type WineDetailHeaderProps = {
   producerSlug?: string;
 };
 
-function VivinoStars({ score }: { score: number }) {
+function RatingStars({ score }: { score: number }) {
   const full = Math.floor(score);
   const hasHalf = score - full >= 0.5;
   const empty = 5 - full - (hasHalf ? 1 : 0);
@@ -164,10 +164,10 @@ export function WineDetailHeader({
               )}
             </dl>
 
-            {/* Vivino rating */}
+            {/* Rating */}
             {wine.vivinoScore != null && (
               <div className="flex items-center gap-3">
-                <VivinoStars score={wine.vivinoScore} />
+                <RatingStars score={wine.vivinoScore} />
                 <span className="font-bold text-gold text-lg">
                   {wine.vivinoScore.toFixed(1)}
                 </span>
@@ -183,7 +183,7 @@ export function WineDetailHeader({
                     rel="noopener noreferrer"
                     className="text-xs text-burgundy hover:text-burgundy-dark flex items-center gap-0.5 transition-colors"
                   >
-                    Vivino
+                    Bekijk beoordeling
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}

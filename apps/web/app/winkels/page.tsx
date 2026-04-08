@@ -126,6 +126,26 @@ export default async function WinkelsPage() {
           </div>
         )}
       </section>
+
+      {/* CTA for shops */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+          <h2 className="font-heading text-xl font-semibold text-foreground mb-2">
+            Ook uw wijnwinkel op WijnVinder.nl?
+          </h2>
+          <p className="text-text-light text-sm mb-4 max-w-lg mx-auto">
+            Bent u een wijnwinkel en wilt u ook door ons geïndexeerd worden?
+            Neem contact met ons op en we bespreken de mogelijkheden.
+          </p>
+          <a
+            href="mailto:info@wijnvinder.nl"
+            className="inline-flex items-center gap-2 rounded-lg bg-burgundy text-white font-medium text-sm py-2.5 px-6 hover:bg-burgundy/90 transition-colors"
+          >
+            Neem contact op
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

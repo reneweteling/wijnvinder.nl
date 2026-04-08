@@ -111,10 +111,12 @@ export class DeWijngeroeScraper extends CheerioScraper {
       }
 
       // Check for next page - Shopify uses ?page= pagination
+      // Do not rely on items.length < PER_PAGE as Shopify can return exactly
+      // PER_PAGE items even on the last page
       const hasNextPage = $('a[rel="next"], .pagination__next').length > 0
         || $(`a[href*="page=${page + 1}"]`).length > 0
 
-      if (!hasNextPage || items.length < PER_PAGE) {
+      if (!hasNextPage) {
         break
       }
 

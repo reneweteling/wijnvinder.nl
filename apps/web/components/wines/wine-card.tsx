@@ -50,7 +50,7 @@ function WineTypeBadge({ type }: { type: string }) {
   );
 }
 
-function VivinoStars({ score }: { score: number }) {
+function RatingStars({ score }: { score: number }) {
   const full = Math.floor(score);
   const hasHalf = score - full >= 0.5;
   const empty = 5 - full - (hasHalf ? 1 : 0);
@@ -156,10 +156,10 @@ export function WineCard({ wine, matchPercentage, index = 0 }: WineCardProps) {
               )}
             </div>
 
-            {/* Vivino score */}
+            {/* Rating */}
             {wine.vivinoScore != null && (
               <div className="flex items-center gap-2">
-                <VivinoStars score={wine.vivinoScore} />
+                <RatingStars score={wine.vivinoScore} />
                 <span className="text-xs font-medium text-gold">
                   {wine.vivinoScore.toFixed(1)}
                 </span>

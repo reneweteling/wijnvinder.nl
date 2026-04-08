@@ -10,6 +10,7 @@ const WINE_TYPE_ICONS: Record<WineType, string> = {
   white: "🥂",
   rose: "🌸",
   sparkling: "🍾",
+  dessert: "🍯",
 };
 
 const WINE_TYPE_DESCRIPTIONS: Record<WineType, string> = {
@@ -17,6 +18,7 @@ const WINE_TYPE_DESCRIPTIONS: Record<WineType, string> = {
   white: "Fris, elegant en veelzijdig",
   rose: "Licht, fruitig en zomers",
   sparkling: "Bubbels voor elk moment",
+  dessert: "Zoet, rijk en intens",
 };
 
 const WINE_TYPE_COLORS: Record<WineType, { bg: string; border: string; selected: string }> = {
@@ -39,6 +41,11 @@ const WINE_TYPE_COLORS: Record<WineType, { bg: string; border: string; selected:
     bg: "bg-amber-50",
     border: "border-amber-100",
     selected: "border-amber-400 bg-amber-50",
+  },
+  dessert: {
+    bg: "bg-orange-50",
+    border: "border-orange-100",
+    selected: "border-orange-400 bg-orange-50",
   },
 };
 

@@ -1,4 +1,4 @@
-export type WineType = 'red' | 'white' | 'rose' | 'sparkling'
+export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert'
 
 export type FlavorProfile = 'fruity' | 'dry' | 'tannic' | 'oaky' | 'mineral' | 'spicy' | 'floral' | 'earthy'
 

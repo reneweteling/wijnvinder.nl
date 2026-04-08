@@ -64,7 +64,7 @@ export function Hero({ shopCount }: { shopCount: number }) {
             <Link href="/winkels" className="text-gold underline underline-offset-2 hover:text-gold/80">
               {shopCount} Nederlandse wijnwinkels
             </Link>{" "}
-            — inclusief prijsvergelijking en Vivino-beoordelingen.
+            — inclusief prijsvergelijking en beoordelingen.
           </motion.p>
 
           <motion.div

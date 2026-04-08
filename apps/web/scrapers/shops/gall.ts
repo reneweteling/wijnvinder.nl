@@ -145,8 +145,18 @@ export class GallScraper extends CheerioScraper {
         }
       }
 
-      // Stop if we got fewer tiles than the page size (last page)
-      if (tiles.length < PAGE_SIZE) {
+      // Gall may return fewer tiles than PAGE_SIZE even on non-last pages
+      // (e.g. 85 on page 1 despite sz=96). Use pagination links to detect end.
+      if (tiles.length === 0) {
+        break
+      }
+
+      // Check if there's a next page by looking for pagination links beyond current start
+      const nextStart = start + PAGE_SIZE
+      const hasMorePages = $(`a[href*="start=${nextStart}"]`).length > 0
+        || $(`a.pagination-next, a[rel="next"]`).length > 0
+
+      if (!hasMorePages) {
         break
       }
 

@@ -27,10 +27,12 @@ export class WijnbeursScraper extends CheerioScraper {
 
   async *scrapeAll(): AsyncGenerator<ScrapedWine> {
     let page = 1
-    const perPage = 96
+    // Wijnbeurs ignores product_list_limit and always returns 18 products per page
+    // (infinite scroll site). We paginate through all pages using ?p= parameter.
+    const perPage = 18
 
     while (true) {
-      const url = `${CONFIG.baseUrl}/wijn?product_list_limit=${perPage}&p=${page}`
+      const url = `${CONFIG.baseUrl}/wijn?p=${page}`
       console.log(`[wijnbeurs] Fetching page ${page}: ${url}`)
 
       let $

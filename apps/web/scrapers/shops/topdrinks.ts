@@ -19,7 +19,8 @@ import { CheerioScraper } from '../cheerio-scraper'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'topdrinks')!
 
-const PER_PAGE = 48
+// Topdrinks returns 24 products per page regardless of any limit parameter
+const PER_PAGE = 24
 
 export class TopdrinksScraper extends CheerioScraper {
   constructor() {

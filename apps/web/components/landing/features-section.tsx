@@ -19,7 +19,7 @@ function getFeatures(shopCount: number) {
   },
   {
     icon: Star,
-    title: "Vivino Integratie",
+    title: "Beoordelingen",
     description:
       "Beoordelingen van miljoenen wijnliefhebbers wereldwijd, direct gekoppeld aan onze aanbevelingen.",
     image:

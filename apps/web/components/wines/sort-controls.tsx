@@ -12,7 +12,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "match", label: "Beste match" },
   { value: "price-asc", label: "Prijs laag → hoog" },
   { value: "price-desc", label: "Prijs hoog → laag" },
-  { value: "rating-desc", label: "Vivino score" },
+  { value: "rating-desc", label: "Beoordeling" },
 ];
 
 type SortControlsProps = {

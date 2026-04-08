@@ -82,7 +82,7 @@ export function CtaSection({ shopCount }: { shopCount: number }) {
               {[
                 { label: "Gratis te gebruiken" },
                 { label: `${shopCount}+ wijnwinkels`, href: "/winkels" },
-                { label: "Vivino-ratings" },
+                { label: "Beoordelingen" },
               ].map((item, i) => (
                 <motion.div
                   key={item.label}

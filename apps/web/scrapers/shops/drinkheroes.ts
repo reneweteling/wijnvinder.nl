@@ -53,9 +53,11 @@ query getProducts($currentPage: Int!, $pageSize: Int!, $filter: ProductAttribute
 }
 `
 
-// Wine category IDs to query (these are Magento category UIDs)
-// We search by category name patterns instead
-const WINE_SEARCH_TERMS = ['wijn']
+// Wine category UIDs from Magento GraphQL categories query.
+// Parent "Wijn" category (ODQ3) contains all subcategories:
+//   Rode Wijn (ODQ4), Witte Wijn (ODQ5), Rosé Wijn (ODUw), Dessert Wijn (ODUx)
+// Using the parent UID returns all wines at once (456+ products).
+const WINE_CATEGORY_UIDS = ['ODQ3']
 
 interface GraphQLProduct {
   name: string
@@ -104,20 +106,20 @@ export class DrinkHeroesScraper extends CheerioScraper {
   }
 
   async *scrapeAll(): AsyncGenerator<ScrapedWine> {
-    for (const searchTerm of WINE_SEARCH_TERMS) {
-      yield* this.scrapeBySearch(searchTerm)
+    for (const categoryUid of WINE_CATEGORY_UIDS) {
+      yield* this.scrapeByCategory(categoryUid)
     }
   }
 
-  private async *scrapeBySearch(searchTerm: string): AsyncGenerator<ScrapedWine> {
+  private async *scrapeByCategory(categoryUid: string): AsyncGenerator<ScrapedWine> {
     let currentPage = 1
 
     while (true) {
-      console.log(`[drinkheroes] Fetching GraphQL page ${currentPage} for "${searchTerm}"`)
+      console.log(`[drinkheroes] Fetching GraphQL page ${currentPage} for category "${categoryUid}"`)
 
       let response: GraphQLResponse
       try {
-        const result = await this.fetchGraphQL(currentPage, searchTerm)
+        const result = await this.fetchGraphQL(currentPage, categoryUid)
         response = result
       } catch (err) {
         console.error(`[drinkheroes] GraphQL request failed on page ${currentPage}:`, err)
@@ -180,7 +182,7 @@ export class DrinkHeroesScraper extends CheerioScraper {
 
   private async fetchGraphQL(
     currentPage: number,
-    searchTerm: string,
+    categoryUid: string,
   ): Promise<GraphQLResponse> {
     // Rate limiting
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -191,7 +193,7 @@ export class DrinkHeroesScraper extends CheerioScraper {
         currentPage,
         pageSize: PAGE_SIZE,
         filter: {
-          name: { match: searchTerm },
+          category_uid: { eq: categoryUid },
         },
       },
     })

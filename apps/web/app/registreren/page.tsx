@@ -56,7 +56,7 @@ export default function RegistrerenPage() {
   const benefits = [
     "Persoonlijke wijnprofielen",
     `Vergelijk prijzen bij ${ENABLED_SHOP_COUNT}+ winkels`,
-    "Vivino-beoordelingen direct zichtbaar",
+    "Beoordelingen direct zichtbaar",
     "Gratis te gebruiken",
   ];
 

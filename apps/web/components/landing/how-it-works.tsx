@@ -17,7 +17,7 @@ function getSteps(shopCount: number) {
     step: "02",
     title: "Wij Zoeken Voor Jou",
     description:
-      `Ons algoritme doorzoekt meer dan ${shopCount} wijnwinkels en matcht de beste wijnen op basis van jouw unieke smaakprofiel en Vivino-ratings.`,
+      `Ons algoritme doorzoekt meer dan ${shopCount} wijnwinkels en matcht de beste wijnen op basis van jouw unieke smaakprofiel en beoordelingen.`,
   },
   {
     icon: ShoppingCart,
