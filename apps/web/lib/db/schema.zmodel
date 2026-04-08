@@ -1,0 +1,233 @@
+plugin policy {
+    provider = '@zenstackhq/plugin-policy'
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  emailVerified Boolean       @default(false)
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  wineProfile   WineProfile?
+  favorites     FavoriteWine[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@allow('read', auth().id == id)
+  @@allow('update', auth().id == id)
+  @@allow('create', true)
+  @@map("user")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@allow('read', auth() != null)
+  @@allow('create', true)
+  @@map("account")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@allow('read,delete', auth().id == userId)
+  @@allow('create', true)
+  @@map("session")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@allow('all', true)
+  @@map("verification")
+}
+
+model WineProfile {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wineTypes String[]
+  grapes    String[]
+  flavors   String[]
+  countries String[]
+  priceMin  Float    @default(5)
+  priceMax  Float    @default(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@allow('read,create', true)
+  @@allow('update,delete', auth().id == userId)
+}
+
+model VivinoRating {
+  id              String   @id @default(cuid())
+  userId          String?
+  vivinoUsername   String?
+  wineName        String
+  vintage         Int?
+  rating          Float
+  grape           String?
+  country         String?
+  region          String?
+  wineType        String?
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+
+  @@allow('read,create', true)
+}
+
+model Producer {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String          @unique
+  country     String?
+  region      String?
+  description String?
+  website     String?
+  imageUrl    String?
+  wines       CanonicalWine[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@allow('read', true)
+  @@index([name])
+}
+
+model Shop {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  baseUrl         String
+  logoUrl         String?
+  description     String?
+  referralParam   String?       // e.g. "?ref=wijnvinder" for affiliate tracking
+  referralEnabled Boolean       @default(false)
+  enabled         Boolean       @default(true)
+  listings        ShopListing[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@allow('read', true)
+}
+
+model CanonicalWine {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  producerId      String?
+  producer        Producer?     @relation(fields: [producerId], references: [id])
+  grape           String?
+  grapes          String[]
+  country         String?
+  region          String?
+  wineType        String?
+  vintage         Int?
+  vivinoScore     Float?
+  vivinoScoreCount Int?
+  vivinoUrl       String?
+  searchName      String
+  imageUrl        String?
+  description     String?
+  listings        ShopListing[]
+  favorites       FavoriteWine[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@allow('read', true)
+  @@index([searchName])
+  @@index([wineType])
+  @@index([country])
+  @@index([vivinoScore])
+  @@index([producerId])
+}
+
+model ShopListing {
+  id              String        @id @default(cuid())
+  canonicalWineId String
+  canonicalWine   CanonicalWine @relation(fields: [canonicalWineId], references: [id], onDelete: Cascade)
+  shopId          String?
+  shop            Shop?         @relation(fields: [shopId], references: [id])
+  shopSlug        String        // denormalized for quick queries
+  shopName        String        // denormalized for display
+  price           Float
+  originalPrice   Float?
+  url             String
+  available       Boolean       @default(true)
+  imageUrl        String?
+  rawName         String
+  rawProducer     String?
+  rating          Float?
+  description     String?
+  lastScrapedAt   DateTime
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([shopSlug, url])
+  @@index([shopSlug])
+  @@index([shopId])
+  @@index([price])
+  @@allow('read', true)
+}
+
+model FavoriteWine {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wineId    String
+  wine      CanonicalWine @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([userId, wineId])
+  @@allow('read,create,update,delete', auth().id == userId)
+  @@map("favorite_wine")
+}
+
+model ScrapeJob {
+  id              String    @id @default(cuid())
+  shopSlug        String
+  status          String    @default("pending")
+  listingsFound   Int       @default(0)
+  listingsMatched Int       @default(0)
+  error           String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@allow('all', true)
+}

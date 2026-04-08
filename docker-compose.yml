@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=wijn
+    ports:
+      - 5440:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  mailcatcher:
+    restart: on-failure
+    image: dockage/mailcatcher:0.9.0
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+volumes:
+  pg_data:

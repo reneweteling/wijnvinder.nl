@@ -1,0 +1,21 @@
+{
+  "name": "wijn.weteling.nl",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev worker:dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint check-types",
+    "check-types": "pnpm --filter web check-types",
+    "worker": "pnpm --filter web worker",
+    "generate": "pnpm --filter web generate",
+    "db:push": "pnpm --filter web db:push",
+    "db:seed": "pnpm --filter web db:seed",
+    "scrape": "pnpm --filter web scrape",
+    "postinstall": "pnpm --filter web postinstall"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.1"
+  },
+  "packageManager": "pnpm@10.8.1"
+}

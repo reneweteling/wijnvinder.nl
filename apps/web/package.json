@@ -1,0 +1,56 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3010",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "worker": "tsx --env-file=.env.local lib/queue/worker.ts",
+    "worker:dev": "tsx --env-file=.env.local watch lib/queue/worker.ts",
+    "generate": "zen generate --schema lib/db/schema.zmodel",
+    "db:push": "zen db push --schema lib/db/schema.zmodel",
+    "db:seed": "tsx --env-file=.env.local lib/db/seed.ts",
+    "scrape": "tsx --env-file=.env.local scrapers/run-scrape.ts",
+    "postinstall": "zen generate --schema lib/db/schema.zmodel"
+  },
+  "zenstack": {
+    "schema": "lib/db/schema.zmodel"
+  },
+  "dependencies": {
+    "@zenstackhq/orm": "^3.5.2",
+    "@zenstackhq/plugin-policy": "^3.5.2",
+    "better-auth": "^1.5.6",
+    "cheerio": "^1.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^0.479.0",
+    "next": "16.2.1",
+    "nodemailer": "^8.0.5",
+    "pg": "^8.20.0",
+    "pg-boss": "^12.14.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "string-similarity-js": "^2.1.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@zenstackhq/cli": "^3.5.2",
+    "@zenstackhq/schema": "^3.5.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.1",
+    "postcss": "^8",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
