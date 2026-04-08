@@ -44,9 +44,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@wijnvinder",
   },
-  alternates: {
-    canonical: "https://wijnvinder.nl",
-  },
 };
 
 export default function RootLayout({
@@ -78,7 +75,7 @@ export default function RootLayout({
           `}</Script>
         </head>
       )}
-      <body className="font-body antialiased">
+      <body className="font-body antialiased flex flex-col min-h-screen">
         {isProd && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} height="0" width="0" style={{display:'none',visibility:'hidden'}} /></noscript>}
           <script
             type="application/ld+json"
@@ -98,7 +95,7 @@ export default function RootLayout({
           />
           <FavoritesProvider>
             <Header />
-            <main className="pt-16">
+            <main className="pt-16 flex-1">
               {children}
             </main>
             <Footer />

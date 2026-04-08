@@ -87,20 +87,28 @@ export class WijnbeursScraper extends CheerioScraper {
 
         if (!name || !productUrl) continue
 
-        // Final price (special price if on sale, otherwise regular)
-        const priceAttr = el
-          .find('[data-price-type="finalPrice"]')
-          .attr('data-price-amount')
-        const price = priceAttr ? parseFloat(priceAttr) : NaN
+        // Final price — data-price-amount was removed, now in <span class="price">8,89</span>
+        const priceText = el
+          .find('[data-price-type="finalPrice"] .price')
+          .first()
+          .text()
+          .trim()
+          .replace(/[€\s]/g, '')
+          .replace(',', '.')
+        const price = priceText ? parseFloat(priceText) : NaN
 
         if (isNaN(price) || price <= 0) continue
 
         // Original price (before sale)
-        const originalPriceAttr = el
-          .find('[data-price-type="oldPrice"]')
-          .attr('data-price-amount')
-        const originalPrice = originalPriceAttr
-          ? parseFloat(originalPriceAttr)
+        const originalPriceText = el
+          .find('[data-price-type="oldPrice"] .price')
+          .first()
+          .text()
+          .trim()
+          .replace(/[€\s]/g, '')
+          .replace(',', '.')
+        const originalPrice = originalPriceText
+          ? parseFloat(originalPriceText)
           : undefined
 
         // Vintage, country, region from ".small" e.g. "2024 | Frankrijk | Pays d'Oc"
