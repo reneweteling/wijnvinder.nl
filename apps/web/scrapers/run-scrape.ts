@@ -8,8 +8,9 @@
  *   pnpm scrape --shop=wijnvoordeel --direct Run scraper inline (no pg-boss)
  *   pnpm scrape --all                        Enqueue one job per enabled shop
  *   pnpm scrape --all --direct               Run all enabled shops inline
- *   pnpm scrape --enrich                     Run Vivino enrichment for all wines
- *   pnpm scrape --enrich --wine=<id>         Enrich a single canonical wine
+ *   pnpm scrape --enrich                     Enqueue Vivino enrichment for all wines
+ *   pnpm scrape --enrich --direct            Run Vivino enrichment inline
+ *   pnpm scrape --enrich --wine=<id>         Enqueue enrichment for a single wine
  */
 
 import { SHOP_CONFIGS } from '@/lib/constants'
@@ -47,8 +48,10 @@ Usage:
   pnpm scrape --shop=<slug> --direct   Run scraper inline (bypass pg-boss)
   pnpm scrape --all                    Enqueue one job per enabled shop
   pnpm scrape --all --direct           Run all enabled shops inline
-  pnpm scrape --enrich                 Run Vivino enrichment for all wines
-  pnpm scrape --enrich --wine=<id>     Enrich a single canonical wine by ID
+  pnpm scrape --enrich                 Enqueue Vivino enrichment for all wines
+  pnpm scrape --enrich --direct        Run Vivino enrichment inline for all wines
+  pnpm scrape --enrich --wine=<id>     Enqueue enrichment for a single wine
+  pnpm scrape --enrich --wine=<id> --direct  Enrich a single wine inline
 
 Available shops:
 ${ALL_SHOP_SLUGS.map((s) => `  - ${s}`).join('\n')}
@@ -118,16 +121,39 @@ async function main(): Promise<void> {
     process.exit(0)
   }
 
-  // --enrich flag (always runs inline — no queue path needed)
+  // --enrich flag
   if (args['enrich']) {
     const wineId = typeof args['wine'] === 'string' ? args['wine'] : null
 
-    if (wineId) {
-      console.log(`[scraper] Enriching single wine: ${wineId}`)
-      await enrichWine(wineId)
+    if (direct) {
+      // Run inline
+      if (wineId) {
+        console.log(`[scraper] Enriching single wine inline: ${wineId}`)
+        await enrichWine(wineId)
+      } else {
+        console.log('[scraper] Running Vivino enrichment inline for all wines...')
+        await enrichAll()
+      }
     } else {
-      console.log('[scraper] Running Vivino enrichment for all wines...')
-      await enrichAll()
+      // Enqueue via pg-boss
+      if (wineId) {
+        const jobId = await QueueClient.enqueue(JobType.ENRICH_VIVINO, { canonicalWineId: wineId })
+        console.log(`[scraper] Enqueued ENRICH_VIVINO job for wine ${wineId} (jobId: ${jobId})`)
+      } else {
+        const { db } = await import('@/lib/db/client')
+        const wines = await db.canonicalWine.findMany({
+          where: { OR: [{ vivinoScore: null }, { updatedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }] },
+          select: { id: true, name: true },
+          orderBy: { createdAt: 'asc' },
+        })
+
+        console.log(`[scraper] Enqueuing ${wines.length} ENRICH_VIVINO jobs via pg-boss`)
+        for (const wine of wines) {
+          const jobId = await QueueClient.enqueue(JobType.ENRICH_VIVINO, { canonicalWineId: wine.id })
+          console.log(`  ✓ ${wine.name} (jobId: ${jobId})`)
+        }
+        console.log(`\n[scraper] ${wines.length} jobs enqueued. Start the worker to process them: pnpm worker`)
+      }
     }
 
     process.exit(0)

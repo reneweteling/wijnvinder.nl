@@ -135,7 +135,11 @@ function scoreOrWrap(
 export default function AanbevelingenPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [profile] = useState<WineProfileData | null>(() => readProfileCookie());
+  const [profile, setProfile] = useState<WineProfileData | null>(null);
+
+  useEffect(() => {
+    setProfile(readProfileCookie());
+  }, []);
 
   // Pure URL-driven: /aanbevelingen = no filters, params = filters
   const initial = paramsToFilters(searchParams);
@@ -186,7 +190,11 @@ export default function AanbevelingenPage() {
       const { wines } = await fetchWines(filters, nextPage);
       if (wines.length > 0) {
         pageRef.current = nextPage;
-        setScoredWines((prev) => [...prev, ...scoreOrWrap(profile, wines)]);
+        setScoredWines((prev) => {
+          const existing = new Set(prev.map((s) => s.wine.id));
+          const newWines = scoreOrWrap(profile, wines).filter((s) => !existing.has(s.wine.id));
+          return [...prev, ...newWines];
+        });
       }
     } catch (err) {
       console.error(err);

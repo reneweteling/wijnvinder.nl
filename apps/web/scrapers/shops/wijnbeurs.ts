@@ -102,7 +102,8 @@ export class WijnbeursScraper extends CheerioScraper {
           const maxW = img.attr('max-width')
           if (maxW && parseInt(maxW) <= 160) continue
           if (src.includes('/media/catalog/product/')) {
-            imageUrl = src
+            // Strip Magento resize params to get full-resolution image
+            imageUrl = src.split('?')[0]
             break
           }
         }

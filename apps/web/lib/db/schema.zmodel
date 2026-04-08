@@ -91,6 +91,7 @@ model WineProfile {
 
   @@allow('read,create', true)
   @@allow('update,delete', auth().id == userId)
+  @@map("wine_profile")
 }
 
 model VivinoRating {
@@ -108,6 +109,7 @@ model VivinoRating {
   createdAt       DateTime @default(now())
 
   @@allow('read,create', true)
+  @@map("vivino_rating")
 }
 
 model Producer {
@@ -125,6 +127,7 @@ model Producer {
 
   @@allow('read', true)
   @@index([name])
+  @@map("producer")
 }
 
 model Shop {
@@ -138,10 +141,12 @@ model Shop {
   referralEnabled Boolean       @default(false)
   enabled         Boolean       @default(true)
   listings        ShopListing[]
+  scrapeJobs      ScrapeJob[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   @@allow('read', true)
+  @@map("shop")
 }
 
 model CanonicalWine {
@@ -173,16 +178,15 @@ model CanonicalWine {
   @@index([country])
   @@index([vivinoScore])
   @@index([producerId])
+  @@map("canonical_wine")
 }
 
 model ShopListing {
   id              String        @id @default(cuid())
   canonicalWineId String
   canonicalWine   CanonicalWine @relation(fields: [canonicalWineId], references: [id], onDelete: Cascade)
-  shopId          String?
-  shop            Shop?         @relation(fields: [shopId], references: [id])
-  shopSlug        String        // denormalized for quick queries
-  shopName        String        // denormalized for display
+  shopId          String
+  shop            Shop          @relation(fields: [shopId], references: [id])
   price           Float
   originalPrice   Float?
   url             String
@@ -196,11 +200,11 @@ model ShopListing {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  @@unique([shopSlug, url])
-  @@index([shopSlug])
+  @@unique([shopId, url])
   @@index([shopId])
   @@index([price])
   @@allow('read', true)
+  @@map("shop_listing")
 }
 
 model FavoriteWine {
@@ -220,7 +224,8 @@ model FavoriteWine {
 
 model ScrapeJob {
   id              String    @id @default(cuid())
-  shopSlug        String
+  shopId          String
+  shop            Shop      @relation(fields: [shopId], references: [id])
   status          String    @default("pending")
   listingsFound   Int       @default(0)
   listingsMatched Int       @default(0)
@@ -230,4 +235,5 @@ model ScrapeJob {
   createdAt       DateTime  @default(now())
 
   @@allow('all', true)
+  @@map("scrape_job")
 }

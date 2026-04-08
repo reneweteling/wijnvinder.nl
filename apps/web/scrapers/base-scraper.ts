@@ -13,6 +13,7 @@ import { db } from '@/lib/db/client'
 import type { ScrapedWine, ShopConfig } from '@/lib/types'
 import { normalizeWineName } from './normalize'
 import { matchOrCreate } from '@/lib/wine-matcher'
+import { fetchProductPage } from './fetch-description'
 
 /** Known badge/award image patterns that should never be used as wine bottle images */
 const BADGE_IMAGE_PATTERNS = [
@@ -36,6 +37,7 @@ function cleanImageUrl(url: string | undefined): string | null {
 
 export abstract class BaseScraper {
   protected readonly config: ShopConfig
+  private shopId!: string
 
   constructor(config: ShopConfig) {
     this.config = config
@@ -57,9 +59,12 @@ export abstract class BaseScraper {
    * 6. Update ScrapeJob
    */
   async run(): Promise<void> {
+    const shop = await db.shop.findUniqueOrThrow({ where: { slug: this.config.slug } })
+    this.shopId = shop.id
+
     const job = await db.scrapeJob.create({
       data: {
-        shopSlug: this.config.slug,
+        shopId: shop.id,
         status: 'running',
         startedAt: new Date(),
       },
@@ -86,18 +91,17 @@ export abstract class BaseScraper {
           )
           listingsMatched++
 
-          // Upsert ShopListing by (shopSlug, url)
+          // Upsert ShopListing by (shopId, url)
           await db.shopListing.upsert({
             where: {
-              shopSlug_url: {
-                shopSlug: this.config.slug,
+              shopId_url: {
+                shopId: this.shopId,
                 url: scraped.url,
               },
             },
             create: {
               canonicalWineId,
-              shopSlug: this.config.slug,
-              shopName: this.config.name,
+              shopId: this.shopId,
               price: scraped.price,
               originalPrice: scraped.originalPrice ?? null,
               url: scraped.url,
@@ -123,45 +127,47 @@ export abstract class BaseScraper {
             },
           })
 
-          // Update canonical wine with better image, aggregate rating, and description
-          const needsCanonicalCheck =
-            validImageUrl != null ||
-            scraped.rating != null ||
-            scraped.description != null
+          // Update canonical wine with rating, description, and high-res image
+          const canonical = await db.canonicalWine.findUnique({
+            where: { id: canonicalWineId },
+            select: { vivinoScore: true, description: true },
+          })
+          const updates: Record<string, unknown> = {}
 
-          if (needsCanonicalCheck) {
-            const canonical = await db.canonicalWine.findUnique({
-              where: { id: canonicalWineId },
-              select: { imageUrl: true, vivinoScore: true, description: true },
+          // Set vivinoScore from tasting panel rating only when no Vivino score exists yet
+          if (scraped.rating != null && canonical?.vivinoScore == null) {
+            updates.vivinoScore = scraped.rating
+          }
+
+          // Always fetch product page for high-res image and description
+          const page = await fetchProductPage(scraped.url)
+
+          if (page.imageUrl) {
+            updates.imageUrl = page.imageUrl
+            await db.shopListing.update({
+              where: { shopId_url: { shopId: this.shopId, url: scraped.url } },
+              data: { imageUrl: page.imageUrl },
             })
-            const updates: Record<string, unknown> = {}
+          } else if (validImageUrl) {
+            updates.imageUrl = validImageUrl
+          }
 
-            // Prefer a real product image over placeholders / badges / Unsplash
-            if (
-              validImageUrl &&
-              (!canonical?.imageUrl ||
-                isBadgeImage(canonical.imageUrl) ||
-                canonical.imageUrl.includes('unsplash.com'))
-            ) {
-              updates.imageUrl = validImageUrl
+          const description = page.description ?? scraped.description ?? null
+          if (description) {
+            await db.shopListing.update({
+              where: { shopId_url: { shopId: this.shopId, url: scraped.url } },
+              data: { description },
+            })
+            if (!canonical?.description) {
+              updates.description = description
             }
+          }
 
-            // Set vivinoScore from tasting panel rating only when no Vivino score exists yet
-            if (scraped.rating != null && canonical?.vivinoScore == null) {
-              updates.vivinoScore = scraped.rating
-            }
-
-            // Propagate description to canonical wine if it doesn't have one yet
-            if (scraped.description && !canonical?.description) {
-              updates.description = scraped.description
-            }
-
-            if (Object.keys(updates).length > 0) {
-              await db.canonicalWine.update({
-                where: { id: canonicalWineId },
-                data: updates,
-              })
-            }
+          if (Object.keys(updates).length > 0) {
+            await db.canonicalWine.update({
+              where: { id: canonicalWineId },
+              data: updates,
+            })
           }
 
           console.log(
@@ -220,7 +226,7 @@ export abstract class BaseScraper {
     // Fetch all active listings for this shop
     const activeListings = await db.shopListing.findMany({
       where: {
-        shopSlug: this.config.slug,
+        shopId: this.shopId,
         available: true,
       },
       select: { id: true, url: true },

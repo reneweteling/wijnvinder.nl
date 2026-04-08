@@ -19,9 +19,9 @@ async function startWorker() {
 
     await boss.work(
       jobType,
-      { batchSize: 5, pollingIntervalSeconds: 2 },
+      { batchSize: 10, pollingIntervalSeconds: 2 },
       async (jobs) => {
-        for (const job of jobs) {
+        await Promise.all(jobs.map(async (job) => {
           console.log(`[worker: ${jobType}] Processing job ${job.id}`);
           try {
             const schema = jobSchemas[jobType as JobType];
@@ -35,7 +35,7 @@ async function startWorker() {
             );
             throw error;
           }
-        }
+        }));
       },
     );
 

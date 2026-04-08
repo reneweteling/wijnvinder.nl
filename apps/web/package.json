@@ -8,12 +8,13 @@
     "start": "next start",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "worker": "tsx --env-file=.env.local lib/queue/worker.ts",
-    "worker:dev": "tsx --env-file=.env.local watch lib/queue/worker.ts",
+    "worker": "node --env-file=.env.local --import tsx lib/queue/worker.ts",
+    "worker:dev": "node --env-file=.env.local --watch --import tsx lib/queue/worker.ts",
     "generate": "zen generate --schema lib/db/schema.zmodel",
     "db:push": "zen db push --schema lib/db/schema.zmodel",
-    "db:seed": "tsx --env-file=.env.local lib/db/seed.ts",
-    "scrape": "tsx --env-file=.env.local scrapers/run-scrape.ts",
+    "db:seed": "node --env-file=.env.local --import tsx lib/db/seed.ts",
+    "db:fresh": "zen db push --schema lib/db/schema.zmodel --force-reset && node --env-file=.env.local --import tsx lib/db/seed.ts",
+    "scrape": "node --env-file=.env.local --import tsx scrapers/run-scrape.ts",
     "postinstall": "zen generate --schema lib/db/schema.zmodel"
   },
   "zenstack": {
@@ -47,8 +48,8 @@
     "@zenstackhq/cli": "^3.5.2",
     "@zenstackhq/schema": "^3.5.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.1",
-    "postcss": "^8",
+    "eslint-config-next": "16.2.2",
+    "postcss": "^8.5.9",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

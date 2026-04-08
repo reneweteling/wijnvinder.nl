@@ -106,6 +106,7 @@ export async function GET(request: NextRequest) {
           listings: {
             where: { available: true },
             orderBy: { price: "asc" },
+            include: { shop: { select: { slug: true, name: true } } },
           },
         },
       }),

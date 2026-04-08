@@ -38,6 +38,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
       producer: true,
       listings: {
         orderBy: { price: "asc" },
+        include: { shop: { select: { slug: true, name: true } } },
       },
     },
   });
@@ -52,7 +53,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
 
   const bestPrice = cheapest?.price ?? null;
   const originalPrice = cheapest?.originalPrice ?? null;
-  const bestShopName = cheapest?.shopName ?? null;
+  const bestShopName = cheapest?.shop?.name ?? null;
   const bestShopUrl = cheapest?.url ?? null;
 
   // Find other wines from the same producer
@@ -114,8 +115,8 @@ export default async function WijnDetailPage({ params }: PageProps) {
         <PriceComparison
           listings={wine.listings.map((l) => ({
             id: l.id,
-            shopSlug: l.shopSlug,
-            shopName: l.shopName,
+            shopSlug: l.shop.slug,
+            shopName: l.shop.name,
             price: l.price,
             originalPrice: l.originalPrice,
             url: l.url,

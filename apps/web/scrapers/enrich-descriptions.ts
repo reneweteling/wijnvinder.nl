@@ -11,76 +11,12 @@
  */
 
 import { db } from '@/lib/db/client'
-import * as cheerio from 'cheerio'
+import { fetchProductPage } from './fetch-description'
 
 const DELAY_MS = 2000
 
-const USER_AGENTS = [
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-]
-
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function randomUA(): string {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
-}
-
-/** Decode HTML entities and strip tags */
-function cleanHtml(html: string): string {
-  // First decode HTML entities using cheerio
-  const decoded = cheerio.load(`<p>${html}</p>`, { xml: false }).text()
-  // Strip any remaining HTML tags
-  return decoded
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-async function fetchDescription(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': randomUA(),
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
-      },
-      redirect: 'follow',
-    })
-
-    if (!response.ok) {
-      console.warn(`[desc] HTTP ${response.status} for ${url}`)
-      return null
-    }
-
-    const html = await response.text()
-    const $ = cheerio.load(html)
-
-    // Try different meta tags in order of quality
-    const tastingNote = $('meta[property="bc:tastingnote"]').attr('content')
-    if (tastingNote) return cleanHtml(tastingNote)
-
-    const ogDescription = $('meta[property="og:description"]').attr('content')
-    if (ogDescription && ogDescription.length > 30) return cleanHtml(ogDescription)
-
-    const shortDesc = $('meta[property="bc:shortDescription"]').attr('content')
-    if (shortDesc) return cleanHtml(shortDesc)
-
-    const metaDesc = $('meta[name="description"]').attr('content')
-    if (metaDesc && metaDesc.length > 30) return cleanHtml(metaDesc)
-
-    // Try product description div (Gall & Gall uses different structure)
-    const productDesc = $('.product-description').text().trim()
-    if (productDesc && productDesc.length > 30) return productDesc.slice(0, 500)
-
-    return null
-  } catch (err) {
-    console.warn(`[desc] Error fetching ${url}:`, err)
-    return null
-  }
 }
 
 export async function enrichDescriptions(): Promise<void> {
@@ -91,6 +27,7 @@ export async function enrichDescriptions(): Promise<void> {
       listings: {
         where: { available: true },
         take: 1,
+        include: { shop: { select: { slug: true } } },
       },
     },
     orderBy: { createdAt: 'asc' },
@@ -109,22 +46,24 @@ export async function enrichDescriptions(): Promise<void> {
       continue
     }
 
-    console.log(`[desc] [${i + 1}/${wines.length}] ${wine.name} — fetching ${listing.shopSlug}...`)
+    console.log(`[desc] [${i + 1}/${wines.length}] ${wine.name} — fetching ${listing.shop.slug}...`)
 
-    const description = await fetchDescription(listing.url)
+    const page = await fetchProductPage(listing.url)
 
-    if (description) {
-      // Update both listing and canonical wine
+    if (page.description) {
       await db.shopListing.update({
         where: { id: listing.id },
-        data: { description },
+        data: { description: page.description },
       })
       await db.canonicalWine.update({
         where: { id: wine.id },
-        data: { description },
+        data: {
+          description: page.description,
+          ...(page.imageUrl ? { imageUrl: page.imageUrl } : {}),
+        },
       })
       enriched++
-      console.log(`[desc]   ✓ ${description.slice(0, 80)}...`)
+      console.log(`[desc]   ✓ ${page.description.slice(0, 80)}...`)
     } else {
       console.log(`[desc]   ✗ No description found`)
     }
