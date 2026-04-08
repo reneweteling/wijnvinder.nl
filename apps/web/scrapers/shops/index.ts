@@ -7,6 +7,12 @@ import type { BaseScraper } from '../base-scraper'
 import { WijnvoordeelScraper } from './wijnvoordeel'
 import { WijnbeursScraper } from './wijnbeurs'
 import { GallScraper } from './gall'
+import { DrankDozijnScraper } from './drankdozijn'
+import { ViavinaScraper } from './viavina'
+import { FansterScraper } from './fanster'
+import { TopdrinksScraper } from './topdrinks'
+import { DrinkHeroesScraper } from './drinkheroes'
+import { DeWijngeroeScraper } from './dewijngoeroe'
 
 type ScraperConstructor = new () => BaseScraper
 
@@ -14,6 +20,12 @@ export const SCRAPER_REGISTRY: Record<string, ScraperConstructor> = {
   wijnvoordeel: WijnvoordeelScraper,
   wijnbeurs: WijnbeursScraper,
   gall: GallScraper,
+  drankdozijn: DrankDozijnScraper,
+  viavina: ViavinaScraper,
+  fanster: FansterScraper,
+  topdrinks: TopdrinksScraper,
+  drinkheroes: DrinkHeroesScraper,
+  dewijngoeroe: DeWijngeroeScraper,
 }
 
 /**

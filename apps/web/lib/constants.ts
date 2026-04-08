@@ -87,20 +87,67 @@ export const SHOP_CONFIGS: ShopConfig[] = [
     name: 'Wijnvoordeel',
     baseUrl: 'https://www.wijnvoordeel.nl',
     enabled: true,
+    description: 'Sinds 1999 online gerenommeerde wijnen voor spectaculair lage prijzen. Meer dan 350 wijnen uit alle toonaangevende wijngebieden.',
   },
   {
     slug: 'wijnbeurs',
     name: 'Wijnbeurs',
     baseUrl: 'https://www.wijnbeurs.nl',
     enabled: true,
+    description: 'Al 48 jaar de meest bijzondere wijnen, direct bij de wijnboer ingekocht. Blind geproefd voor gegarandeerde kwaliteit.',
   },
   {
     slug: 'gall',
     name: 'Gall & Gall',
     baseUrl: 'https://www.gall.nl',
     enabled: true,
+    description: 'De bekendste slijterij van Nederland met ruim 600 winkels. Groot assortiment wijn, bier en sterke drank.',
+  },
+  {
+    slug: 'drankdozijn',
+    name: 'DrankDozijn',
+    baseUrl: 'https://www.drankdozijn.nl',
+    enabled: true,
+    description: 'Dé online slijterij van Nederland met meer dan 4.000 producten. Breed assortiment wijn, whisky, rum, gin en meer.',
+  },
+  {
+    slug: 'viavina',
+    name: 'Viavina',
+    baseUrl: 'https://www.viavina.nl',
+    enabled: true,
+    description: 'Mindfully crafted biologische en natuurzuivere wijnen zonder toegevoegde suikers.',
+  },
+  {
+    slug: 'fanster',
+    name: 'Fanster',
+    baseUrl: 'https://www.fanster.nl',
+    enabled: true,
+    description: 'Meer dan 800 wijnen van over de hele wereld onder één dak. Alle wijnen in huis voor snelle levering.',
+  },
+  {
+    slug: 'topdrinks',
+    name: 'Topdrinks',
+    baseUrl: 'https://www.topdrinks.nl',
+    enabled: true,
+    description: 'Uitgebreid aanbod dranken met scherpe prijzen. Van bekende likeuren tot exclusieve whiskeys en wijnen.',
+  },
+  {
+    slug: 'drinkheroes',
+    name: 'Drink Heroes',
+    baseUrl: 'https://www.drinkheroes.nl',
+    enabled: true,
+    description: 'Gepassioneerde wijnspecialist met topwijnen in rood, wit, rosé, mousserende en alcoholvrij.',
+  },
+  {
+    slug: 'dewijngoeroe',
+    name: 'De Wijngoeroe',
+    baseUrl: 'https://www.dewijngoeroe.nl',
+    enabled: true,
+    description: 'Wijnexpert met zorgvuldig geselecteerde wijnen. Persoonlijk advies en kwaliteitswijnen.',
   },
 ]
+
+export const ENABLED_SHOP_COUNT = SHOP_CONFIGS.filter(s => s.enabled).length
 
 export const SCORING_WEIGHTS = {
   grape: 30,

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function Hero() {
+export function Hero({ shopCount }: { shopCount: number }) {
   return (
     <section className="relative -mt-16 h-screen min-h-[640px] flex items-center justify-center overflow-hidden">
       {/* Background image */}
@@ -60,8 +60,11 @@ export function Hero() {
             className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             Wij analyseren jouw smaakprofiel en zoeken de beste wijnen bij meer
-            dan 59 Nederlandse wijnwinkels — inclusief prijsvergelijking en
-            Vivino-beoordelingen.
+            dan{" "}
+            <Link href="/winkels" className="text-gold underline underline-offset-2 hover:text-gold/80">
+              {shopCount} Nederlandse wijnwinkels
+            </Link>{" "}
+            — inclusief prijsvergelijking en Vivino-beoordelingen.
           </motion.p>
 
           <motion.div

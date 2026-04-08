@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
   { href: "/aanbevelingen", label: "Aanbevelingen" },
+  { href: "/winkels", label: "Winkels" },
 ];
 
 export function Header() {

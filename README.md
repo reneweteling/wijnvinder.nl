@@ -1,6 +1,6 @@
 # wijn.weteling.nl — WijnWijzer
 
-Dutch wine recommendation platform. Create a taste profile, get personalized wine suggestions with price comparison across 59+ Dutch wine shops.
+Dutch wine recommendation platform. Create a taste profile, get personalized wine suggestions with price comparison across 10+ Dutch wine shops.
 
 ## Local development
 
@@ -34,6 +34,7 @@ dokku postgres:create wijnvinder-db && dokku postgres:link wijnvinder-db wijnvin
 dokku domains:set wijnvinder wijnvinder.nl www.wijnvinder.nl
 dokku ports:add wijnvinder http:80:3000 https:443:3000
 dokku letsencrypt:enable wijnvinder
+dokku ps:scale wijnvinder web=1 worker=1
 
 # Locally
 git remote add dokku dokku@weteling.com:wijnvinder
@@ -52,7 +53,6 @@ git push dokku main:main
 | Viavina        | viavina.nl        | ❌        | ✅         | TradeTracker / LinkPizza                     |
 | Fanster        | fanster.nl        | ❌        | ✅         | TradeTracker                                 |
 | Topdrinks      | topdrinks.nl      | ❌        | ✅         | TradeTracker / LinkPizza                     |
-| DrankKoning    | drankkoning.nl    | ❌        | ✅         | TradeTracker (7.70%, 100d cookie)            |
 | Bulwijn        | bulwijn.nl        | ❌        | ✅         | Direct (own program)                         |
 | WijnSpijs      | wijnspijs.nl      | ❌        | ✅         | Direct (own program)                         |
 | Drink Heroes   | drinkheroes.nl    | ❌        | ✅         | LinkPizza                                    |

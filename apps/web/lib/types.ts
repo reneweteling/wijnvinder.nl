@@ -27,6 +27,7 @@ export type ShopConfig = {
   name: string
   baseUrl: string
   enabled: boolean
+  description?: string
 }
 
 export type ScrapedWine = {

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { WineDetailHeader } from "@/components/wines/wine-detail-header";
 import { PriceComparison } from "@/components/wines/price-comparison";
+import { MatchBreakdown } from "@/components/wines/match-breakdown";
 import type { Metadata } from "next";
 
 type PageProps = {
@@ -106,32 +107,55 @@ export default async function WijnDetailPage({ params }: PageProps) {
         producerSlug={wine.producer?.slug}
       />
 
-      {/* Price comparison section */}
+      {/* Price comparison + match breakdown */}
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="font-heading text-2xl font-semibold text-foreground mb-5">
-          Prijsvergelijking
-        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Price comparison - takes 2 columns */}
+          <div className="lg:col-span-2">
+            <h2 className="font-heading text-2xl font-semibold text-foreground mb-5">
+              Prijsvergelijking
+            </h2>
 
-        <PriceComparison
-          listings={wine.listings.map((l) => ({
-            id: l.id,
-            shopSlug: l.shop.slug,
-            shopName: l.shop.name,
-            price: l.price,
-            originalPrice: l.originalPrice,
-            url: l.url,
-            available: l.available,
-            rating: l.rating,
-          }))}
-        />
+            <PriceComparison
+              listings={wine.listings.map((l) => ({
+                id: l.id,
+                shopSlug: l.shop.slug,
+                shopName: l.shop.name,
+                price: l.price,
+                originalPrice: l.originalPrice,
+                url: l.url,
+                available: l.available,
+                rating: l.rating,
+              }))}
+            />
 
-        {wine.listings.length === 0 && (
-          <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-text-light">
-              Er zijn momenteel geen winkelvermeldingen beschikbaar voor deze wijn.
-            </p>
+            {wine.listings.length === 0 && (
+              <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
+                <p className="text-text-light">
+                  Er zijn momenteel geen winkelvermeldingen beschikbaar voor deze wijn.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Match breakdown sidebar */}
+          <div>
+            <h2 className="font-heading text-2xl font-semibold text-foreground mb-5">
+              Smaakprofiel
+            </h2>
+            <MatchBreakdown
+              wine={{
+                id: wine.id,
+                grape: wine.grape,
+                grapes: wine.grapes,
+                country: wine.country,
+                wineType: wine.wineType,
+                vivinoScore: wine.vivinoScore,
+                bestPrice: bestPrice,
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Related wines from same producer */}

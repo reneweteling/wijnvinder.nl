@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { ProfileWizard } from "@/components/profile/profile-wizard";
+import { db } from "@/lib/db/client";
 
 export const metadata = {
   title: "Maak je Smaakprofiel – WijnVinder",
@@ -6,7 +8,8 @@ export const metadata = {
     "Stel je smaakprofiel in en ontvang persoonlijke wijnaanbevelingen van Nederlandse wijnwinkels.",
 };
 
-export default function ProfielPage() {
+export default async function ProfielPage() {
+  const shopCount = await db.shop.count({ where: { enabled: true } });
   return (
     <main className="min-h-screen bg-background">
       {/* Hero banner */}
@@ -18,7 +21,10 @@ export default function ProfielPage() {
           </h1>
           <p className="mt-2 text-text-light text-lg max-w-xl mx-auto">
             Vertel ons wat jij lekker vindt en wij zoeken de beste wijnen voor
-            jou bij 59+ Nederlandse wijnwinkels.
+            jou bij{" "}
+            <Link href="/winkels" className="text-burgundy underline underline-offset-2 hover:text-burgundy/80">
+              {shopCount}+ Nederlandse wijnwinkels
+            </Link>.
           </p>
         </div>
       </div>

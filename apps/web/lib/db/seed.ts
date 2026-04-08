@@ -13,11 +13,13 @@ async function seed() {
         name: shop.name,
         baseUrl: shop.baseUrl,
         enabled: shop.enabled,
+        description: shop.description ?? null,
       },
       update: {
         name: shop.name,
         baseUrl: shop.baseUrl,
         enabled: shop.enabled,
+        description: shop.description ?? null,
       },
     });
     console.log(`  ✓ Shop: ${shop.name} (${shop.slug})`);

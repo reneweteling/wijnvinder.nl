@@ -1,15 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Store, Star, Tag, User } from "lucide-react";
 
-const features = [
+function getFeatures(shopCount: number) {
+  return [
   {
     icon: Store,
-    title: "59+ Wijnwinkels",
+    title: `${shopCount}+ Wijnwinkels`,
     description:
-      "Wij doorzoeken meer dan 59 Nederlandse wijnwinkels zodat jij altijd de beste keuze hebt.",
+      `Wij doorzoeken meer dan ${shopCount} Nederlandse wijnwinkels zodat jij altijd de beste keuze hebt.`,
+    linkTo: "/winkels",
     image:
       "/images/feature-bottles.jpg",
     imageAlt: "Wijnflessen",
@@ -42,6 +45,7 @@ const features = [
     imageAlt: "Wijn glazen",
   },
 ];
+}
 
 const containerVariants = {
   hidden: {},
@@ -59,7 +63,8 @@ const cardVariants = {
   },
 };
 
-export function FeaturesSection() {
+export function FeaturesSection({ shopCount }: { shopCount: number }) {
+  const features = getFeatures(shopCount);
   return (
     <section className="py-28 bg-cream relative overflow-hidden">
       {/* Decorative top border */}
@@ -126,7 +131,13 @@ export function FeaturesSection() {
                 {/* Content */}
                 <div className="p-5">
                   <h3 className="font-heading font-semibold text-lg text-foreground mb-2">
-                    {feature.title}
+                    {"linkTo" in feature ? (
+                      <Link href={feature.linkTo!} className="hover:text-burgundy underline underline-offset-2 decoration-gold/50">
+                        {feature.title}
+                      </Link>
+                    ) : (
+                      feature.title
+                    )}
                   </h3>
                   <p className="text-text-light text-sm leading-relaxed">
                     {feature.description}

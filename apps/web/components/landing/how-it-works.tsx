@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { UserCircle, Search, ShoppingCart } from "lucide-react";
 
-const steps = [
+function getSteps(shopCount: number) {
+  return [
   {
     icon: UserCircle,
     step: "01",
@@ -16,7 +17,7 @@ const steps = [
     step: "02",
     title: "Wij Zoeken Voor Jou",
     description:
-      "Ons algoritme doorzoekt meer dan 59 wijnwinkels en matcht de beste wijnen op basis van jouw unieke smaakprofiel en Vivino-ratings.",
+      `Ons algoritme doorzoekt meer dan ${shopCount} wijnwinkels en matcht de beste wijnen op basis van jouw unieke smaakprofiel en Vivino-ratings.`,
   },
   {
     icon: ShoppingCart,
@@ -26,6 +27,7 @@ const steps = [
       "Bekijk jouw persoonlijke aanbevelingen, vergelijk prijzen en bestel direct bij de winkel van jouw keuze. Zo eenvoudig is het.",
   },
 ];
+}
 
 const containerVariants = {
   hidden: {},
@@ -45,7 +47,8 @@ const itemVariants = {
   },
 };
 
-export function HowItWorks() {
+export function HowItWorks({ shopCount }: { shopCount: number }) {
+  const steps = getSteps(shopCount);
   return (
     <section
       id="hoe-het-werkt"

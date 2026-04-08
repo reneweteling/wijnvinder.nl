@@ -16,34 +16,9 @@
 import type { ScrapedWine } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
 import { CheerioScraper } from '../cheerio-scraper'
+import { normalizeCountry } from '../country-map'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'wijnbeurs')!
-
-const COUNTRY_MAP: Record<string, string> = {
-  'spanje': 'Spanje',
-  'frankrijk': 'Frankrijk',
-  'italië': 'Italië',
-  'italic': 'Italië',
-  'portugal': 'Portugal',
-  'duitsland': 'Duitsland',
-  'oostenrijk': 'Oostenrijk',
-  'griekenland': 'Griekenland',
-  'verenigde staten': 'Verenigde Staten',
-  'usa': 'Verenigde Staten',
-  'argentinië': 'Argentinië',
-  'argentina': 'Argentinië',
-  'chili': 'Chili',
-  'australië': 'Australië',
-  'nieuw-zeeland': 'Nieuw-Zeeland',
-  'nieuw zeeland': 'Nieuw-Zeeland',
-  'zuid-afrika': 'Zuid-Afrika',
-  'hongarije': 'Hongarije',
-  'roemenië': 'Roemenië',
-}
-
-function normalizeCountry(dutch: string): string | undefined {
-  return COUNTRY_MAP[dutch.toLowerCase().trim()]
-}
 
 export class WijnbeursScraper extends CheerioScraper {
   constructor() {

@@ -28,6 +28,7 @@ export function Footer() {
                 { href: "/", label: "Home" },
                 { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
                 { href: "/aanbevelingen", label: "Aanbevelingen" },
+                { href: "/winkels", label: "Winkels" },
                 { href: "/profiel", label: "Mijn profiel" },
               ].map((link) => (
                 <Link
@@ -47,31 +48,34 @@ export function Footer() {
               Informatie
             </h3>
             <nav className="flex flex-col gap-2">
-              {/* TODO: create pages for over-ons, privacy, contact */}
               {[
-                { href: "#", label: "Over ons" },
-                { href: "#", label: "Privacybeleid" },
-                { href: "#", label: "Contact" },
+                { href: "/over-ons", label: "Over ons" },
+                { href: "/privacybeleid", label: "Privacybeleid" },
+                { href: "/contact", label: "Contact" },
               ].map((link) => (
-                <a
-                  key={link.label}
+                <Link
+                  key={link.href}
                   href={link.href}
                   className="text-sm text-white/70 hover:text-gold transition-colors"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col items-center gap-3 text-center">
           <p className="text-white/40 text-sm">
-            &copy; {new Date().getFullYear()} WijnVinder.
-            Alle rechten voorbehouden.
+            &copy; {new Date().getFullYear()} WijnVinder. Alle rechten
+            voorbehouden.
           </p>
-          <p className="text-gold/70 text-sm font-heading italic">
-            Vind jouw perfecte wijn.
+          <p className="text-white/30 text-xs">
+            WijnVinder.nl is een geregistreerde handelsnaam van{" "}
+            <a href="https://www.weteling.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 underline">
+              Felobo B.V.
+            </a>{" "}
+            — KvK 80910483
           </p>
         </div>
       </div>

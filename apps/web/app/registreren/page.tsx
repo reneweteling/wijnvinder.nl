@@ -9,6 +9,7 @@ import { Wine, User, Mail, Lock, AlertCircle, CheckCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ENABLED_SHOP_COUNT } from "@/lib/constants";
 
 export default function RegistrerenPage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function RegistrerenPage() {
 
   const benefits = [
     "Persoonlijke wijnprofielen",
-    "Vergelijk prijzen bij 59+ winkels",
+    `Vergelijk prijzen bij ${ENABLED_SHOP_COUNT}+ winkels`,
     "Vivino-beoordelingen direct zichtbaar",
     "Gratis te gebruiken",
   ];

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function CtaSection() {
+export function CtaSection({ shopCount }: { shopCount: number }) {
   return (
     <section className="relative py-36 overflow-hidden">
       {/* Background image */}
@@ -79,21 +79,29 @@ export function CtaSection() {
 
             {/* Trust indicators */}
             <div className="mt-10 flex flex-wrap gap-6">
-              {["Gratis te gebruiken", "59+ wijnwinkels", "Vivino-ratings"].map(
-                (item, i) => (
-                  <motion.div
-                    key={item}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="flex items-center gap-2 text-white/70 text-sm"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-                    {item}
-                  </motion.div>
-                )
-              )}
+              {[
+                { label: "Gratis te gebruiken" },
+                { label: `${shopCount}+ wijnwinkels`, href: "/winkels" },
+                { label: "Vivino-ratings" },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
+                  className="flex items-center gap-2 text-white/70 text-sm"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold" />
+                  {item.href ? (
+                    <Link href={item.href} className="underline underline-offset-2 hover:text-white/90">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    item.label
+                  )}
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>
