@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Store, Star, Tag, User } from "lucide-react";
 
@@ -113,12 +112,10 @@ export function FeaturesSection({ shopCount }: { shopCount: number }) {
               >
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
-                  <Image
+                  <img
                     src={feature.image}
                     alt={feature.imageAlt}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    unoptimized
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 

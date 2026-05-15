@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,10 @@ export function CtaSection({ shopCount }: { shopCount: number }) {
     <section className="relative py-36 overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
-        <Image
+        <img
           src="/images/cta-vineyard.jpg"
           alt="Wijnkelder"
-          fill
-          className="object-cover object-center"
-          unoptimized
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-burgundy-dark/90 via-black/70 to-black/50" />
       </div>

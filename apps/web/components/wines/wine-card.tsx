@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, ShoppingBag, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -111,13 +110,10 @@ export function WineCard({ wine, matchPercentage, index = 0, priority = false }:
               <FavoriteButton wineId={wine.id} />
             </div>
             {wine.imageUrl ? (
-              <Image
+              <img
                 src={wine.imageUrl}
                 alt={wine.name}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                priority={priority}
-                className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                className="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-text-light">

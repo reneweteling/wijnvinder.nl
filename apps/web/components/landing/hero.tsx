@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,10 @@ export function Hero({ shopCount }: { shopCount: number }) {
     <section className="relative -mt-16 h-screen min-h-[640px] flex items-center justify-center overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
-        <Image
+        <img
           src="/images/hero-wine.jpg"
           alt="Wijn glazen"
-          fill
-          className="object-cover object-center"
-          priority
-          unoptimized
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />

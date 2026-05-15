@@ -16,7 +16,7 @@ const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'drankdozijn')!
 
 const API_URL = 'https://es-api.drankdozijn.nl/products'
 const PAGE_SIZE = 100
-const IMAGE_BASE = 'https://res.cloudinary.com/boozeboodcdn/image/upload/f_auto,q_auto/v1/products'
+const IMAGE_BASE = 'https://res.cloudinary.com/boozeboodcdn/image/upload/f_auto,q_auto/w_750,h_750,c_limit'
 
 interface DrankDozijnProduct {
   description: string
@@ -31,6 +31,29 @@ interface DrankDozijnProduct {
 
 function getFeature(product: DrankDozijnProduct, featureAlias: string): string | undefined {
   return product.features.find((f) => f.alias === featureAlias)?.value?.description
+}
+
+function buildDescription(product: DrankDozijnProduct): string | undefined {
+  const parts: string[] = []
+  const category = getFeature(product, 'categorie')
+  const taste = getFeature(product, 'smaak')
+  const grape = getFeature(product, 'druif')
+  const region = getFeature(product, 'regio')
+  const country = getFeature(product, 'land')
+  const appellation = getFeature(product, 'appellatie')
+  const alcohol = getFeature(product, 'alcoholpercentage')
+  const volume = getFeature(product, 'inhoud')
+
+  if (category) parts.push(category)
+  if (taste) parts.push(taste)
+  if (grape) parts.push(`Druif: ${grape}`)
+  if (appellation) parts.push(`Appellatie: ${appellation}`)
+  if (region && country) parts.push(`${region}, ${country}`)
+  else if (country) parts.push(country)
+  if (alcohol) parts.push(`Alcohol: ${alcohol}`)
+  if (volume) parts.push(volume)
+
+  return parts.length > 0 ? parts.join(' · ') : undefined
 }
 
 function inferWineType(category: string | undefined): WineType | undefined {
@@ -125,6 +148,7 @@ export class DrankDozijnScraper extends BaseScraper {
           grape: grape || undefined,
           vintage,
           type: inferWineType(category),
+          description: buildDescription(product),
         }
       }
 

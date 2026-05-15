@@ -21,7 +21,7 @@ pnpm dev                      # http://localhost:3010 (Next.js + worker via turb
 ```bash
 pnpm scrape -- --all              # Enqueue all shops via pg-boss
 pnpm scrape -- --all --direct     # Run inline (no pg-boss)
-pnpm scrape -- --shop=gall        # Single shop via pg-boss
+pnpm scrape -- --shop=wijnbeurs   # Single shop via pg-boss
 pnpm scrape -- --enrich           # Vivino enrichment (requires headless browser)
 ```
 

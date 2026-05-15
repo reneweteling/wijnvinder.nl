@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Wine, User, Mail, Lock, AlertCircle, CheckCircle } from "lucide-react";
@@ -64,12 +63,10 @@ export default function RegistrerenPage() {
     <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left side — decorative image (hidden on mobile) */}
       <div className="hidden lg:block relative flex-1 max-w-[45%]">
-        <Image
+        <img
           src="/images/cta-vineyard.jpg"
           alt="Wijnkelder"
-          fill
-          className="object-cover object-center"
-          unoptimized
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-l from-cream/10 to-burgundy/70" />
 

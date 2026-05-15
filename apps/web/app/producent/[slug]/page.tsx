@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, MapPin, Star, Globe } from "lucide-react";
 import { db } from "@/lib/db/client";
 import type { Metadata } from "next";
@@ -117,12 +116,10 @@ export default async function ProducentPage({ params }: PageProps) {
               >
                 <div className="relative h-48 bg-surface flex items-center justify-center overflow-hidden">
                   {wine.imageUrl ? (
-                    <Image
+                    <img
                       src={wine.imageUrl}
                       alt={wine.name}
-                      fill
-                      unoptimized
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                      className="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <span className="text-4xl">🍷</span>

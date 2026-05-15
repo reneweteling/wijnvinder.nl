@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,12 +87,10 @@ export function WineDetailHeader({
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {wine.imageUrl ? (
-              <Image
+              <img
                 src={wine.imageUrl}
                 alt={wine.name}
-                fill
-                unoptimized
-                className="object-contain p-6"
+                className="absolute inset-0 w-full h-full object-contain p-6"
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-text-light">

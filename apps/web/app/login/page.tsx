@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Wine, Mail, Lock, AlertCircle } from "lucide-react";
@@ -151,12 +150,10 @@ export default function LoginPage() {
 
       {/* Right side — decorative image (hidden on mobile) */}
       <div className="hidden lg:block relative flex-1 max-w-[45%]">
-        <Image
+        <img
           src="/images/hero-wine.jpg"
           alt="Wijn glazen"
-          fill
-          className="object-cover object-center"
-          unoptimized
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-cream/20 to-burgundy/60" />
         <div className="absolute inset-0 flex items-end p-14">
