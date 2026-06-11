@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSyncExternalStore } from "react";
 
 const COOKIE_NAME = "cookie-consent";
 
@@ -38,31 +39,40 @@ declare global {
   }
 }
 
-export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+// useSyncExternalStore: server snapshot returns null (no cookie on server),
+// client snapshot reads the actual cookie — safe for hydration.
+function subscribe(cb: () => void) {
+  // Cookies don't fire events; we only need the initial client read.
+  void cb;
+  return () => {};
+}
 
+export function CookieConsent() {
+  // consent: what the cookie says on the client (null = not yet set).
+  // useSyncExternalStore gives the server a stable null snapshot so hydration matches.
+  const consent = useSyncExternalStore(subscribe, getConsent, () => null);
+  // dismissed: true once the user clicks accept/decline in this session
+  const [dismissed, setDismissed] = useState(false);
+
+  // Push existing consent to gtag. Not setState, so a plain useEffect is fine.
   useEffect(() => {
-    const consent = getConsent();
-    if (consent) {
-      updateGtagConsent(consent);
-    } else {
-      setVisible(true);
-    }
-  }, []);
+    if (consent) updateGtagConsent(consent);
+  }, [consent]);
 
   const handleAccept = useCallback(() => {
     setConsentCookie("granted");
     updateGtagConsent("granted");
-    setVisible(false);
+    setDismissed(true);
   }, []);
 
   const handleDecline = useCallback(() => {
     setConsentCookie("denied");
     updateGtagConsent("denied");
-    setVisible(false);
+    setDismissed(true);
   }, []);
 
-  if (!visible) return null;
+  // Show banner when no consent cookie exists and user hasn't dismissed yet
+  if (consent !== null || dismissed) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 animate-in slide-in-from-bottom duration-300">

@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nl" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="nl" data-scroll-behavior="smooth" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
       {isProd && (
         <head>
           <Script id="gtm-consent-default" strategy="beforeInteractive">{`

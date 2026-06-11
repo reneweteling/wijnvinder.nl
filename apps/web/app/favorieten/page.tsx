@@ -27,15 +27,15 @@ export default function FavorietenPage() {
 
   useEffect(() => {
     if (isPending) return;
-    if (!session?.user) {
-      setLoading(false);
-      return;
-    }
 
-    fetch("/api/favorieten")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setFavorites(data))
-      .finally(() => setLoading(false));
+    // When not logged in or logged in: always settle loading via the promise chain.
+    const load = session?.user
+      ? fetch("/api/favorieten")
+          .then((r) => (r.ok ? r.json() : []))
+          .then((data) => setFavorites(data))
+      : Promise.resolve();
+
+    load.finally(() => setLoading(false));
   }, [session, isPending]);
 
   const removeFavorite = async (wineId: string) => {

@@ -28,21 +28,24 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const isLoggedIn = !!session?.user;
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      setFavorites({});
-      return;
-    }
-
-    fetch("/api/favorieten")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: { wineId: string; id: string; notes: string | null }[]) => {
+    const loadFavorites = async () => {
+      if (!isLoggedIn) {
+        setFavorites({});
+        return;
+      }
+      try {
+        const r = await fetch("/api/favorieten");
+        const data: { wineId: string; id: string; notes: string | null }[] = r.ok ? await r.json() : [];
         const map: FavoriteMap = {};
         for (const fav of data) {
           map[fav.wineId] = { id: fav.id, notes: fav.notes };
         }
         setFavorites(map);
-      })
-      .catch(() => {});
+      } catch {
+        // ignore
+      }
+    };
+    void loadFavorites();
   }, [isLoggedIn]);
 
   const isFavorite = useCallback(

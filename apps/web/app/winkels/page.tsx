@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { db } from "@/lib/db/client";
 import { timeAgo } from "@/lib/time";
 import { ExternalLink, Store, Wine } from "lucide-react";
@@ -57,10 +58,12 @@ export default async function WinkelsPage() {
                 {/* Shop header */}
                 <div className="flex items-start gap-3">
                   {shop.logoUrl ? (
-                    <img
+                    <Image
                       src={shop.logoUrl}
                       alt={`${shop.name} logo`}
-                      className="w-12 h-12 rounded-lg object-contain bg-white border border-border p-1 flex-shrink-0"
+                      width={48}
+                      height={48}
+                      className="rounded-lg object-contain bg-white border border-border p-1 flex-shrink-0"
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-burgundy/10 flex items-center justify-center flex-shrink-0">

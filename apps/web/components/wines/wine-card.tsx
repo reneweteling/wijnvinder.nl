@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Star, MapPin, ShoppingBag, TrendingUp } from "lucide-react";
@@ -76,7 +78,8 @@ function RatingStars({ score }: { score: number }) {
   );
 }
 
-export function WineCard({ wine, matchPercentage, index = 0, priority = false }: WineCardProps) {
+export function WineCard({ wine, matchPercentage, index: _index = 0, priority: _priority = false }: WineCardProps) {
+  const [imageFailed, setImageFailed] = useState(false);
   const onSale =
     wine.originalPrice != null &&
     wine.bestPrice != null &&
@@ -109,11 +112,13 @@ export function WineCard({ wine, matchPercentage, index = 0, priority = false }:
               )}
               <FavoriteButton wineId={wine.id} />
             </div>
-            {wine.imageUrl ? (
-              <img
+            {wine.imageUrl && !imageFailed ? (
+              <Image
                 src={wine.imageUrl}
                 alt={wine.name}
-                className="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                fill
+                onError={() => setImageFailed(true)}
+                className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-text-light">
