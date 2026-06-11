@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String        @unique
-  emailVerified Boolean       @default(false)
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  wineProfile   WineProfile?
-  favorites     FavoriteWine[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  name               String?
+  email              String        @unique
+  emailVerified      Boolean       @default(false)
+  image              String?
+  weeklyDealsOptIn   Boolean       @default(true)
+  accounts           Account[]
+  sessions           Session[]
+  wineProfile        WineProfile?
+  favorites          FavoriteWine[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@allow('read', auth().id == id)
   @@allow('update', auth().id == id)

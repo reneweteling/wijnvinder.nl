@@ -4,6 +4,7 @@ export enum JobType {
   SCRAPE_SHOP = "scrape-shop",
   ENRICH_LISTING = "enrich-listing",
   ENRICH_VIVINO = "enrich-vivino",
+  WEEKLY_DEALS_EMAIL = "weekly-deals-email",
 }
 
 export const scrapeShopPayloadSchema = z.object({
@@ -21,10 +22,14 @@ export const enrichVivinoPayloadSchema = z.object({
   canonicalWineId: z.string(),
 });
 
+// No payload needed for weekly deals email — it fetches everything itself.
+export const weeklyDealsEmailPayloadSchema = z.object({});
+
 export const jobSchemas: Record<JobType, z.ZodSchema> = {
   [JobType.SCRAPE_SHOP]: scrapeShopPayloadSchema,
   [JobType.ENRICH_LISTING]: enrichListingPayloadSchema,
   [JobType.ENRICH_VIVINO]: enrichVivinoPayloadSchema,
+  [JobType.WEEKLY_DEALS_EMAIL]: weeklyDealsEmailPayloadSchema,
 };
 
 export type JobPayload<T extends JobType> = T extends JobType.SCRAPE_SHOP
@@ -33,7 +38,9 @@ export type JobPayload<T extends JobType> = T extends JobType.SCRAPE_SHOP
     ? z.infer<typeof enrichListingPayloadSchema>
     : T extends JobType.ENRICH_VIVINO
       ? z.infer<typeof enrichVivinoPayloadSchema>
-      : never;
+      : T extends JobType.WEEKLY_DEALS_EMAIL
+        ? z.infer<typeof weeklyDealsEmailPayloadSchema>
+        : never;
 
 export interface JobOptions {
   startAfter?: number | Date;

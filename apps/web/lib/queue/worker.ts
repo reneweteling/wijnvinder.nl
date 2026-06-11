@@ -4,6 +4,9 @@ import { getWorkerClient, shutdownQueue } from "./config";
 import { processors } from "./processors";
 import { JobType, jobSchemas } from "./types";
 
+// Every Friday at 16:00 Europe/Amsterdam
+const WEEKLY_DEALS_CRON = "0 16 * * 5";
+
 // Allow parallel enrichment fetches (different domains), keep other queues sequential
 const WORKER_OPTIONS: Partial<Record<JobType, { batchSize: number; localConcurrency: number }>> = {
   [JobType.ENRICH_LISTING]: { batchSize: 25, localConcurrency: 25 },
@@ -40,6 +43,17 @@ async function startWorker() {
 
     console.log(`[worker: ${jobType}] Registered with boss.work()`);
   }
+
+  // Schedule weekly deals email every Friday at 16:00 Europe/Amsterdam
+  await boss.schedule(
+    JobType.WEEKLY_DEALS_EMAIL,
+    WEEKLY_DEALS_CRON,
+    {},
+    { tz: "Europe/Amsterdam" },
+  );
+  console.log(
+    `[worker] Scheduled ${JobType.WEEKLY_DEALS_EMAIL} (${WEEKLY_DEALS_CRON} Europe/Amsterdam)`,
+  );
 
   console.log("[worker] Queue worker started. Listening for jobs...");
 

@@ -4,6 +4,7 @@ import { getScraperForShop } from "@/scrapers/shops/index";
 import { enrichWine } from "@/scrapers/vivino-enricher";
 import { fetchProductPage } from "@/scrapers/fetch-description";
 import { db } from "@/lib/db/client";
+import { processWeeklyDealsEmail } from "./weekly-deals-email";
 
 async function processScrapeShop(job: {
   id: string;
@@ -83,4 +84,5 @@ export const processors: {
   [JobType.SCRAPE_SHOP]: processScrapeShop,
   [JobType.ENRICH_LISTING]: processEnrichListing,
   [JobType.ENRICH_VIVINO]: processEnrichVivino,
+  [JobType.WEEKLY_DEALS_EMAIL]: processWeeklyDealsEmail,
 };
