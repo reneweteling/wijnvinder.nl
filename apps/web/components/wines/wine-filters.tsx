@@ -40,7 +40,7 @@ function FilterPanel({
     filters.grapes.length > 0 ||
     filters.countries.length > 0 ||
     filters.priceMin > 5 ||
-    filters.priceMax < 200 ||
+    filters.priceMax < 100 ||
     filters.minRating > 3;
 
   const handleClear = () => {
@@ -49,7 +49,7 @@ function FilterPanel({
       grapes: [],
       countries: [],
       priceMin: 5,
-      priceMax: 200,
+      priceMax: 100,
       minRating: 3,
     });
   };
@@ -163,9 +163,9 @@ function FilterPanel({
           <Slider
             id="price-max"
             label="Maximum prijs"
-            displayValue={`€${filters.priceMax}`}
+            displayValue={`€${filters.priceMax}${filters.priceMax >= 100 ? "+" : ""}`}
             min={filters.priceMin + 1}
-            max={200}
+            max={100}
             step={1}
             value={filters.priceMax}
             onChange={(e) =>
@@ -201,7 +201,7 @@ export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: W
     filters.types.length +
     filters.grapes.length +
     filters.countries.length +
-    (filters.priceMin > 5 || filters.priceMax < 200 ? 1 : 0) +
+    (filters.priceMin > 5 || filters.priceMax < 100 ? 1 : 0) +
     (filters.minRating > 3 ? 1 : 0);
 
   return (

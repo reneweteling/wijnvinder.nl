@@ -1,10 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState, useCallback, useRef } from "react";
+import { useSyncExternalStore } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { WineGrid } from "@/components/wines/wine-grid";
 import { WineFilters } from "@/components/wines/wine-filters";
+import { SearchBar } from "@/components/wines/search-bar";
 import { SortControls } from "@/components/wines/sort-controls";
 import { EmptyState } from "@/components/wines/empty-state";
 import type { WineFilters as WineFiltersType } from "@/components/wines/wine-filters";
@@ -24,8 +26,9 @@ const DEFAULT_FILTERS: WineFiltersType = {
   minRating: 3,
 };
 
-function filtersToParams(filters: WineFiltersType, sort: SortOption): URLSearchParams {
+function filtersToParams(filters: WineFiltersType, sort: SortOption, query: string): URLSearchParams {
   const params = new URLSearchParams();
+  if (query) params.set("q", query);
   if (filters.types.length > 0) params.set("type", filters.types.join(","));
   if (filters.grapes.length > 0) params.set("grape", filters.grapes.join(","));
   if (filters.countries.length > 0) params.set("country", filters.countries.join(","));
@@ -36,7 +39,7 @@ function filtersToParams(filters: WineFiltersType, sort: SortOption): URLSearchP
   return params;
 }
 
-function paramsToFilters(searchParams: URLSearchParams): { filters: WineFiltersType; sort: SortOption } {
+function paramsToFilters(searchParams: URLSearchParams): { filters: WineFiltersType; sort: SortOption; query: string } {
   const type = searchParams.get("type");
   const grape = searchParams.get("grape");
   const country = searchParams.get("country");
@@ -55,6 +58,7 @@ function paramsToFilters(searchParams: URLSearchParams): { filters: WineFiltersT
       minRating: minRating ? Number(minRating) : 3,
     },
     sort,
+    query: searchParams.get("q") ?? "",
   };
 }
 
@@ -83,9 +87,16 @@ function readProfileCookie(): WineProfileData | null {
   }
 }
 
+// useSyncExternalStore: server snapshot returns null, client reads the cookie.
+function subscribeProfile(cb: () => void) {
+  void cb;
+  return () => {};
+}
+
 async function fetchWines(
   filters: WineFiltersType,
-  page: number
+  page: number,
+  query: string
 ): Promise<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wines: any[];
@@ -93,6 +104,7 @@ async function fetchWines(
 }> {
   const params = new URLSearchParams();
 
+  if (query) params.set("q", query);
   if (filters.types.length > 0) params.set("type", filters.types.join(","));
   if (filters.grapes.length > 0) params.set("grape", filters.grapes.join(","));
   if (filters.countries.length > 0)
@@ -143,18 +155,15 @@ export default function AanbevelingenPage() {
 function AanbevelingenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [profile, setProfile] = useState<WineProfileData | null>(null);
-  const [profileLoaded, setProfileLoaded] = useState(false);
-
-  useEffect(() => {
-    setProfile(readProfileCookie());
-    setProfileLoaded(true);
-  }, []);
+  // Read profile cookie via useSyncExternalStore: server snapshot is null,
+  // client snapshot is the actual cookie — no useEffect + setState needed.
+  const profile = useSyncExternalStore(subscribeProfile, readProfileCookie, () => null);
 
   // Pure URL-driven: /aanbevelingen = no filters, params = filters
   const initial = paramsToFilters(searchParams);
   const [filters, setFilters] = useState<WineFiltersType>(initial.filters);
   const [sort, setSort] = useState<SortOption>(initial.sort);
+  const [query, setQuery] = useState<string>(initial.query);
   const [scoredWines, setScoredWines] = useState<ScoredWine[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -169,26 +178,37 @@ function AanbevelingenContent() {
       isInitialMount.current = false;
       return;
     }
-    const params = filtersToParams(filters, sort);
+    const params = filtersToParams(filters, sort, query);
     const qs = params.toString();
     router.replace(`/aanbevelingen${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [filters, sort, router]);
+  }, [filters, sort, query, router]);
 
-  const loadWines = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  useEffect(() => {
+    let cancelled = false;
     pageRef.current = 1;
-    try {
-      const { wines, total: t } = await fetchWines(filters, 1);
-      setTotal(t);
-      setScoredWines(scoreOrWrap(profile, wines));
-    } catch (err) {
-      console.error(err);
-      setError("Er is een fout opgetreden bij het laden van de wijnen.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, profile]);
+
+    const run = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const { wines, total: t } = await fetchWines(filters, 1, query);
+        if (!cancelled) {
+          setTotal(t);
+          setScoredWines(scoreOrWrap(profile, wines));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setError("Er is een fout opgetreden bij het laden van de wijnen.");
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void run();
+    return () => { cancelled = true; };
+  }, [filters, profile, query]);
 
   const loadingMoreRef = useRef(false);
   const loadMore = useCallback(async () => {
@@ -197,7 +217,7 @@ function AanbevelingenContent() {
     setIsLoadingMore(true);
     const nextPage = pageRef.current + 1;
     try {
-      const { wines } = await fetchWines(filters, nextPage);
+      const { wines } = await fetchWines(filters, nextPage, query);
       if (wines.length > 0) {
         pageRef.current = nextPage;
         setScoredWines((prev) => {
@@ -212,11 +232,7 @@ function AanbevelingenContent() {
       loadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [filters, profile]);
-
-  useEffect(() => {
-    if (profileLoaded) loadWines();
-  }, [profileLoaded, loadWines]);
+  }, [filters, profile, query]);
 
   const hasMore = scoredWines.length < total;
 
@@ -252,6 +268,7 @@ function AanbevelingenContent() {
 
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS);
+    setQuery("");
   };
 
   return (
@@ -265,12 +282,12 @@ function AanbevelingenContent() {
             transition={{ duration: 0.4 }}
           >
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-burgundy">
-              Jouw Aanbevelingen
+              {profile ? "Jouw Aanbevelingen" : "Wijnen"}
             </h1>
             <p className="text-text-light mt-2 max-w-xl">
               {profile
                 ? "Wijnen geselecteerd op basis van jouw smaakprofiel, gesorteerd op beste match."
-                : "Maak een smaakprofiel aan voor gepersonaliseerde aanbevelingen."}
+                : "Zoek en filter door alle wijnen, of maak een smaakprofiel aan voor persoonlijke aanbevelingen."}
             </p>
           </motion.div>
         </div>
@@ -289,6 +306,9 @@ function AanbevelingenContent() {
 
           {/* Wine listing */}
           <div className="flex-1 min-w-0 space-y-6">
+            {/* Search */}
+            <SearchBar value={query} onChange={setQuery} />
+
             {/* Sort controls */}
             <SortControls
               value={sort}

@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
+  const q = searchParams.get("q")?.trim();
   const type = searchParams.get("type");
   const grape = searchParams.get("grape");
   const country = searchParams.get("country");
@@ -25,6 +26,21 @@ export async function GET(request: NextRequest) {
   // Build where clause
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: Record<string, any> = {};
+
+  if (q) {
+    // Match each search term against name, producer, grape and region
+    const terms = q.split(/\s+/).filter(Boolean).slice(0, 6);
+    where.AND = terms.map((term) => ({
+      OR: [
+        { name: { contains: term, mode: "insensitive" } },
+        { searchName: { contains: term, mode: "insensitive" } },
+        { grape: { contains: term, mode: "insensitive" } },
+        { region: { contains: term, mode: "insensitive" } },
+        { country: { contains: term, mode: "insensitive" } },
+        { producer: { name: { contains: term, mode: "insensitive" } } },
+      ],
+    }));
+  }
 
   if (type) {
     // Support comma-separated types
