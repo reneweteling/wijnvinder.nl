@@ -1,5 +1,5 @@
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -43,3 +43,6 @@ next-env.d.ts
 **/lib/db/schema.ts
 **/lib/db/models.ts
 node_modules/.zenstack
+
+# playwright-cli artifacts
+.playwright-cli/
