@@ -9,10 +9,10 @@ docker compose up -d          # PostgreSQL + Mailcatcher
 pnpm install
 pnpm generate && pnpm db:push # Zenstack schema
 pnpm db:seed                  # OR: pnpm scrape -- --all --direct
-pnpm dev                      # http://localhost:3010 (Next.js + worker via turbo)
+pnpm dev                      # http://localhost:3020 (Next.js + worker via turbo)
 ```
 
-- App: http://localhost:3010
+- App: http://localhost:3020
 - Mailcatcher: http://localhost:1080
 - PostgreSQL: localhost:5440
 

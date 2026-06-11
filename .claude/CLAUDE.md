@@ -35,5 +35,5 @@ Turborepo monorepo. All Next.js code lives in `apps/web/`.
 Environment variables are managed via `.envrc` (direnv), not `.env` files.
 - DATABASE_URL: postgres://postgres:postgres@localhost:5440/wijn
 - BETTER_AUTH_SECRET: set in .envrc
-- BETTER_AUTH_BASE_URL: http://localhost:3010
+- BETTER_AUTH_BASE_URL: http://localhost:3020
 - RESEND_API_KEY: optional, falls back to SMTP if unset
