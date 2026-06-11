@@ -142,11 +142,31 @@ model Shop {
   enabled         Boolean       @default(true)
   listings        ShopListing[]
   scrapeJobs      ScrapeJob[]
+  outboundClicks  OutboundClick[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   @@allow('read', true)
   @@map("shop")
+}
+
+// Logged whenever a visitor clicks through to a shop. This is the data
+// story for affiliate deals: how much traffic we send per shop.
+model OutboundClick {
+  id              String       @id @default(cuid())
+  shopId          String
+  shop            Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  listingId       String?
+  listing         ShopListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  canonicalWineId String?
+  source          String?      // e.g. "detail-header", "prijsvergelijking"
+  referer         String?
+  userAgent       String?
+  createdAt       DateTime     @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([listingId])
+  @@map("outbound_click")
 }
 
 model CanonicalWine {
@@ -197,6 +217,7 @@ model ShopListing {
   rating          Float?
   description     String?
   lastScrapedAt   DateTime
+  outboundClicks  OutboundClick[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

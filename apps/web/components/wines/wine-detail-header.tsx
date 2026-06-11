@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { WINE_TYPES } from "@/lib/constants";
 import { FavoriteButton } from "@/components/wines/favorite-button";
 
@@ -27,7 +28,7 @@ type WineDetailHeaderProps = {
   bestPrice?: number | null;
   originalPrice?: number | null;
   bestShopName?: string | null;
-  bestShopUrl?: string | null;
+  bestListingId?: string | null;
   producerSlug?: string;
 };
 
@@ -61,7 +62,7 @@ export function WineDetailHeader({
   bestPrice,
   originalPrice,
   bestShopName,
-  bestShopUrl,
+  bestListingId,
   producerSlug,
 }: WineDetailHeaderProps) {
   const wineTypeLabel =
@@ -87,10 +88,11 @@ export function WineDetailHeader({
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {wine.imageUrl ? (
-              <img
+              <Image
                 src={wine.imageUrl}
                 alt={wine.name}
-                className="absolute inset-0 w-full h-full object-contain p-6"
+                fill
+                className="object-contain p-6"
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-text-light">
@@ -213,18 +215,16 @@ export function WineDetailHeader({
                     )}
                   </div>
                 </div>
-                {bestShopUrl && (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={() =>
-                      window.open(bestShopUrl, "_blank", "noopener,noreferrer")
-                    }
-                    className="flex items-center gap-2"
+                {bestListingId && (
+                  <a
+                    href={`/uit/${bestListingId}?bron=detail-header`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${buttonVariants({ variant: "primary", size: "lg" })} flex items-center gap-2`}
                   >
                     Bekijk aanbieding
                     <ExternalLink className="h-4 w-4" />
-                  </Button>
+                  </a>
                 )}
                 <FavoriteButton wineId={wine.id} size="md" />
               </div>

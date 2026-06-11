@@ -124,7 +124,7 @@ export function PriceComparison({ listings }: PriceComparisonProps) {
 
               {/* Link */}
               <a
-                href={listing.url}
+                href={`/uit/${listing.id}?bron=prijsvergelijking`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 flex items-center gap-1 text-xs text-burgundy hover:text-burgundy-dark font-medium transition-colors"
