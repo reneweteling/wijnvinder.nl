@@ -6,7 +6,7 @@ import { Filter, X, SlidersHorizontal, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { WINE_TYPES, GRAPES, COUNTRIES } from "@/lib/constants";
+import { WINE_TYPES, GRAPES, COUNTRIES, FILTER_DEFAULTS } from "@/lib/constants";
 import type { WineType } from "@/lib/types";
 
 export type WineFilters = {
@@ -39,18 +39,18 @@ function FilterPanel({
     filters.types.length > 0 ||
     filters.grapes.length > 0 ||
     filters.countries.length > 0 ||
-    filters.priceMin > 5 ||
-    filters.priceMax < 100 ||
-    filters.minRating > 3;
+    filters.priceMin > FILTER_DEFAULTS.priceMin ||
+    filters.priceMax < FILTER_DEFAULTS.priceMax ||
+    filters.minRating > FILTER_DEFAULTS.minRating;
 
   const handleClear = () => {
     onChange({
       types: [],
       grapes: [],
       countries: [],
-      priceMin: 5,
-      priceMax: 100,
-      minRating: 3,
+      priceMin: FILTER_DEFAULTS.priceMin,
+      priceMax: FILTER_DEFAULTS.priceMax,
+      minRating: FILTER_DEFAULTS.minRating,
     });
   };
 
@@ -202,8 +202,8 @@ export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: W
     filters.types.length +
     filters.grapes.length +
     filters.countries.length +
-    (filters.priceMin > 5 || filters.priceMax < 100 ? 1 : 0) +
-    (filters.minRating > 3 ? 1 : 0);
+    (filters.priceMin > FILTER_DEFAULTS.priceMin || filters.priceMax < FILTER_DEFAULTS.priceMax ? 1 : 0) +
+    (filters.minRating > FILTER_DEFAULTS.minRating ? 1 : 0);
 
   return (
     <>

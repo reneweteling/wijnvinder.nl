@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
+    "test": "vitest run",
     "worker": "node --import tsx lib/queue/worker.ts",
     "worker:dev": "node --watch --import tsx lib/queue/worker.ts",
     "generate": "zen generate --schema lib/db/schema.zmodel",
@@ -16,7 +17,8 @@
     "db:migrate:deploy": "zen migrate deploy --schema lib/db/schema.zmodel",
     "db:migrate:status": "zen migrate status --schema lib/db/schema.zmodel",
     "db:migrate:reset": "zen migrate reset --schema lib/db/schema.zmodel",
-    "db:migrate:reset:worker": "echo \"import pg from 'pg';const p=new pg.Pool({connectionString:process.env.DATABASE_URL});await p.query('DROP SCHEMA IF EXISTS pgboss CASCADE');console.log('pgboss schema dropped');await p.end()\"",
+    "db:trgm": "node --import tsx scripts/apply-trgm-indexes.ts",
+    "db:migrate:reset:worker": "node --import tsx scripts/drop-pgboss-schema.ts",
     "db:seed": "node --import tsx lib/db/seed.ts",
     "db:fresh": "pnpm db:migrate:reset:worker && pnpm db:migrate:reset && pnpm db:push && pnpm db:seed",
     "scrape": "node --import tsx scrapers/run-scrape.ts",
@@ -51,13 +53,16 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vitest/browser": "^4.1.8",
     "@zenstackhq/cli": "^3.7.2",
     "@zenstackhq/schema": "^3.7.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.9",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }

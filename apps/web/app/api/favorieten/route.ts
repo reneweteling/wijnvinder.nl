@@ -4,7 +4,7 @@ import { getServerAuthSession } from "@/lib/auth";
 
 export async function GET() {
   const session = await getServerAuthSession();
-  if (!session) return NextResponse.json(null, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const favorites = await authDb(session.user).favoriteWine.findMany({
     where: { userId: session.user.id },
@@ -43,7 +43,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const session = await getServerAuthSession();
-  if (!session) return NextResponse.json(null, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const body = await request.json();
   const { wineId } = body;
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const session = await getServerAuthSession();
-  if (!session) return NextResponse.json(null, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const body = await request.json();
   const { wineId, notes } = body;

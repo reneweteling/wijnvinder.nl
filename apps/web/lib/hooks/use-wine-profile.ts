@@ -13,7 +13,8 @@ const defaultProfile: WineProfileData = {
   flavors: [],
   countries: [],
   priceMin: 5,
-  priceMax: 50,
+  // 100 matches FILTER_DEFAULTS.priceMax and the slider max in wine-filters.tsx
+  priceMax: 100,
 };
 
 function setCookie(name: string, value: string, days = 365) {

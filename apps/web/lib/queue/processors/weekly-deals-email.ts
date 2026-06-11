@@ -1,37 +1,7 @@
 import { db } from "@/lib/db/client";
-import { Resend } from "resend";
-import { createTransport } from "nodemailer";
 import { createHmac } from "crypto";
-
-const EMAIL_FROM = process.env.EMAIL_FROM || "noreply@wijnvinder.nl";
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const smtpTransport = !resend
-  ? createTransport({
-      host: process.env.SMTP_HOST || "localhost",
-      port: Number(process.env.SMTP_PORT || 1025),
-      secure: false,
-    })
-  : null;
-
-async function sendEmail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  if (resend) {
-    await resend.emails.send({ from: EMAIL_FROM, to, subject, html });
-  } else {
-    await smtpTransport!.sendMail({ from: EMAIL_FROM, to, subject, html });
-  }
-}
+import { sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
 
 type DealWine = {
   name: string;
@@ -46,7 +16,7 @@ function formatEur(amount: number): string {
 }
 
 function buildUnsubscribeToken(userId: string): string {
-  return createHmac("sha256", process.env.BETTER_AUTH_SECRET!)
+  return createHmac("sha256", env.BETTER_AUTH_SECRET)
     .update(userId)
     .digest("hex");
 }

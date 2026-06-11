@@ -5,7 +5,7 @@ import { authDb } from "@/lib/db/client";
 export async function GET() {
   const session = await getServerAuthSession();
   if (!session) {
-    return NextResponse.json(null, { status: 401 });
+    return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   }
 
   const user = await authDb(session.user).user.findUnique({

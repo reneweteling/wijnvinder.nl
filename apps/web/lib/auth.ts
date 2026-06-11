@@ -1,31 +1,9 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
-import { Resend } from "resend";
-import { createTransport } from "nodemailer";
 import { pool } from "@/lib/db/client";
-
-const EMAIL_FROM = process.env.EMAIL_FROM || "noreply@wijnvinder.nl";
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const smtpTransport = !resend
-  ? createTransport({
-      host: process.env.SMTP_HOST || "localhost",
-      port: Number(process.env.SMTP_PORT || 1025),
-      secure: false,
-    })
-  : null;
-
-async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  if (resend) {
-    await resend.emails.send({ from: EMAIL_FROM, to, subject, html });
-  } else {
-    await smtpTransport!.sendMail({ from: EMAIL_FROM, to, subject, html });
-  }
-}
+import { sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
 
 function emailLayout({ greeting, body, buttonUrl, buttonLabel, footnote }: {
   greeting: string;
@@ -68,8 +46,8 @@ function emailLayout({ greeting, body, buttonUrl, buttonLabel, footnote }: {
 }
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_BASE_URL,
-  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_BASE_URL,
+  secret: env.BETTER_AUTH_SECRET,
   database: pool,
   rateLimit: {
     enabled: true,

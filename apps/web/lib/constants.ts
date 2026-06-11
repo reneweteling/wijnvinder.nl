@@ -150,6 +150,17 @@ export const SHOP_CONFIGS: ShopConfig[] = [
 
 export const ENABLED_SHOP_COUNT = SHOP_CONFIGS.filter(s => s.enabled).length
 
+export const FILTER_DEFAULTS = {
+  priceMin: 5,
+  priceMax: 100,
+  minRating: 3,
+} as const;
+
+export const CLICK_SOURCES = {
+  PRICE_COMPARISON: "prijsvergelijking",
+  DETAIL_HEADER: "detail-header",
+} as const;
+
 export const SCORING_WEIGHTS = {
   grape: 30,
   region: 20,

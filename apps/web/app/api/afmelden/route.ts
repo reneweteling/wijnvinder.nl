@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { db } from "@/lib/db/client";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
 function computeToken(userId: string): string {
-  return createHmac("sha256", process.env.BETTER_AUTH_SECRET!)
+  return createHmac("sha256", env.BETTER_AUTH_SECRET)
     .update(userId)
     .digest("hex");
 }
