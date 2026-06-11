@@ -125,7 +125,11 @@ export abstract class BaseScraper {
           listingsMatched++
 
           // Upsert ShopListing by (shopId, url)
-          await db.shopListing.upsert({
+          const existingListing = existingByUrl.get(scraped.url)
+          const isNewListing = !existingListing
+          const priceChanged = existingListing && existingListing.price !== scraped.price
+
+          const upserted = await db.shopListing.upsert({
             where: {
               shopId_url: {
                 shopId: this.shopId,
@@ -159,6 +163,17 @@ export abstract class BaseScraper {
               lastScrapedAt: new Date(),
             },
           })
+
+          // Record price history when the listing is new or the price changed
+          if (isNewListing || priceChanged) {
+            await db.priceHistory.create({
+              data: {
+                listingId: upserted.id,
+                price: scraped.price,
+                originalPrice: scraped.originalPrice ?? null,
+              },
+            })
+          }
 
           // Update canonical wine with rating, thumbnail, and any scraped description
           const canonical = await db.canonicalWine.findUnique({

@@ -218,6 +218,7 @@ model ShopListing {
   description     String?
   lastScrapedAt   DateTime
   outboundClicks  OutboundClick[]
+  priceHistory    PriceHistory[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -226,6 +227,19 @@ model ShopListing {
   @@index([price])
   @@allow('read', true)
   @@map("shop_listing")
+}
+
+model PriceHistory {
+  id            String      @id @default(cuid())
+  listingId     String
+  listing       ShopListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  price         Float
+  originalPrice Float?
+  recordedAt    DateTime    @default(now())
+
+  @@index([listingId, recordedAt])
+  @@allow('read', true)
+  @@map("price_history")
 }
 
 model FavoriteWine {

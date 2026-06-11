@@ -30,6 +30,7 @@ type WineDetailHeaderProps = {
   bestShopName?: string | null;
   bestListingId?: string | null;
   producerSlug?: string;
+  priceDrop?: boolean;
 };
 
 function RatingStars({ score }: { score: number }) {
@@ -64,6 +65,7 @@ export function WineDetailHeader({
   bestShopName,
   bestListingId,
   producerSlug,
+  priceDrop,
 }: WineDetailHeaderProps) {
   const wineTypeLabel =
     WINE_TYPES.find((t) => t.value === wine.wineType)?.label ?? wine.wineType;
@@ -119,6 +121,9 @@ export function WineDetailHeader({
               )}
               {onSale && (
                 <Badge variant="destructive">Aanbieding</Badge>
+              )}
+              {priceDrop && (
+                <Badge variant="success">Prijs gedaald</Badge>
               )}
             </div>
 

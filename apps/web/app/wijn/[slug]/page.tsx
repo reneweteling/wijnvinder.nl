@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { WineDetailHeader } from "@/components/wines/wine-detail-header";
 import { PriceComparison } from "@/components/wines/price-comparison";
+import { PriceHistoryChart } from "@/components/wines/price-history-chart";
 import { MatchBreakdown } from "@/components/wines/match-breakdown";
 import { WineCard } from "@/components/wines/wine-card";
 import type { Metadata } from "next";
@@ -83,6 +84,26 @@ export default async function WijnDetailPage({ params }: PageProps) {
   const originalPrice = cheapest?.originalPrice ?? null;
   const bestShopName = cheapest?.shop?.name ?? null;
   const bestListingId = cheapest?.id ?? null;
+
+  // Fetch price history for the cheapest listing (last 90 days, max 30 points)
+  const now = new Date();
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const rawHistory = cheapest
+    ? await db.priceHistory.findMany({
+        where: {
+          listingId: cheapest.id,
+          recordedAt: { gte: ninetyDaysAgo },
+        },
+        orderBy: { recordedAt: "asc" },
+        take: 30,
+      })
+    : [];
+
+  // Determine whether price dropped vs previous recorded point
+  const priceDrop =
+    rawHistory.length >= 2 &&
+    bestPrice != null &&
+    bestPrice < rawHistory[rawHistory.length - 2].price;
 
   // Find other wines from the same producer
   const relatedWines = wine.producerId
@@ -214,6 +235,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
         bestShopName={bestShopName}
         bestListingId={bestListingId}
         producerSlug={wine.producer?.slug}
+        priceDrop={priceDrop}
       />
 
       {/* Price comparison + match breakdown */}
@@ -243,6 +265,18 @@ export default async function WijnDetailPage({ params }: PageProps) {
                 <p className="text-text-light">
                   Er zijn momenteel geen winkelvermeldingen beschikbaar voor deze wijn.
                 </p>
+              </div>
+            )}
+
+            {rawHistory.length >= 2 && bestPrice != null && (
+              <div className="mt-6">
+                <PriceHistoryChart
+                  points={rawHistory.map((p) => ({
+                    price: p.price,
+                    recordedAt: p.recordedAt,
+                  }))}
+                  currentPrice={bestPrice}
+                />
               </div>
             )}
           </div>
