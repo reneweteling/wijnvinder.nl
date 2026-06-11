@@ -1,5 +1,31 @@
 export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert'
 
+/** Core wine shape consumed by WineCard. */
+export type WineCardWine = {
+  id: string;
+  slug?: string | null;
+  name: string;
+  producer?: string | null;
+  grape?: string | null;
+  country?: string | null;
+  region?: string | null;
+  wineType?: string | null;
+  vivinoScore?: number | null;
+  imageUrl?: string | null;
+  bestPrice?: number | null;
+  originalPrice?: number | null;
+  shopCount?: number;
+};
+
+/** What the /api/wijnen endpoint returns per wine (WineCardWine + extra API fields). */
+export type WineListItem = WineCardWine & {
+  searchName?: string | null;
+  vivinoScoreCount?: number | null;
+  vivinoUrl?: string | null;
+  vintage?: number | null;
+  description?: string | null;
+};
+
 export type FlavorProfile = 'fruity' | 'dry' | 'tannic' | 'oaky' | 'mineral' | 'spicy' | 'floral' | 'earthy'
 
 export type WineProfileData = {

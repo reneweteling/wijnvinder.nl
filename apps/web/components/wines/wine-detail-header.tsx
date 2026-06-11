@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { MapPin, Star, ExternalLink } from "lucide-react";
+import { MapPin, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RatingStars } from "@/components/wines/rating-stars";
 import { buttonVariants } from "@/components/ui/button";
 import { WINE_TYPES } from "@/lib/constants";
 import { FavoriteButton } from "@/components/wines/favorite-button";
@@ -33,30 +34,6 @@ type WineDetailHeaderProps = {
   priceDrop?: boolean;
 };
 
-function RatingStars({ score }: { score: number }) {
-  const full = Math.floor(score);
-  const hasHalf = score - full >= 0.5;
-  const empty = 5 - full - (hasHalf ? 1 : 0);
-  return (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: full }).map((_, i) => (
-        <Star key={`f-${i}`} className="h-5 w-5 fill-gold text-gold" />
-      ))}
-      {hasHalf && (
-        <span className="relative h-5 w-5 inline-block">
-          <Star className="absolute h-5 w-5 text-gold" />
-          <Star
-            className="absolute h-5 w-5 fill-gold text-gold"
-            style={{ clipPath: "inset(0 50% 0 0)" }}
-          />
-        </span>
-      )}
-      {Array.from({ length: empty }).map((_, i) => (
-        <Star key={`e-${i}`} className="h-5 w-5 text-gold" />
-      ))}
-    </div>
-  );
-}
 
 export function WineDetailHeader({
   wine,
@@ -171,7 +148,7 @@ export function WineDetailHeader({
             {/* Rating */}
             {wine.vivinoScore != null && (
               <div className="flex items-center gap-3">
-                <RatingStars score={wine.vivinoScore} />
+                <RatingStars score={wine.vivinoScore} size="lg" />
                 <span className="font-bold text-gold text-lg">
                   {wine.vivinoScore.toFixed(1)}
                 </span>

@@ -4,26 +4,15 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Star, MapPin, ShoppingBag, TrendingUp } from "lucide-react";
+import { MapPin, ShoppingBag, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WINE_TYPES } from "@/lib/constants";
 import { FavoriteButton } from "@/components/wines/favorite-button";
+import { RatingStars } from "@/components/wines/rating-stars";
+import type { WineCardWine } from "@/lib/types";
 
-export type WineCardWine = {
-  id: string;
-  slug?: string | null;
-  name: string;
-  producer?: string | null;
-  grape?: string | null;
-  country?: string | null;
-  region?: string | null;
-  wineType?: string | null;
-  vivinoScore?: number | null;
-  imageUrl?: string | null;
-  bestPrice?: number | null;
-  originalPrice?: number | null;
-  shopCount?: number;
-};
+// Re-export so existing importers of this type don't break.
+export type { WineCardWine } from "@/lib/types";
 
 type WineCardProps = {
   wine: WineCardWine;
@@ -49,33 +38,6 @@ function WineTypeBadge({ type }: { type: string }) {
     >
       {label}
     </span>
-  );
-}
-
-function RatingStars({ score }: { score: number }) {
-  const full = Math.floor(score);
-  const hasHalf = score - full >= 0.5;
-  const empty = 5 - full - (hasHalf ? 1 : 0);
-
-  return (
-    <div className="flex items-center gap-0.5" aria-label={`Score: ${score} van 5`}>
-      {Array.from({ length: full }).map((_, i) => (
-        <Star key={`f-${i}`} className="h-3 w-3 fill-gold text-gold" aria-hidden />
-      ))}
-      {hasHalf && (
-        <span className="relative h-3 w-3 inline-block" aria-hidden>
-          <Star className="absolute h-3 w-3 text-gold" aria-hidden />
-          <Star
-            className="absolute h-3 w-3 fill-gold text-gold"
-            style={{ clipPath: "inset(0 50% 0 0)" }}
-            aria-hidden
-          />
-        </span>
-      )}
-      {Array.from({ length: empty }).map((_, i) => (
-        <Star key={`e-${i}`} className="h-3 w-3 text-gold" aria-hidden />
-      ))}
-    </div>
   );
 }
 
@@ -164,7 +126,7 @@ export function WineCard({ wine, matchPercentage, index: _index = 0, priority: _
             {/* Rating */}
             {wine.vivinoScore != null && (
               <div className="flex items-center gap-2">
-                <RatingStars score={wine.vivinoScore} />
+                <RatingStars score={wine.vivinoScore} size="sm" />
                 <span className="text-xs font-medium text-amber-700">
                   {wine.vivinoScore.toFixed(1)}
                 </span>

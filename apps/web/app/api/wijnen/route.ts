@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import type { CanonicalWineWhereInput } from "@/lib/db/input";
 
 const ALLOWED_SORTS = new Set(["rating-desc", "price-asc", "price-desc"]);
 
@@ -31,8 +32,7 @@ export async function GET(request: NextRequest) {
   const minRating = !isNaN(minRatingRaw) ? minRatingRaw : undefined;
 
   // Build where clause as a single AND array so conditions never overwrite each other.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const andConditions: Record<string, any>[] = [];
+  const andConditions: CanonicalWineWhereInput[] = [];
 
   if (q) {
     // Each search term must match at least one field.
@@ -98,14 +98,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: Record<string, any> = andConditions.length > 0
+  const where: CanonicalWineWhereInput = andConditions.length > 0
     ? { AND: andConditions }
     : {};
 
-  // Build orderBy
+  // Build orderBy. Aggregate ordering (_min) is not in the generated types, so typed loosely.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let orderBy: Record<string, any>[] = [];
+  let orderBy: any[] = [];
   switch (sort) {
     case "price-asc":
       orderBy = [{ listings: { _min: { price: "asc" } } }];

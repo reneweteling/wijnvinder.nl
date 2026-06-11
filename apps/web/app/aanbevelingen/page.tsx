@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/wines/empty-state";
 import type { WineFilters as WineFiltersType } from "@/components/wines/wine-filters";
 import type { SortOption } from "@/components/wines/sort-controls";
 import { scoreWines } from "@/lib/recommendation-engine";
-import type { WineProfileData } from "@/lib/types";
+import type { WineProfileData, WineListItem } from "@/lib/types";
 import type { ScoredWine } from "@/lib/recommendation-engine";
 
 const PAGE_SIZE = 50;
@@ -78,39 +78,23 @@ async function fetchWines(
   filters: WineFiltersType,
   page: number,
   query: string
-): Promise<{
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wines: any[];
-  total: number;
-}> {
-  const params = new URLSearchParams();
-
-  if (query) params.set("q", query);
-  if (filters.types.length > 0) params.set("type", filters.types.join(","));
-  if (filters.grapes.length > 0) params.set("grape", filters.grapes.join(","));
-  if (filters.countries.length > 0)
-    params.set("country", filters.countries.join(","));
-  if (filters.priceMin > 5) params.set("priceMin", String(filters.priceMin));
-  if (filters.priceMax < 100)
-    params.set("priceMax", String(filters.priceMax));
-  if (filters.minRating > 3)
-    params.set("minRating", String(filters.minRating));
+): Promise<{ wines: WineListItem[]; total: number }> {
+  // Reuse filtersToParams for filter params (sort omitted, sorting is client-side).
+  const params = filtersToParams(filters, "match", query);
+  // Remove sort param — the API default (rating-desc) is fine; sort happens client-side.
+  params.delete("sort");
   params.set("page", String(page));
   params.set("limit", String(PAGE_SIZE));
 
   const res = await fetch(`/api/wijnen?${params.toString()}`);
   if (!res.ok) throw new Error("Ophalen van wijnen mislukt");
-  return res.json();
+  return res.json() as Promise<{ wines: WineListItem[]; total: number }>;
 }
 
-function scoreOrWrap(
-  profile: WineProfileData | null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wines: any[]
-): ScoredWine[] {
-  if (profile) return scoreWines(profile, wines);
+function scoreOrWrap(profile: WineProfileData | null, wines: WineListItem[]): ScoredWine[] {
+  if (profile) return scoreWines(profile, wines as unknown as Record<string, unknown>[]);
   return wines.map((w) => ({
-    wine: w,
+    wine: w as unknown as Record<string, unknown>,
     score: {
       wineId: w.id,
       totalScore: w.vivinoScore ? w.vivinoScore * 20 : 50,
@@ -177,9 +161,8 @@ function AanbevelingenContent() {
           setTotal(t);
           setScoredWines(scoreOrWrap(profile, wines));
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
-          console.error(err);
           setError("Er is een fout opgetreden bij het laden van de wijnen.");
         }
       } finally {
@@ -213,8 +196,8 @@ function AanbevelingenContent() {
           return [...prev, ...newWines];
         });
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // loadMore errors are silently swallowed; user can scroll again to retry.
     } finally {
       loadingMoreRef.current = false;
       if (mountedRef.current) setIsLoadingMore(false);
