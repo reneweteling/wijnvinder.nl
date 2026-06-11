@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FavoritesProvider } from "@/lib/favorites-context";
 import { CookieConsent } from "@/components/cookie-consent";
+import { SITE_URL } from "@/lib/site";
 
 const GTM_ID = "GTM-PL683HW8";
 const isProd = process.env.NODE_ENV === "production";
@@ -23,7 +24,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://wijnvinder.nl"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "WijnVinder - Vind jouw perfecte wijn",
     template: "%s | WijnVinder",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     title: "WijnVinder - Vind jouw perfecte wijn",
     description:
       "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
-    url: "https://wijnvinder.nl",
+    url: SITE_URL,
     siteName: "WijnVinder",
     locale: "nl_NL",
     type: "website",
@@ -94,12 +95,12 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "WijnVinder",
-              "url": "https://wijnvinder.nl",
+              "url": SITE_URL,
               "description": "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
               "inLanguage": "nl",
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://wijnvinder.nl/aanbevelingen?q={search_term_string}",
+                "target": `${SITE_URL}/aanbevelingen?q={search_term_string}`,
                 "query-input": "required name=search_term_string"
               }
             }) }}

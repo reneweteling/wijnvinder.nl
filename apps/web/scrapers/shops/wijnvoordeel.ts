@@ -14,7 +14,9 @@
 import type { ScrapedWine } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
 import { CheerioScraper } from '../cheerio-scraper'
+import { isBadgeImage } from '../base-scraper'
 import { normalizeCountry } from '../country-map'
+import { extractVintage } from '../normalize'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'wijnvoordeel')!
 
@@ -53,17 +55,14 @@ export class WijnvoordeelScraper extends CheerioScraper {
 
         const name = el.find('a.product-item-link').text().trim()
         const productUrl = el.find('a.product-item-link').attr('href') ?? ''
-        // Magento product items have multiple images: rating badges + bottle photo
-        // Filter out badges (trophy, proefpanelpunten, hamersma, catavinum, berliner)
-        // and placeholders to find the actual bottle image
-        const BADGE_PATTERNS = ['proefpanelpunten', 'hamersma', 'trophy', 'catavinum', 'berliner', 'medaille', 'award', 'punten', 'luca-maroni', 'luca_maroni', 'vivino', 'gilbert', 'gaillard', 'hires_', 'pixel.png']
+        // Magento product items have multiple images: rating badges + bottle photo.
+        // Use the shared isBadgeImage() from base-scraper to filter them out.
         let cleanImageUrl: string | undefined
         const allImgs = el.find('img.product-image-photo')
         for (let j = 0; j < allImgs.length; j++) {
           const img = allImgs.eq(j)
           const src = img.attr('data-src') ?? img.attr('src') ?? ''
-          if (src.includes('/static/version') || src.includes('placeholder')) continue
-          if (BADGE_PATTERNS.some(p => src.toLowerCase().includes(p))) continue
+          if (isBadgeImage(src)) continue
           // Skip small square images (160x160 are always badges)
           const maxW = img.attr('max-width')
           if (maxW && parseInt(maxW) <= 160) continue
@@ -91,9 +90,9 @@ export class WijnvoordeelScraper extends CheerioScraper {
         if (smallText) {
           const parts = smallText.split('|').map((p) => p.trim())
           for (const part of parts) {
-            const yearMatch = part.match(/\b(19\d{2}|20\d{2})\b/)
-            if (yearMatch) {
-              vintage = parseInt(yearMatch[1], 10)
+            const year = extractVintage(part)
+            if (year !== undefined) {
+              vintage = year
             } else if (part.length > 1) {
               const mapped = normalizeCountry(part)
               if (mapped) country = mapped

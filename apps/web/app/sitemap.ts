@@ -1,7 +1,6 @@
 import { MetadataRoute } from "next";
 import { db } from "@/lib/db/client";
-
-const BASE_URL = "https://wijnvinder.nl";
+import { SITE_URL as BASE_URL } from "@/lib/site";
 
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/` },

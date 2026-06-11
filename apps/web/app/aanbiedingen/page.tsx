@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/lib/db/client";
 import { WineCard } from "@/components/wines/wine-card";
 import type { WineCardWine } from "@/components/wines/wine-card";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 1800;
 
@@ -10,13 +11,13 @@ export const metadata: Metadata = {
   description:
     "Wijnen die nu met korting te krijgen zijn bij Nederlandse wijnwinkels. Bespaar op kwaliteitswijnen.",
   alternates: {
-    canonical: "https://wijnvinder.nl/aanbiedingen",
+    canonical: `${SITE_URL}/aanbiedingen`,
   },
   openGraph: {
     title: "Aanbiedingen | WijnVinder",
     description:
       "Wijnen die nu met korting te krijgen zijn bij Nederlandse wijnwinkels. Bespaar op kwaliteitswijnen.",
-    url: "https://wijnvinder.nl/aanbiedingen",
+    url: `${SITE_URL}/aanbiedingen`,
     siteName: "WijnVinder",
     locale: "nl_NL",
     type: "website",

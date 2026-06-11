@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacybeleid - WijnVinder",
@@ -30,10 +31,10 @@ export default function PrivacybeleidPage() {
             — KvK 80910483.
             Voor vragen over dit privacybeleid kun je contact opnemen via{" "}
             <a
-              href="mailto:info@wijnvinder.nl"
+              href={`mailto:${CONTACT_EMAIL}`}
               className="text-burgundy hover:underline"
             >
-              info@wijnvinder.nl
+              {CONTACT_EMAIL}
             </a>
             .
           </p>
@@ -105,10 +106,10 @@ export default function PrivacybeleidPage() {
           <p>
             Neem hiervoor contact op via{" "}
             <a
-              href="mailto:info@wijnvinder.nl"
+              href={`mailto:${CONTACT_EMAIL}`}
               className="text-burgundy hover:underline"
             >
-              info@wijnvinder.nl
+              {CONTACT_EMAIL}
             </a>
             . Je hebt ook het recht een klacht in te dienen bij de Autoriteit
             Persoonsgegevens.

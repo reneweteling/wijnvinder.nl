@@ -29,6 +29,15 @@ const SPARKLING_KEYWORDS = [
 ]
 
 /**
+ * Keywords that indicate a dessert/fortified wine.
+ * Checked after sparkling so "sparkling port" would still match sparkling.
+ */
+const DESSERT_KEYWORDS = [
+  'port', 'porto', 'sherry', 'jerez', 'dessert',
+  'sauternes', 'pedro ximenez', 'pedro ximénez',
+]
+
+/**
  * Matches a standalone rosé/rosado/rosato word in the wine name.
  *
  * \b doesn't work reliably with non-ASCII chars (é is char 233), so we use
@@ -49,9 +58,12 @@ const NON_WINE_RE = /\bgrappa\b|\bnonino\b/i
  *
  * Rules (applied in order):
  * 1. If the name matches a non-wine pattern (grappa, Nonino), return the hint as-is.
- * 2. If the name contains a sparkling keyword AND no standalone rosé word → 'sparkling'.
- * 3. If the name contains a standalone rosé word → 'rose'.
- * 4. Otherwise return the hint unchanged (may be null/undefined).
+ * 2. Sparkling keyword AND no standalone rosé → 'sparkling'.
+ *    Sparkling keyword AND standalone rosé → 'rose' (sparkling rosé).
+ * 3. Standalone rosé word → 'rose'.
+ * 4. Dessert keyword → 'dessert'.
+ * 5. Red keyword in name → 'red'; white keyword → 'white'.
+ * 6. Otherwise return the hint unchanged (may be null/undefined).
  *
  * This is the canonical correction layer. It prevents sparkling wines from
  * being misclassified as 'rose' or 'white' when the scraper's category signal
@@ -75,6 +87,14 @@ export function classifyWineType(
 
   // No sparkling keyword — trust the hint (or apply a rosé name override).
   if (ROSE_WORD_RE.test(name)) return 'rose'
+
+  // Keyword fallbacks — only applied when the scraper provides no hint.
+  // This avoids overriding a shop's explicit category (e.g. white port typed as 'white').
+  if (!hint) {
+    if (DESSERT_KEYWORDS.some((kw) => lower.includes(kw))) return 'dessert'
+    if (/\b(rood|rouge|red|tinto|rosso|nero|noir)\b/.test(lower)) return 'red'
+    if (/\b(wit|blanc|white|bianco|blanco|weiss|chardonnay|sauvignon|riesling|viognier|pinot gris|pinot grigio)\b/.test(lower)) return 'white'
+  }
 
   return hint ?? null
 }
@@ -113,7 +133,7 @@ function stripAccents(str: string): string {
  * Extract a 4-digit vintage year (1900–2099) from the name.
  * Returns the year if found, or undefined.
  */
-function extractVintage(str: string): number | undefined {
+export function extractVintage(str: string): number | undefined {
   const match = str.match(/\b(19\d{2}|20\d{2})\b/)
   if (!match) return undefined
   const year = parseInt(match[1], 10)

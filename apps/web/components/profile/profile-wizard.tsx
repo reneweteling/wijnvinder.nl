@@ -21,6 +21,8 @@ import { StepSummary } from "./step-summary";
 import { VivinoImport } from "./vivino-import";
 import type { WineProfileData, WineType, FlavorProfile } from "@/lib/types";
 
+const VIVINO_ENABLED = process.env.NEXT_PUBLIC_ENABLE_VIVINO_IMPORT === "1"
+
 const STEPS = [
   { id: "wine-types", label: "Wijnsoorten" },
   { id: "grapes", label: "Druiven" },
@@ -107,41 +109,45 @@ export function ProfileWizard() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      {/* Vivino Import Banner */}
-      <AnimatePresence>
-        {!showVivinoImport && (
-          <motion.button
-            type="button"
-            onClick={() => setShowVivinoImport(true)}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="group flex w-full items-center gap-3 rounded-xl border border-gold/40 bg-gold-light px-4 py-3 text-left transition-all hover:border-gold/60 hover:bg-gold-light/80"
-          >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold text-white group-hover:scale-105 transition-transform">
-              <Wine className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">
-                Heb je een Vivino account?
-              </p>
-              <p className="text-xs text-text-light">
-                Importeer je profielgegevens automatisch
-              </p>
-            </div>
-            <Import className="h-4 w-4 text-gold" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Vivino Import Banner — only shown when NEXT_PUBLIC_ENABLE_VIVINO_IMPORT=1 */}
+      {VIVINO_ENABLED && (
+        <>
+          <AnimatePresence>
+            {!showVivinoImport && (
+              <motion.button
+                type="button"
+                onClick={() => setShowVivinoImport(true)}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="group flex w-full items-center gap-3 rounded-xl border border-gold/40 bg-gold-light px-4 py-3 text-left transition-all hover:border-gold/60 hover:bg-gold-light/80"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold text-white group-hover:scale-105 transition-transform">
+                  <Wine className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Heb je een Vivino account?
+                  </p>
+                  <p className="text-xs text-text-light">
+                    Importeer je profielgegevens automatisch
+                  </p>
+                </div>
+                <Import className="h-4 w-4 text-gold" />
+              </motion.button>
+            )}
+          </AnimatePresence>
 
-      <AnimatePresence>
-        {showVivinoImport && (
-          <VivinoImport
-            onImport={handleVivinoImport}
-            onClose={() => setShowVivinoImport(false)}
-          />
-        )}
-      </AnimatePresence>
+          <AnimatePresence>
+            {showVivinoImport && (
+              <VivinoImport
+                onImport={handleVivinoImport}
+                onClose={() => setShowVivinoImport(false)}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
 
       {/* Wizard card */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">

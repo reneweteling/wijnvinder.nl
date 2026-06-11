@@ -9,7 +9,11 @@ import { PriceComparison } from "@/components/wines/price-comparison";
 import { PriceHistoryChart } from "@/components/wines/price-history-chart";
 import { MatchBreakdown } from "@/components/wines/match-breakdown";
 import { WineCard } from "@/components/wines/wine-card";
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
+
+const PRICE_HISTORY_DAYS = 90
+const PRICE_HISTORY_MAX_POINTS = 30
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -99,7 +103,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const description = truncateDescription(rawDescription, 157);
 
-  const canonicalUrl = `https://wijnvinder.nl/wijn/${slug}`;
+  const canonicalUrl = `${SITE_URL}/wijn/${slug}`;
 
   return {
     title,
@@ -136,7 +140,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
   const bestListingId = cheapest?.id ?? null;
 
   const now = new Date();
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = new Date(now.getTime() - PRICE_HISTORY_DAYS * 24 * 60 * 60 * 1000);
 
   // Build the OR conditions for similar wines — skip the query entirely if both are absent
   const similarOrConditions = [
@@ -154,7 +158,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
             recordedAt: { gte: ninetyDaysAgo },
           },
           orderBy: { recordedAt: "asc" },
-          take: 30,
+          take: PRICE_HISTORY_MAX_POINTS,
         })
       : Promise.resolve([]),
 
@@ -256,8 +260,8 @@ export default async function WijnDetailPage({ params }: PageProps) {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://wijnvinder.nl" },
-            { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": "https://wijnvinder.nl/aanbevelingen" },
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+            { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": `${SITE_URL}/aanbevelingen` },
             { "@type": "ListItem", "position": 3, "name": buildWineName(wine.producer?.name, wine.name, null) },
           ]
         }) }}

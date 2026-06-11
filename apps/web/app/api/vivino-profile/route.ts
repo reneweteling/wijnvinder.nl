@@ -178,6 +178,13 @@ function getMockRatings(username: string): VivinoWineRating[] {
 const VIVINO_USERNAME_RE = /^[a-zA-Z0-9_.-]{2,50}$/;
 
 export async function POST(request: Request) {
+  if (process.env.ENABLE_VIVINO_IMPORT !== "1") {
+    return NextResponse.json(
+      { error: "Vivino-import is tijdelijk niet beschikbaar" },
+      { status: 503 },
+    );
+  }
+
   const session = await getServerAuthSession();
   if (!session) {
     return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });

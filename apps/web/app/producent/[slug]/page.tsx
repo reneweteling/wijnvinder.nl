@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Star, Globe } from "lucide-react";
 import { db } from "@/lib/db/client";
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 type PageProps = {
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `https://wijnvinder.nl/producent/${slug}`,
+      canonical: `${SITE_URL}/producent/${slug}`,
     },
     openGraph: {
       title,

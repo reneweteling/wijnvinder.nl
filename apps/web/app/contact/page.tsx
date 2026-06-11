@@ -1,4 +1,5 @@
 import { Mail } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -21,14 +22,14 @@ export default function ContactPage() {
 
         <div className="max-w-sm mx-auto mb-12">
           <a
-            href="mailto:info@wijnvinder.nl"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="bg-card border border-border rounded-xl p-6 flex flex-col items-center text-center hover:border-burgundy/40 transition-colors group"
           >
             <Mail className="w-8 h-8 text-burgundy mb-3 group-hover:scale-110 transition-transform" />
             <h2 className="font-heading font-semibold text-foreground mb-1">
               E-mail
             </h2>
-            <p className="text-text-light text-sm">info@wijnvinder.nl</p>
+            <p className="text-text-light text-sm">{CONTACT_EMAIL}</p>
           </a>
         </div>
 

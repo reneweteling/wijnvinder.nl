@@ -13,6 +13,13 @@ import type { NormalizedWine } from '@/scrapers/normalize'
 const MATCH_THRESHOLD = 0.9
 
 /**
+ * In-memory producer cache for the current scrape run.
+ * Maps producer name → producer id, so we avoid a findUnique DB call per wine.
+ * Cleared between scrape runs by process restart (worker is short-lived).
+ */
+const producerCache = new Map<string, string>()
+
+/**
  * Find or create a CanonicalWine for a scraped wine.
  * Returns the canonicalWineId.
  */
@@ -62,9 +69,9 @@ export async function matchOrCreate(
   }
 
   // No good match — create a new CanonicalWine.
-  // classifyWineType applies the canonical correction layer: sparkling keywords in the
-  // name override a wrong category hint (e.g. a shop that puts Prosecco in rosé).
-  const rawType = scraped.type ?? inferWineType(scraped) ?? null
+  // classifyWineType is the canonical layer: sparkling/rosé/dessert/red/white keywords
+  // in the name override a wrong category hint from the scraper.
+  const rawType = scraped.type ?? null
   const wineType = classifyWineType(scraped.name, rawType)
   const wineName = normalized.name || scraped.name
   // Prefer scraper-provided producer (explicit) over normalized (guessed from name)
@@ -72,23 +79,29 @@ export async function matchOrCreate(
   const vintage = normalized.vintage ?? scraped.vintage ?? null
   const slug = generateSlug(producerName, wineName, vintage)
 
-  // Find or create Producer
+  // Find or create Producer — use in-memory cache to avoid a DB round-trip per wine
   let producerId: string | null = null
   if (producerName) {
-    const producerSlug = generateSlug(null, producerName, null)
-    const existingProducer = await db.producer.findUnique({ where: { name: producerName } })
-    if (existingProducer) {
-      producerId = existingProducer.id
+    const cached = producerCache.get(producerName)
+    if (cached) {
+      producerId = cached
     } else {
-      const newProducer = await db.producer.create({
-        data: {
-          slug: producerSlug,
-          name: producerName,
-          country: scraped.country ?? null,
-          region: scraped.region ?? null,
-        },
-      })
-      producerId = newProducer.id
+      const producerSlug = generateSlug(null, producerName, null)
+      const existingProducer = await db.producer.findUnique({ where: { name: producerName } })
+      if (existingProducer) {
+        producerId = existingProducer.id
+      } else {
+        const newProducer = await db.producer.create({
+          data: {
+            slug: producerSlug,
+            name: producerName,
+            country: scraped.country ?? null,
+            region: scraped.region ?? null,
+          },
+        })
+        producerId = newProducer.id
+      }
+      producerCache.set(producerName, producerId)
     }
   }
 
@@ -129,16 +142,3 @@ function generateSlug(producer: string | null, name: string, vintage: number | n
   return slug
 }
 
-/**
- * Infer wine type from category hints in the scraped name.
- * Very lightweight heuristic.
- */
-function inferWineType(scraped: ScrapedWine): string | undefined {
-  if (scraped.type) return scraped.type
-  const name = (scraped.name + ' ' + (scraped.grape ?? '')).toLowerCase()
-  if (/rosé|rose|rosado/.test(name)) return 'rose'
-  if (/champagne|cava|prosecco|crémant|cremant|mousseux|sekt|sparkling/.test(name)) return 'sparkling'
-  if (/\b(rood|rouge|red|tinto|rosso|nero|noir)\b/.test(name)) return 'red'
-  if (/\b(wit|blanc|white|bianco|blanco|weiss|weißburgunder|chardonnay|sauvignon|riesling|viognier|pinot gris|pinot grigio)\b/.test(name)) return 'white'
-  return undefined
-}

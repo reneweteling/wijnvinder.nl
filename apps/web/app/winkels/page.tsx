@@ -2,6 +2,7 @@ import Image from "next/image";
 import { db } from "@/lib/db/client";
 import { timeAgo } from "@/lib/time";
 import { ExternalLink, Store, Wine } from "lucide-react";
+import { SITE_URL, CONTACT_EMAIL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const revalidate = 86400;
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     title: "Winkels | WijnVinder",
     description:
       "Bekijk alle wijnwinkels die we vergelijken. WijnVinder doorzoekt tientallen Nederlandse wijnwinkels om de beste prijs voor jou te vinden.",
-    url: "https://wijnvinder.nl/winkels",
+    url: `${SITE_URL}/winkels`,
     siteName: "WijnVinder",
     locale: "nl_NL",
     type: "website",
@@ -152,7 +153,7 @@ export default async function WinkelsPage() {
             Neem contact met ons op en we bespreken de mogelijkheden.
           </p>
           <a
-            href="mailto:info@wijnvinder.nl"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="inline-flex items-center gap-2 rounded-lg bg-burgundy text-white font-medium text-sm py-2.5 px-6 hover:bg-burgundy/90 transition-colors"
           >
             Neem contact op

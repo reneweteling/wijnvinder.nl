@@ -16,6 +16,7 @@
 import type { ScrapedWine } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
 import { CheerioScraper } from '../cheerio-scraper'
+import { isBadgeImage } from '../base-scraper'
 import { normalizeCountry } from '../country-map'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'wijnbeurs')!
@@ -56,25 +57,14 @@ export class WijnbeursScraper extends CheerioScraper {
         const name = el.find('a.product-item-link').text().trim()
         const productUrl = el.find('a.product-item-link').attr('href') ?? ''
         // Wijnbeurs has multiple product-image-photo per item:
-        // 1st = rating badge (proefpanelpunten/hamersma), 2nd = actual bottle
-        // Filter out badges and placeholders to find the real bottle image
+        // 1st = rating badge (proefpanelpunten/hamersma), 2nd = actual bottle.
+        // Use the shared isBadgeImage() from base-scraper to filter them out.
         let imageUrl: string | undefined
         const allImgs = el.find('img.product-image-photo')
         for (let j = 0; j < allImgs.length; j++) {
           const img = allImgs.eq(j)
           const src = img.attr('data-src') ?? img.attr('src') ?? ''
-          // Skip rating badges and placeholders
-          if (src.includes('proefpanelpunten') || src.includes('hamersma') ||
-              src.includes('trophy') || src.includes('catavinum') ||
-              src.includes('berliner') || src.includes('punten') ||
-              src.includes('medaille') || src.includes('award') ||
-              src.includes('luca-maroni') || src.includes('luca_maroni') ||
-              src.includes('vivino') || src.includes('gilbert') ||
-              src.includes('gaillard') || src.includes('hires_') ||
-              src.includes('/static/version') || src.includes('placeholder') ||
-              src.includes('pixel.png')) {
-            continue
-          }
+          if (isBadgeImage(src)) continue
           // Skip small square images (badges are typically 160x160)
           const maxW = img.attr('max-width')
           if (maxW && parseInt(maxW) <= 160) continue

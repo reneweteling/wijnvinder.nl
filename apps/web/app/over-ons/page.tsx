@@ -1,4 +1,5 @@
 import { Wine, Users, Target, Heart } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -90,10 +91,10 @@ export default function OverOnsPage() {
               <dt className="text-text-light">E-mail</dt>
               <dd className="text-foreground font-medium">
                 <a
-                  href="mailto:info@wijnvinder.nl"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="text-burgundy hover:underline"
                 >
-                  info@wijnvinder.nl
+                  {CONTACT_EMAIL}
                 </a>
               </dd>
             </div>

@@ -17,6 +17,7 @@
 import type { ScrapedWine } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
 import { CheerioScraper } from '../cheerio-scraper'
+import { extractVintage } from '../normalize'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'dewijngoeroe')!
 
@@ -93,11 +94,7 @@ export class DeWijngeroeScraper extends CheerioScraper {
 
         // Try to extract vintage from product name
         // Pattern: "Name 2020 - Producer - 75CL - 15,0% Vol."
-        let vintage: number | undefined
-        const vintageMatch = name.match(/\b(19\d{2}|20\d{2})\b/)
-        if (vintageMatch) {
-          vintage = parseInt(vintageMatch[1], 10)
-        }
+        const vintage = extractVintage(name)
 
         yield {
           name,

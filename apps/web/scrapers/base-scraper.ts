@@ -41,7 +41,7 @@ const BADGE_IMAGE_PATTERNS = [
 ]
 
 /** Returns true if the image URL looks like a rating badge rather than a wine bottle */
-function isBadgeImage(url: string): boolean {
+export function isBadgeImage(url: string): boolean {
   const lower = url.toLowerCase()
   return BADGE_IMAGE_PATTERNS.some(p => lower.includes(p))
 }

@@ -11,6 +11,7 @@
 import type { ScrapedWine, WineType } from '@/lib/types'
 import { SHOP_CONFIGS } from '@/lib/constants'
 import { BaseScraper } from '../base-scraper'
+import { classifyWineType } from '../normalize'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'drankdozijn')!
 
@@ -56,7 +57,7 @@ function buildDescription(product: DrankDozijnProduct): string | undefined {
   return parts.length > 0 ? parts.join(' · ') : undefined
 }
 
-function inferWineType(category: string | undefined): WineType | undefined {
+function inferWineTypeFromCategory(category: string | undefined): WineType | undefined {
   if (!category) return undefined
   const lower = category.toLowerCase()
   if (lower.includes('rood') || lower.includes('rode')) return 'red'
@@ -136,6 +137,11 @@ export class DrankDozijnScraper extends BaseScraper {
         const vintageStr = getFeature(product, 'vintage')
         const vintage = vintageStr ? parseInt(vintageStr.replace(/\D/g, ''), 10) || undefined : undefined
 
+        // Use classifyWineType to apply the canonical correction layer on top of
+        // the category hint from the API (catches e.g. Prosecco in wrong category).
+        const categoryHint = inferWineTypeFromCategory(category)
+        const wineType = classifyWineType(product.description, categoryHint) as WineType | null
+
         yield {
           name: product.description,
           producer: product.brandDescription || undefined,
@@ -147,7 +153,7 @@ export class DrankDozijnScraper extends BaseScraper {
           region: region || undefined,
           grape: grape || undefined,
           vintage,
-          type: inferWineType(category),
+          type: wineType ?? undefined,
           description: buildDescription(product),
         }
       }
