@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/client";
 import { Resend } from "resend";
 import { createTransport } from "nodemailer";
+import { createHmac } from "crypto";
 
 const EMAIL_FROM = process.env.EMAIL_FROM || "noreply@wijnvinder.nl";
 
@@ -44,7 +45,18 @@ function formatEur(amount: number): string {
   return `€${amount.toFixed(2).replace(".", ",")}`;
 }
 
-function buildEmailHtml(deals: DealWine[]): string {
+function buildUnsubscribeToken(userId: string): string {
+  return createHmac("sha256", process.env.BETTER_AUTH_SECRET!)
+    .update(userId)
+    .digest("hex");
+}
+
+function buildUnsubscribeUrl(userId: string): string {
+  const token = buildUnsubscribeToken(userId);
+  return `https://wijnvinder.nl/api/afmelden?uid=${encodeURIComponent(userId)}&token=${token}`;
+}
+
+function buildEmailHtml(deals: DealWine[], unsubscribeUrl: string): string {
   const wineRows = deals
     .map(
       (d) => `
@@ -93,7 +105,7 @@ function buildEmailHtml(deals: DealWine[]): string {
 
           <p style="margin:32px 0 0;font-size:13px;line-height:1.5;color:#999999;">
             Je ontvangt deze e-mail omdat je bent aangemeld voor de wekelijkse aanbiedingen.
-            <a href="https://wijnvinder.nl/profiel/voorkeuren?afmelden=1" style="color:#722f37;">Afmelden</a>
+            <a href="${unsubscribeUrl}" style="color:#722f37;">Afmelden</a>
           </p>
         </td></tr>
 
@@ -171,13 +183,12 @@ export async function processWeeklyDealsEmail(_job: {
     `[weekly-deals-email] Sending to ${users.length} users, ${deals.length} deals`,
   );
 
-  const html = buildEmailHtml(deals);
-
   let sent = 0;
   let failed = 0;
 
   for (const user of users) {
     try {
+      const html = buildEmailHtml(deals, buildUnsubscribeUrl(user.id));
       await sendEmail({
         to: user.email,
         subject: "De beste wijnaanbiedingen van deze week",

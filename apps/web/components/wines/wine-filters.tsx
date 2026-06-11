@@ -109,6 +109,7 @@ function FilterPanel({
               <button
                 key={type.value}
                 onClick={() => toggleType(type.value)}
+                aria-pressed={active}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   active
                     ? "bg-burgundy text-white"

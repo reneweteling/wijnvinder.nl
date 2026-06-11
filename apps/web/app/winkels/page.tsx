@@ -4,12 +4,21 @@ import { timeAgo } from "@/lib/time";
 import { ExternalLink, Store, Wine } from "lucide-react";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Winkels — WijnVinder",
+  title: "Winkels",
   description:
     "Bekijk alle wijnwinkels die we vergelijken. WijnVinder doorzoekt tientallen Nederlandse wijnwinkels om de beste prijs voor jou te vinden.",
+  openGraph: {
+    title: "Winkels | WijnVinder",
+    description:
+      "Bekijk alle wijnwinkels die we vergelijken. WijnVinder doorzoekt tientallen Nederlandse wijnwinkels om de beste prijs voor jou te vinden.",
+    url: "https://wijnvinder.nl/winkels",
+    siteName: "WijnVinder",
+    locale: "nl_NL",
+    type: "website",
+  },
 };
 
 export default async function WinkelsPage() {

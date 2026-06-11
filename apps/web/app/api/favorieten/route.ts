@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
+import { authDb } from "@/lib/db/client";
 import { getServerAuthSession } from "@/lib/auth";
 
 export async function GET() {
   const session = await getServerAuthSession();
   if (!session) return NextResponse.json(null, { status: 401 });
 
-  const favorites = await db.favoriteWine.findMany({
+  const favorites = await authDb(session.user).favoriteWine.findMany({
     where: { userId: session.user.id },
     include: {
       wine: {
@@ -53,16 +53,17 @@ export async function POST(request: NextRequest) {
   }
 
   // Toggle: if already favorited, remove it
-  const existing = await db.favoriteWine.findUnique({
+  const userDb = authDb(session.user);
+  const existing = await userDb.favoriteWine.findUnique({
     where: { userId_wineId: { userId: session.user.id, wineId } },
   });
 
   if (existing) {
-    await db.favoriteWine.delete({ where: { id: existing.id } });
+    await userDb.favoriteWine.delete({ where: { id: existing.id } });
     return NextResponse.json({ favorited: false });
   }
 
-  const favorite = await db.favoriteWine.create({
+  const favorite = await userDb.favoriteWine.create({
     data: { userId: session.user.id, wineId },
   });
 
@@ -80,7 +81,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "wineId is verplicht" }, { status: 400 });
   }
 
-  const favorite = await db.favoriteWine.findUnique({
+  const userDb = authDb(session.user);
+  const favorite = await userDb.favoriteWine.findUnique({
     where: { userId_wineId: { userId: session.user.id, wineId } },
   });
 
@@ -88,7 +90,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Favoriet niet gevonden" }, { status: 404 });
   }
 
-  await db.favoriteWine.update({
+  await userDb.favoriteWine.update({
     where: { id: favorite.id },
     data: { notes: notes ?? null },
   });

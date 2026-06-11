@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
-import { db } from "@/lib/db/client";
+import { authDb } from "@/lib/db/client";
 
 export async function GET() {
   const session = await getServerAuthSession();
@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json(null, { status: 401 });
   }
 
-  const user = await db.user.findUnique({
+  const user = await authDb(session.user).user.findUnique({
     where: { id: session.user.id },
     select: { weeklyDealsOptIn: true },
   });
@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Ongeldige waarde" }, { status: 400 });
   }
 
-  await db.user.update({
+  await authDb(session.user).user.update({
     where: { id: session.user.id },
     data: { weeklyDealsOptIn: body.weeklyDealsOptIn },
   });

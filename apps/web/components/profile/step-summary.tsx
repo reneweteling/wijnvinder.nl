@@ -181,7 +181,7 @@ export function StepSummary({ profile, onEditStep }: StepSummaryProps) {
         className="rounded-xl bg-burgundy-light border border-burgundy/20 p-4"
       >
         <p className="text-sm text-burgundy">
-          <span className="font-semibold">Je profiel is klaar!</span> Klik op
+          <span className="font-semibold">Je profiel is klaar!</span>{" "}Klik op
           &ldquo;Bekijk aanbevelingen&rdquo; om persoonlijke wijnsuggesties te
           ontvangen op basis van jouw smaakprofiel.
         </p>

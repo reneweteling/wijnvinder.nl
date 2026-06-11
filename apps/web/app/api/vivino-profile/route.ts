@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import type { VivinoWineRating } from "@/lib/types";
+import { getServerAuthSession } from "@/lib/auth";
 
 function extractUsername(input: string): string {
   // Handle full URLs like https://www.vivino.com/users/reneweteling
@@ -174,7 +175,14 @@ function getMockRatings(username: string): VivinoWineRating[] {
   ];
 }
 
+const VIVINO_USERNAME_RE = /^[a-zA-Z0-9_.-]{2,50}$/;
+
 export async function POST(request: Request) {
+  const session = await getServerAuthSession();
+  if (!session) {
+    return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
+  }
+
   let body: { username: string };
   try {
     body = await request.json();
@@ -191,7 +199,7 @@ export async function POST(request: Request) {
 
   const username = extractUsername(body.username);
 
-  if (!username || username.length < 2) {
+  if (!username || !VIVINO_USERNAME_RE.test(username)) {
     return NextResponse.json(
       { error: "Ongeldige gebruikersnaam" },
       { status: 400 },

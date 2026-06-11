@@ -26,6 +26,34 @@ export async function GET(
     return NextResponse.redirect(new URL("/aanbevelingen", request.url));
   }
 
+  // Validate that the listing URL is https and belongs to the shop's own domain.
+  let targetUrlHostname: string;
+  try {
+    const targetUrl = new URL(listing.url);
+    if (targetUrl.protocol !== "https:") {
+      return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    }
+    targetUrlHostname = targetUrl.hostname;
+  } catch {
+    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+  }
+
+  let shopBaseHostname: string;
+  try {
+    shopBaseHostname = new URL(listing.shop.baseUrl).hostname;
+  } catch {
+    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+  }
+
+  // Allow exact match or subdomain (e.g. shop.example.com for example.com)
+  const isAllowedHost =
+    targetUrlHostname === shopBaseHostname ||
+    targetUrlHostname.endsWith(`.${shopBaseHostname}`);
+
+  if (!isAllowedHost) {
+    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+  }
+
   const source = request.nextUrl.searchParams.get("bron");
 
   try {

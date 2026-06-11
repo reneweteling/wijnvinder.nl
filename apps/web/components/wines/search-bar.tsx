@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 
 type SearchBarProps = {
@@ -13,6 +13,12 @@ export function SearchBar({ value, onChange, placeholder }: SearchBarProps) {
   const [draft, setDraft] = useState(value);
   const [prevValue, setPrevValue] = useState(value);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   // Render-time adjustment: when the controlled value changes from outside
   // (e.g. URL navigation), reset draft during this render cycle.

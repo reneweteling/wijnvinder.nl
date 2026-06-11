@@ -24,7 +24,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://wijnvinder.nl"),
-  title: "WijnVinder - Vind jouw perfecte wijn",
+  title: {
+    default: "WijnVinder - Vind jouw perfecte wijn",
+    template: "%s | WijnVinder",
+  },
   description:
     "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
   openGraph: {
@@ -35,6 +38,14 @@ export const metadata: Metadata = {
     siteName: "WijnVinder",
     locale: "nl_NL",
     type: "website",
+    images: [
+      {
+        url: "/images/hero-wine.jpg",
+        width: 1200,
+        height: 630,
+        alt: "WijnVinder - Vind jouw perfecte wijn",
+      },
+    ],
   },
   robots: {
     index: true,

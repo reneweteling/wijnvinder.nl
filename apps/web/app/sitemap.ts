@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { MetadataRoute } from "next";
 import { db } from "@/lib/db/client";
 
@@ -8,11 +6,11 @@ const BASE_URL = "https://wijnvinder.nl";
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/` },
   { url: `${BASE_URL}/aanbevelingen` },
+  { url: `${BASE_URL}/aanbiedingen` },
   { url: `${BASE_URL}/winkels` },
   { url: `${BASE_URL}/over-ons` },
   { url: `${BASE_URL}/contact` },
   { url: `${BASE_URL}/privacybeleid` },
-  { url: `${BASE_URL}/profiel` },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

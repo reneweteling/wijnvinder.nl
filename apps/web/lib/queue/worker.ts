@@ -44,16 +44,25 @@ async function startWorker() {
     console.log(`[worker: ${jobType}] Registered with boss.work()`);
   }
 
-  // Schedule weekly deals email every Friday at 16:00 Europe/Amsterdam
-  await boss.schedule(
-    JobType.WEEKLY_DEALS_EMAIL,
-    WEEKLY_DEALS_CRON,
-    {},
-    { tz: "Europe/Amsterdam" },
-  );
-  console.log(
-    `[worker] Scheduled ${JobType.WEEKLY_DEALS_EMAIL} (${WEEKLY_DEALS_CRON} Europe/Amsterdam)`,
-  );
+  // Schedule weekly deals email every Friday at 16:00 Europe/Amsterdam.
+  // Wrapped in try/catch because pg-boss throws when a schedule with the same name
+  // already exists in the database (e.g. on worker restart without a clean shutdown).
+  try {
+    await boss.schedule(
+      JobType.WEEKLY_DEALS_EMAIL,
+      WEEKLY_DEALS_CRON,
+      {},
+      { tz: "Europe/Amsterdam" },
+    );
+    console.log(
+      `[worker] Scheduled ${JobType.WEEKLY_DEALS_EMAIL} (${WEEKLY_DEALS_CRON} Europe/Amsterdam)`,
+    );
+  } catch (error) {
+    console.warn(
+      `[worker] Could not register schedule for ${JobType.WEEKLY_DEALS_EMAIL} (may already exist):`,
+      error,
+    );
+  }
 
   console.log("[worker] Queue worker started. Listening for jobs...");
 

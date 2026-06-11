@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSyncExternalStore } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getProfileSnapshot, getServerProfileSnapshot, subscribeProfile } from "@/lib/profile-cookie";
 import { motion } from "framer-motion";
 import { WineGrid } from "@/components/wines/wine-grid";
 import { WineFilters } from "@/components/wines/wine-filters";
@@ -73,26 +74,6 @@ function profileToFilters(profile: WineProfileData): WineFiltersType {
   };
 }
 
-function readProfileCookie(): WineProfileData | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("wine-profile="));
-  if (!match) return null;
-  try {
-    const raw = decodeURIComponent(match.split("=").slice(1).join("="));
-    return JSON.parse(raw) as WineProfileData;
-  } catch {
-    return null;
-  }
-}
-
-// useSyncExternalStore: server snapshot returns null, client reads the cookie.
-function subscribeProfile(cb: () => void) {
-  void cb;
-  return () => {};
-}
-
 async function fetchWines(
   filters: WineFiltersType,
   page: number,
@@ -156,8 +137,8 @@ function AanbevelingenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   // Read profile cookie via useSyncExternalStore: server snapshot is null,
-  // client snapshot is the actual cookie — no useEffect + setState needed.
-  const profile = useSyncExternalStore(subscribeProfile, readProfileCookie, () => null);
+  // client snapshot reads the cached cookie (stable reference, no infinite loop).
+  const profile = useSyncExternalStore(subscribeProfile, getProfileSnapshot, getServerProfileSnapshot);
 
   // Pure URL-driven: /aanbevelingen = no filters, params = filters
   const initial = paramsToFilters(searchParams);
@@ -211,6 +192,12 @@ function AanbevelingenContent() {
   }, [filters, profile, query]);
 
   const loadingMoreRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const loadMore = useCallback(async () => {
     if (loadingMoreRef.current) return;
     loadingMoreRef.current = true;
@@ -218,7 +205,7 @@ function AanbevelingenContent() {
     const nextPage = pageRef.current + 1;
     try {
       const { wines } = await fetchWines(filters, nextPage, query);
-      if (wines.length > 0) {
+      if (wines.length > 0 && mountedRef.current) {
         pageRef.current = nextPage;
         setScoredWines((prev) => {
           const existing = new Set(prev.map((s) => s.wine.id));
@@ -230,7 +217,7 @@ function AanbevelingenContent() {
       console.error(err);
     } finally {
       loadingMoreRef.current = false;
-      setIsLoadingMore(false);
+      if (mountedRef.current) setIsLoadingMore(false);
     }
   }, [filters, profile, query]);
 
@@ -239,8 +226,14 @@ function AanbevelingenContent() {
   // Sort the scored wines client-side
   const sortedWines = [...scoredWines].sort((a, b) => {
     switch (sort) {
-      case "match":
-        return b.score.totalScore - a.score.totalScore;
+      case "match": {
+        const diff = b.score.totalScore - a.score.totalScore;
+        if (diff !== 0) return diff;
+        // Tiebreak: higher Vivino score first (relevant when no profile)
+        const ra = (a.wine.vivinoScore as number | null) ?? 0;
+        const rb = (b.wine.vivinoScore as number | null) ?? 0;
+        return rb - ra;
+      }
       case "price-asc": {
         const pa = (a.wine.bestPrice as number | null) ?? Infinity;
         const pb = (b.wine.bestPrice as number | null) ?? Infinity;

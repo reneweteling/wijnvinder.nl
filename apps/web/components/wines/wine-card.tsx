@@ -58,21 +58,22 @@ function RatingStars({ score }: { score: number }) {
   const empty = 5 - full - (hasHalf ? 1 : 0);
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-0.5" aria-label={`Score: ${score} van 5`}>
       {Array.from({ length: full }).map((_, i) => (
-        <Star key={`f-${i}`} className="h-3 w-3 fill-gold text-gold" />
+        <Star key={`f-${i}`} className="h-3 w-3 fill-gold text-gold" aria-hidden />
       ))}
       {hasHalf && (
-        <span className="relative h-3 w-3 inline-block">
-          <Star className="absolute h-3 w-3 text-gold" />
+        <span className="relative h-3 w-3 inline-block" aria-hidden>
+          <Star className="absolute h-3 w-3 text-gold" aria-hidden />
           <Star
             className="absolute h-3 w-3 fill-gold text-gold"
             style={{ clipPath: "inset(0 50% 0 0)" }}
+            aria-hidden
           />
         </span>
       )}
       {Array.from({ length: empty }).map((_, i) => (
-        <Star key={`e-${i}`} className="h-3 w-3 text-gold" />
+        <Star key={`e-${i}`} className="h-3 w-3 text-gold" aria-hidden />
       ))}
     </div>
   );
@@ -117,6 +118,7 @@ export function WineCard({ wine, matchPercentage, index: _index = 0, priority: _
                 src={wine.imageUrl}
                 alt={wine.name}
                 fill
+                sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
                 onError={() => setImageFailed(true)}
                 className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
               />

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
-import { db } from "@/lib/db/client";
+import { authDb } from "@/lib/db/client";
 import type { WineProfileData } from "@/lib/types";
 
 export async function GET() {
@@ -10,12 +10,14 @@ export async function GET() {
   }
 
   try {
-    const profile = await db.wineProfile.findUnique({
+    const profile = await authDb(session.user).wineProfile.findUnique({
       where: { userId: session.user.id },
     });
 
     if (!profile) {
-      return NextResponse.json(null, { status: 404 });
+      // 200 + null so the client can distinguish "no profile yet" from auth errors
+      // without triggering console errors on a 404.
+      return NextResponse.json(null, { status: 200 });
     }
 
     const profileData: WineProfileData = {
@@ -50,7 +52,7 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const profile = await db.wineProfile.upsert({
+    const profile = await authDb(session.user).wineProfile.upsert({
       where: { userId: session.user.id },
       update: {
         wineTypes: body.wineTypes,

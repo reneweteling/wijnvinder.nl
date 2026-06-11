@@ -75,15 +75,16 @@ export default function RegistrerenPage() {
           src="/images/cta-vineyard.jpg"
           alt="Wijnkelder"
           fill
+          priority
           className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-l from-cream/10 to-burgundy/70" />
 
         {/* Benefits overlay */}
         <div className="absolute inset-0 flex flex-col justify-center p-14">
-          <h2 className="font-heading font-bold text-3xl text-white mb-8">
+          <p className="font-heading font-bold text-3xl text-white mb-8">
             Jouw persoonlijke<br />wijnsommelier
-          </h2>
+          </p>
           <ul className="space-y-4">
             {benefits.map((benefit, i) => (
               <motion.li
@@ -198,7 +199,6 @@ export default function RegistrerenPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="new-password"
-                  minLength={8}
                   className="pl-10"
                 />
               </div>
@@ -216,8 +216,7 @@ export default function RegistrerenPage() {
 
             <p className="text-xs text-text-light text-center">
               Door aan te melden ga je akkoord met onze{" "}
-              {/* TODO: create page */}
-              <a href="#" className="underline hover:text-foreground">
+              <a href="/privacybeleid" className="underline hover:text-foreground">
                 privacyvoorwaarden
               </a>
               .

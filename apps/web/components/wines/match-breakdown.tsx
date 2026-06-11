@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import { getProfileSnapshot, getServerProfileSnapshot, subscribeProfile } from "@/lib/profile-cookie";
 import { TrendingUp, Grape, MapPin, Wine, Sparkles, Tag, Star, UserCircle } from "lucide-react";
 import { SCORING_WEIGHTS } from "@/lib/constants";
 import { buttonVariants } from "@/components/ui/button";
@@ -133,25 +134,6 @@ function scoreWineForBreakdown(profile: WineProfileData, wine: MatchBreakdownPro
   };
 }
 
-function readProfileCookie(): WineProfileData | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("wine-profile="));
-  if (!match) return null;
-  try {
-    return JSON.parse(decodeURIComponent(match.split("=").slice(1).join("=")));
-  } catch {
-    return null;
-  }
-}
-
-// useSyncExternalStore: server snapshot returns null, client reads the cookie.
-function subscribeProfile(cb: () => void) {
-  void cb;
-  return () => {};
-}
-
 const CATEGORIES = [
   { key: "grapeScore" as const, label: "Druif", max: SCORING_WEIGHTS.grape, icon: Grape },
   { key: "regionScore" as const, label: "Regio", max: SCORING_WEIGHTS.region, icon: MapPin },
@@ -162,7 +144,7 @@ const CATEGORIES = [
 ];
 
 export function MatchBreakdown({ wine }: MatchBreakdownProps) {
-  const profile = useSyncExternalStore(subscribeProfile, readProfileCookie, () => null);
+  const profile = useSyncExternalStore(subscribeProfile, getProfileSnapshot, getServerProfileSnapshot);
   const score = useMemo(
     () => (profile ? scoreWineForBreakdown(profile, wine) : null),
     [profile, wine]

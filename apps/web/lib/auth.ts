@@ -71,6 +71,11 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: pool,
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 10,
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {

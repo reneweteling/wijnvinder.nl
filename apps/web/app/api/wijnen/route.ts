@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 
+const ALLOWED_SORTS = new Set(["rating-desc", "price-asc", "price-desc"]);
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
@@ -11,7 +13,8 @@ export async function GET(request: NextRequest) {
   const priceMinParam = searchParams.get("priceMin");
   const priceMaxParam = searchParams.get("priceMax");
   const minRatingParam = searchParams.get("minRating");
-  const sort = searchParams.get("sort") ?? "rating-desc";
+  const sortParam = searchParams.get("sort") ?? "rating-desc";
+  const sort = ALLOWED_SORTS.has(sortParam) ? sortParam : "rating-desc";
   const pageParam = searchParams.get("page") ?? "1";
   const limitParam = searchParams.get("limit") ?? "24";
 
@@ -19,78 +22,86 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(100, Math.max(1, parseInt(limitParam, 10) || 24));
   const skip = (page - 1) * pageSize;
 
-  const priceMin = priceMinParam != null ? parseFloat(priceMinParam) : undefined;
-  const priceMax = priceMaxParam != null ? parseFloat(priceMaxParam) : undefined;
-  const minRating = minRatingParam != null ? parseFloat(minRatingParam) : undefined;
+  const priceMinRaw = priceMinParam != null ? parseFloat(priceMinParam) : NaN;
+  const priceMaxRaw = priceMaxParam != null ? parseFloat(priceMaxParam) : NaN;
+  const minRatingRaw = minRatingParam != null ? parseFloat(minRatingParam) : NaN;
 
-  // Build where clause
+  const priceMin = !isNaN(priceMinRaw) ? priceMinRaw : undefined;
+  const priceMax = !isNaN(priceMaxRaw) ? priceMaxRaw : undefined;
+  const minRating = !isNaN(minRatingRaw) ? minRatingRaw : undefined;
+
+  // Build where clause as a single AND array so conditions never overwrite each other.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: Record<string, any> = {};
+  const andConditions: Record<string, any>[] = [];
 
   if (q) {
-    // Match each search term against name, producer, grape and region
+    // Each search term must match at least one field.
     const terms = q.split(/\s+/).filter(Boolean).slice(0, 6);
-    where.AND = terms.map((term) => ({
-      OR: [
-        { name: { contains: term, mode: "insensitive" } },
-        { searchName: { contains: term, mode: "insensitive" } },
-        { grape: { contains: term, mode: "insensitive" } },
-        { region: { contains: term, mode: "insensitive" } },
-        { country: { contains: term, mode: "insensitive" } },
-        { producer: { name: { contains: term, mode: "insensitive" } } },
-      ],
-    }));
+    for (const term of terms) {
+      andConditions.push({
+        OR: [
+          { name: { contains: term, mode: "insensitive" } },
+          { searchName: { contains: term, mode: "insensitive" } },
+          { grape: { contains: term, mode: "insensitive" } },
+          { region: { contains: term, mode: "insensitive" } },
+          { country: { contains: term, mode: "insensitive" } },
+          { producer: { name: { contains: term, mode: "insensitive" } } },
+        ],
+      });
+    }
   }
 
   if (type) {
-    // Support comma-separated types
     const types = type.split(",").filter(Boolean);
     if (types.length === 1) {
-      where.wineType = types[0];
+      andConditions.push({ wineType: types[0] });
     } else if (types.length > 1) {
-      where.wineType = { in: types };
+      andConditions.push({ wineType: { in: types } });
     }
   }
 
   if (grape) {
     const grapes = grape.split(",").filter(Boolean);
     if (grapes.length === 1) {
-      where.grape = { contains: grapes[0], mode: "insensitive" };
+      andConditions.push({ grape: { contains: grapes[0], mode: "insensitive" } });
     } else if (grapes.length > 1) {
-      where.OR = grapes.map((g) => ({
-        grape: { contains: g, mode: "insensitive" },
-      }));
+      andConditions.push({
+        OR: grapes.map((g) => ({
+          grape: { contains: g, mode: "insensitive" },
+        })),
+      });
     }
   }
 
   if (country) {
     const countries = country.split(",").filter(Boolean);
     if (countries.length === 1) {
-      where.country = { equals: countries[0], mode: "insensitive" };
+      andConditions.push({ country: { equals: countries[0], mode: "insensitive" } });
     } else if (countries.length > 1) {
-      where.country = { in: countries, mode: "insensitive" };
+      andConditions.push({ country: { in: countries, mode: "insensitive" } });
     }
   }
 
-  if (minRating != null && !isNaN(minRating)) {
-    where.vivinoScore = { gte: minRating };
+  if (minRating != null) {
+    andConditions.push({ vivinoScore: { gte: minRating } });
   }
 
-  // For price filtering we filter via listings
-  const listingsWhere =
-    priceMin != null || priceMax != null
-      ? {
-          some: {
-            available: true,
-            ...(priceMin != null ? { price: { gte: priceMin } } : {}),
-            ...(priceMax != null ? { price: { lte: priceMax } } : {}),
-          },
-        }
-      : undefined;
-
-  if (listingsWhere) {
-    where.listings = listingsWhere;
+  if (priceMin != null || priceMax != null) {
+    andConditions.push({
+      listings: {
+        some: {
+          available: true,
+          ...(priceMin != null ? { price: { gte: priceMin } } : {}),
+          ...(priceMax != null ? { price: { lte: priceMax } } : {}),
+        },
+      },
+    });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: Record<string, any> = andConditions.length > 0
+    ? { AND: andConditions }
+    : {};
 
   // Build orderBy
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,7 +133,14 @@ export async function GET(request: NextRequest) {
           listings: {
             where: { available: true },
             orderBy: { price: "asc" },
-            include: { shop: { select: { slug: true, name: true } } },
+            select: {
+              id: true,
+              price: true,
+              originalPrice: true,
+              available: true,
+              url: true,
+              shop: { select: { slug: true, name: true } },
+            },
           },
         },
       }),

@@ -10,6 +10,7 @@ export default function VoorkeurenPage() {
   const { data: session, isPending } = authClient.useSession();
   const searchParams = useSearchParams();
   const afmelden = searchParams.get("afmelden") === "1";
+  const afgemeld = searchParams.get("afgemeld") === "1";
 
   const [optIn, setOptIn] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function VoorkeurenPage() {
       .finally(() => setLoading(false));
   }, [session, isPending]);
 
-  // Auto-unsubscribe when ?afmelden=1 is present and optIn is currently true
+  // Auto-unsubscribe when ?afmelden=1 is present and optIn is currently true (logged-in flow)
   const autoUnsubscribeDone = useRef(false);
   useEffect(() => {
     if (!afmelden || optIn !== true || autoUnsubscribeDone.current) return;
@@ -68,6 +69,13 @@ export default function VoorkeurenPage() {
     setSaving(false);
   }
 
+  // Token-based unsubscribe confirmation banner (visible to anyone, no login required)
+  const afgemeldBanner = afgemeld ? (
+    <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800 font-medium">
+      Je bent afgemeld voor de wekelijkse aanbiedingenmail.
+    </div>
+  ) : null;
+
   // Not logged in
   if (!isPending && !session?.user) {
     return (
@@ -76,6 +84,7 @@ export default function VoorkeurenPage() {
           <h1 className="font-heading text-3xl font-bold text-foreground mb-4">
             Voorkeuren
           </h1>
+          {afgemeldBanner}
           <p className="text-text-light mb-6">
             Log in om je e-mailvoorkeuren te beheren.
           </p>
@@ -104,6 +113,8 @@ export default function VoorkeurenPage() {
         <h1 className="font-heading text-3xl font-bold text-foreground mb-8">
           E-mailvoorkeuren
         </h1>
+
+        {afgemeldBanner}
 
         {loading || isPending ? (
           <div className="h-20 rounded-xl border border-border bg-card animate-pulse" />

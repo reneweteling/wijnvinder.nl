@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,31 +15,89 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+/** Escape </script> sequences so JSON-LD blobs are safe inside <script> tags. */
+function jsonLd(obj: object): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
 
-  const wine = await db.canonicalWine.findUnique({
+/**
+ * Fetch the wine for a given slug.
+ *
+ * Metadata query: only available listings (needed for canonical price in <head>).
+ * Page query (fetchWineForPage): all listings including unavailable, because the
+ * price-comparison table intentionally shows crossed-out unavailable entries.
+ *
+ * React.cache deduplicates the metadata fetch within a single render pass.
+ */
+const fetchWineForMetadata = cache(async (slug: string) => {
+  return db.canonicalWine.findUnique({
     where: { slug },
     include: {
       producer: true,
       listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
     },
   });
+});
+
+const fetchWineForPage = cache(async (slug: string) => {
+  return db.canonicalWine.findUnique({
+    where: { slug },
+    include: {
+      producer: true,
+      // Include ALL listings (available and unavailable) — the price-comparison
+      // table shows unavailable entries with a strikethrough price, so we need them.
+      listings: {
+        orderBy: { price: "asc" },
+        include: { shop: { select: { slug: true, name: true } } },
+      },
+    },
+  });
+});
+
+/** Truncate description at the last space before maxLen, append "..." if cut. */
+function truncateDescription(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  const cut = text.lastIndexOf(" ", maxLen - 3);
+  const boundary = cut > 0 ? cut : maxLen - 3;
+  return text.slice(0, boundary) + "...";
+}
+
+/**
+ * Build a display name for the wine that avoids doubling the producer name.
+ * wine.name often already starts with the producer name ("Taittinger Brut..."),
+ * so we only prepend producer when it isn't already there.
+ */
+function buildWineName(producerName: string | null | undefined, wineName: string, vintage: number | string | null | undefined): string {
+  const parts: string[] = [];
+  if (producerName && !wineName.toLowerCase().startsWith(producerName.toLowerCase())) {
+    parts.push(producerName);
+  }
+  parts.push(wineName);
+  if (vintage != null) parts.push(String(vintage));
+  return parts.join(" ");
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  const wine = await fetchWineForMetadata(slug);
 
   if (!wine) {
     return { title: "Wijn niet gevonden | WijnVinder" };
   }
 
-  const titleParts = [wine.producer?.name, wine.name, wine.vintage].filter(Boolean);
-  const title = `${titleParts.join(" ")} | WijnVinder`;
+  const displayName = buildWineName(wine.producer?.name, wine.name, wine.vintage);
+  const title = `${displayName} | WijnVinder`;
 
   const bestPrice = wine.listings[0]?.price ?? null;
-  const baseDescription = wine.description
-    ? wine.description.slice(0, 120)
-    : `Bekijk prijzen en details van ${wine.name} bij Nederlandse wijnwinkels.`;
-  const description = bestPrice
-    ? `Vanaf €${bestPrice.toFixed(2)} - Vergelijk prijzen voor ${wine.name} bij Nederlandse wijnwinkels. ${baseDescription}`.slice(0, 160)
-    : baseDescription;
+
+  const rawDescription = wine.description
+    ? `Vanaf €${bestPrice != null ? `${bestPrice.toFixed(2)} - ` : ""}${wine.description}`
+    : bestPrice != null
+      ? `Vanaf €${bestPrice.toFixed(2)} - Vergelijk prijzen voor ${wine.name} bij Nederlandse wijnwinkels.`
+      : `Bekijk prijzen en details van ${wine.name} bij Nederlandse wijnwinkels.`;
+
+  const description = truncateDescription(rawDescription, 157);
 
   const canonicalUrl = `https://wijnvinder.nl/wijn/${slug}`;
 
@@ -61,16 +120,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function WijnDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const wine = await db.canonicalWine.findUnique({
-    where: { slug },
-    include: {
-      producer: true,
-      listings: {
-        orderBy: { price: "asc" },
-        include: { shop: { select: { slug: true, name: true } } },
-      },
-    },
-  });
+  const wine = await fetchWineForPage(slug);
 
   if (!wine) {
     notFound();
@@ -85,59 +135,68 @@ export default async function WijnDetailPage({ params }: PageProps) {
   const bestShopName = cheapest?.shop?.name ?? null;
   const bestListingId = cheapest?.id ?? null;
 
-  // Fetch price history for the cheapest listing (last 90 days, max 30 points)
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const rawHistory = cheapest
-    ? await db.priceHistory.findMany({
-        where: {
-          listingId: cheapest.id,
-          recordedAt: { gte: ninetyDaysAgo },
-        },
-        orderBy: { recordedAt: "asc" },
-        take: 30,
-      })
-    : [];
 
-  // Determine whether price dropped vs previous recorded point
+  // Build the OR conditions for similar wines — skip the query entirely if both are absent
+  const similarOrConditions = [
+    ...(wine.grape ? [{ grape: wine.grape }] : []),
+    ...(wine.country ? [{ country: wine.country }] : []),
+  ];
+
+  // Run all secondary queries in parallel
+  const [rawHistory, relatedWines, similarWinesCandidates] = await Promise.all([
+    // Price history for the cheapest listing (last 90 days, max 30 points)
+    cheapest
+      ? db.priceHistory.findMany({
+          where: {
+            listingId: cheapest.id,
+            recordedAt: { gte: ninetyDaysAgo },
+          },
+          orderBy: { recordedAt: "asc" },
+          take: 30,
+        })
+      : Promise.resolve([]),
+
+    // Other wines from the same producer
+    wine.producerId
+      ? db.canonicalWine.findMany({
+          where: {
+            producerId: wine.producerId,
+            id: { not: wine.id },
+          },
+          include: { listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 } },
+          take: 6,
+        })
+      : Promise.resolve([]),
+
+    // Similar wines: same wineType + (same grape OR same country)
+    // Skip the query when neither grape nor country is available to avoid an empty OR array
+    wine.wineType && similarOrConditions.length > 0
+      ? db.canonicalWine.findMany({
+          where: {
+            id: { not: wine.id },
+            wineType: wine.wineType,
+            listings: { some: { available: true } },
+            NOT: { name: { contains: "pakket", mode: "insensitive" } },
+            OR: similarOrConditions,
+          },
+          include: {
+            producer: { select: { name: true } },
+            listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
+          },
+          orderBy: [{ vivinoScore: "desc" }],
+          take: 20,
+        })
+      : Promise.resolve([]),
+  ]);
+
+  // Determine whether price dropped between the two most recent history points
+  // rawHistory is ordered asc, so the last point is the most recent and the
+  // second-to-last is the previous recorded price.
   const priceDrop =
     rawHistory.length >= 2 &&
-    bestPrice != null &&
-    bestPrice < rawHistory[rawHistory.length - 2].price;
-
-  // Find other wines from the same producer
-  const relatedWines = wine.producerId
-    ? await db.canonicalWine.findMany({
-        where: {
-          producerId: wine.producerId,
-          id: { not: wine.id },
-        },
-        include: { listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 } },
-        take: 6,
-      })
-    : [];
-
-  // Find similar wines: same wineType, same grape OR same country, at least one available listing
-  const similarWinesCandidates = wine.wineType
-    ? await db.canonicalWine.findMany({
-        where: {
-          id: { not: wine.id },
-          wineType: wine.wineType,
-          listings: { some: { available: true } },
-          NOT: { name: { contains: "pakket", mode: "insensitive" } },
-          OR: [
-            ...(wine.grape ? [{ grape: wine.grape }] : []),
-            ...(wine.country ? [{ country: wine.country }] : []),
-          ],
-        },
-        include: {
-          producer: { select: { name: true } },
-          listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
-        },
-        orderBy: [{ vivinoScore: "desc" }],
-        take: 20,
-      })
-    : [];
+    rawHistory[rawHistory.length - 1].price < rawHistory[rawHistory.length - 2].price;
 
   // Filter to comparable price range (0.6x–1.6x current best price) then cap at 4
   const similarWines = bestPrice
@@ -150,14 +209,16 @@ export default async function WijnDetailPage({ params }: PageProps) {
         .slice(0, 4)
     : similarWinesCandidates.slice(0, 4);
 
+  const productName = buildWineName(wine.producer?.name, wine.name, wine.vintage);
+
   return (
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        dangerouslySetInnerHTML={{ __html: jsonLd({
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": [wine.producer?.name, wine.name, wine.vintage].filter(Boolean).join(" "),
+          "name": productName,
           "description": wine.description || `${wine.name} - vergelijk prijzen bij Nederlandse wijnwinkels`,
           ...(wine.imageUrl ? { "image": wine.imageUrl } : {}),
           ...(wine.producer?.name ? { "brand": { "@type": "Brand", "name": wine.producer.name } } : {}),
@@ -191,13 +252,13 @@ export default async function WijnDetailPage({ params }: PageProps) {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        dangerouslySetInnerHTML={{ __html: jsonLd({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://wijnvinder.nl" },
             { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": "https://wijnvinder.nl/aanbevelingen" },
-            { "@type": "ListItem", "position": 3, "name": [wine.producer?.name, wine.name].filter(Boolean).join(" ") },
+            { "@type": "ListItem", "position": 3, "name": buildWineName(wine.producer?.name, wine.name, null) },
           ]
         }) }}
       />

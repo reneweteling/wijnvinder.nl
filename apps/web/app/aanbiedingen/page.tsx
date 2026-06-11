@@ -3,14 +3,23 @@ import { db } from "@/lib/db/client";
 import { WineCard } from "@/components/wines/wine-card";
 import type { WineCardWine } from "@/components/wines/wine-card";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
-  title: "Aanbiedingen | WijnVinder",
+  title: "Aanbiedingen",
   description:
     "Wijnen die nu met korting te krijgen zijn bij Nederlandse wijnwinkels. Bespaar op kwaliteitswijnen.",
   alternates: {
     canonical: "https://wijnvinder.nl/aanbiedingen",
+  },
+  openGraph: {
+    title: "Aanbiedingen | WijnVinder",
+    description:
+      "Wijnen die nu met korting te krijgen zijn bij Nederlandse wijnwinkels. Bespaar op kwaliteitswijnen.",
+    url: "https://wijnvinder.nl/aanbiedingen",
+    siteName: "WijnVinder",
+    locale: "nl_NL",
+    type: "website",
   },
 };
 

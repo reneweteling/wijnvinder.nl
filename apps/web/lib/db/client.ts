@@ -64,7 +64,9 @@ export { db, authDbInstance };
 /**
  * Create an authenticated database client with a user context.
  * Applies ZenStack access control policies based on the user.
+ * Accepts a partial user (e.g. from BetterAuth session) since ZenStack
+ * only uses the id field for auth().id comparisons in policy rules.
  */
-export const authDb = (user: User) => {
+export const authDb = (user: Pick<User, "id"> & Partial<User>) => {
   return authDbInstance.$setAuth(user as User);
 };

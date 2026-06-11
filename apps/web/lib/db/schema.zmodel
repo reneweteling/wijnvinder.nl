@@ -44,7 +44,7 @@ model Account {
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
-  @@allow('read', auth() != null)
+  @@allow('read', auth().id == userId)
   @@allow('create', true)
   @@map("account")
 }
@@ -73,7 +73,8 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@allow('all', true)
+  // BetterAuth writes to this model directly via the raw DB client (not via authDb),
+  // so policies here do not need to grant anything. Default deny is safe.
   @@map("verification")
 }
 
@@ -90,7 +91,10 @@ model WineProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@allow('read,create', true)
+  // Anonymous cookie-based profiles never touch this model (they use localStorage/cookie only).
+  // Only authenticated users reach /api/profiel.
+  @@allow('read', auth().id == userId)
+  @@allow('create', auth() != null)
   @@allow('update,delete', auth().id == userId)
   @@map("wine_profile")
 }
@@ -109,7 +113,8 @@ model VivinoRating {
   imageUrl        String?
   createdAt       DateTime @default(now())
 
-  @@allow('read,create', true)
+  @@allow('read', true)
+  @@allow('create', auth() != null)
   @@map("vivino_rating")
 }
 
@@ -167,6 +172,7 @@ model OutboundClick {
 
   @@index([shopId, createdAt])
   @@index([listingId])
+  @@index([canonicalWineId, createdAt])
   @@map("outbound_click")
 }
 
@@ -226,6 +232,7 @@ model ShopListing {
   @@unique([shopId, url])
   @@index([shopId])
   @@index([price])
+  @@index([canonicalWineId, available, price])
   @@allow('read', true)
   @@map("shop_listing")
 }
@@ -270,6 +277,7 @@ model ScrapeJob {
   completedAt     DateTime?
   createdAt       DateTime  @default(now())
 
-  @@allow('all', true)
+  // Public read so shop status can be inspected; writes go through raw db client in the worker.
+  @@allow('read', true)
   @@map("scrape_job")
 }

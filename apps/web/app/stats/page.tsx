@@ -19,6 +19,26 @@ function getAdminEmails(): string[] {
     .filter(Boolean);
 }
 
+// --- types ------------------------------------------------------------------
+
+type ShopClickRow = {
+  shopid: string;
+  shopname: string;
+  total: bigint;
+  last30d: bigint;
+  last7d: bigint;
+};
+
+type TopWineRow = {
+  canonicalwineid: string;
+  clicks: bigint;
+};
+
+type SourceRow = {
+  source: string | null;
+  count: bigint;
+};
+
 // --- data fetching ----------------------------------------------------------
 
 async function fetchStats() {
@@ -26,47 +46,52 @@ async function fetchStats() {
   const ago7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const ago30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const [totalClicks, clicks7d, clicks30d] = await Promise.all([
-    db.outboundClick.count(),
-    db.outboundClick.count({ where: { createdAt: { gte: ago7 } } }),
-    db.outboundClick.count({ where: { createdAt: { gte: ago30 } } }),
-  ]);
+  // Single query: totals + per-shop counts using FILTER
+  const shopClickRows = await db.$queryRaw<ShopClickRow[]>`
+    SELECT
+      s.id        AS shopid,
+      s.name      AS shopname,
+      COUNT(*)                                                          AS total,
+      COUNT(*) FILTER (WHERE oc."createdAt" >= ${ago30})              AS last30d,
+      COUNT(*) FILTER (WHERE oc."createdAt" >= ${ago7})               AS last7d
+    FROM shop s
+    LEFT JOIN outbound_click oc ON oc."shopId" = s.id
+    GROUP BY s.id, s.name
+    ORDER BY s.name ASC
+  `;
 
-  // Clicks per shop
-  const shops = await db.shop.findMany({ orderBy: { name: "asc" } });
-  const shopStats = await Promise.all(
-    shops.map(async (shop) => {
-      const [total, last30d, last7d] = await Promise.all([
-        db.outboundClick.count({ where: { shopId: shop.id } }),
-        db.outboundClick.count({
-          where: { shopId: shop.id, createdAt: { gte: ago30 } },
-        }),
-        db.outboundClick.count({
-          where: { shopId: shop.id, createdAt: { gte: ago7 } },
-        }),
-      ]);
-      return { shop, total, last30d, last7d };
-    })
+  const totalClicks = shopClickRows.reduce(
+    (sum, r) => sum + Number(r.total),
+    0,
+  );
+  const clicks30d = shopClickRows.reduce(
+    (sum, r) => sum + Number(r.last30d),
+    0,
+  );
+  const clicks7d = shopClickRows.reduce(
+    (sum, r) => sum + Number(r.last7d),
+    0,
   );
 
-  // Top 10 wines by clicks in last 30 days
-  // Group by canonicalWineId via raw query approach using findMany + groupBy
-  const clicksLast30d = await db.outboundClick.findMany({
-    where: { createdAt: { gte: ago30 }, canonicalWineId: { not: null } },
-    select: { canonicalWineId: true },
-  });
+  const shopStats = shopClickRows.map((r) => ({
+    shop: { id: r.shopid, name: r.shopname },
+    total: Number(r.total),
+    last30d: Number(r.last30d),
+    last7d: Number(r.last7d),
+  }));
 
-  const wineCounts: Record<string, number> = {};
-  for (const c of clicksLast30d) {
-    if (c.canonicalWineId) {
-      wineCounts[c.canonicalWineId] = (wineCounts[c.canonicalWineId] ?? 0) + 1;
-    }
-  }
-  const topWineIds = Object.entries(wineCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([id]) => id);
+  // Top 10 wines by clicks in last 30 days (groupBy in DB)
+  const topWineClickRows = await db.$queryRaw<TopWineRow[]>`
+    SELECT "canonicalWineId" AS canonicalwineid, COUNT(*) AS clicks
+    FROM outbound_click
+    WHERE "createdAt" >= ${ago30}
+      AND "canonicalWineId" IS NOT NULL
+    GROUP BY "canonicalWineId"
+    ORDER BY clicks DESC
+    LIMIT 10
+  `;
 
+  const topWineIds = topWineClickRows.map((r) => r.canonicalwineid);
   const topWines = topWineIds.length
     ? await db.canonicalWine.findMany({
         where: { id: { in: topWineIds } },
@@ -74,21 +99,23 @@ async function fetchStats() {
       })
     : [];
 
-  const topWineRows = topWineIds.map((id) => ({
-    wine: topWines.find((w) => w.id === id)!,
-    clicks: wineCounts[id],
+  const topWineRows = topWineClickRows.map((r) => ({
+    wine: topWines.find((w) => w.id === r.canonicalwineid)!,
+    clicks: Number(r.clicks),
   }));
 
-  // Source distribution
-  const allClicks = await db.outboundClick.findMany({
-    select: { source: true },
-  });
-  const sourceCounts: Record<string, number> = {};
-  for (const c of allClicks) {
-    const key = c.source ?? "(onbekend)";
-    sourceCounts[key] = (sourceCounts[key] ?? 0) + 1;
-  }
-  const sourceRows = Object.entries(sourceCounts).sort((a, b) => b[1] - a[1]);
+  // Source distribution (groupBy in DB)
+  const sourceClickRows = await db.$queryRaw<SourceRow[]>`
+    SELECT source, COUNT(*) AS count
+    FROM outbound_click
+    GROUP BY source
+    ORDER BY count DESC
+  `;
+
+  const sourceRows: [string, number][] = sourceClickRows.map((r) => [
+    r.source ?? "(onbekend)",
+    Number(r.count),
+  ]);
 
   return { totalClicks, clicks7d, clicks30d, shopStats, topWineRows, sourceRows };
 }

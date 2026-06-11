@@ -5,7 +5,7 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { db } from "@/lib/db/client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function Home() {
   const [shopCount, wineCount] = await Promise.all([

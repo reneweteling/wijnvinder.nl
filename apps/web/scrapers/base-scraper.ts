@@ -92,7 +92,7 @@ export abstract class BaseScraper {
     // Pre-fetch existing listings for change detection
     const existingListings = await db.shopListing.findMany({
       where: { shopId: this.shopId },
-      select: { url: true, rawName: true, price: true, description: true },
+      select: { url: true, rawName: true, price: true, description: true, available: true },
     })
     const existingByUrl = new Map(existingListings.map(l => [l.url, l]))
 
@@ -128,6 +128,9 @@ export abstract class BaseScraper {
           const existingListing = existingByUrl.get(scraped.url)
           const isNewListing = !existingListing
           const priceChanged = existingListing && existingListing.price !== scraped.price
+          // A listing coming back from unavailable to available needs a history point even
+          // if the price itself didn't change, so the history graph has no silent gap.
+          const becameAvailable = existingListing && !existingListing.available
 
           const upserted = await db.shopListing.upsert({
             where: {
@@ -164,8 +167,11 @@ export abstract class BaseScraper {
             },
           })
 
-          // Record price history when the listing is new or the price changed
-          if (isNewListing || priceChanged) {
+          // Record price history when:
+          // - listing is new
+          // - price changed
+          // - listing came back from unavailable (price unchanged but availability flipped)
+          if (isNewListing || priceChanged || becameAvailable) {
             await db.priceHistory.create({
               data: {
                 listingId: upserted.id,
@@ -199,14 +205,14 @@ export abstract class BaseScraper {
             })
           }
 
-          // Enqueue enrichment job if listing is new/changed and needs detail page data
+          // Enqueue enrichment job if listing is new/changed/returned and needs detail page data
           if (!scraped.description) {
             const existing = existingByUrl.get(scraped.url)
             const isNew = !existing
             const hasChanged = existing && (existing.rawName !== scraped.name || existing.price !== scraped.price)
             const needsEnrichment = !canonical?.description || !canonical?.imageUrl || canonical.imageUrl.includes('unsplash.com')
 
-            if (isNew || hasChanged || needsEnrichment) {
+            if (isNew || hasChanged || becameAvailable || needsEnrichment) {
               await QueueClient.enqueue(
                 JobType.ENRICH_LISTING,
                 {

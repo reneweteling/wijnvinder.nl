@@ -4,7 +4,7 @@ export const WINE_TYPES: { value: WineType; label: string }[] = [
   { value: 'red', label: 'Rood' },
   { value: 'white', label: 'Wit' },
   { value: 'rose', label: 'Ros\u00e9' },
-  { value: 'sparkling', label: 'Mousserende' },
+  { value: 'sparkling', label: 'Mousserend' },
   { value: 'dessert', label: 'Dessert & Port' },
 ]
 
