@@ -11,7 +11,7 @@
     "worker": "node --import tsx lib/queue/worker.ts",
     "worker:dev": "node --watch --import tsx lib/queue/worker.ts",
     "generate": "zen generate --schema lib/db/schema.zmodel",
-    "db:push": "zen db push --schema lib/db/schema.zmodel",
+    "db:push": "zen db push --schema lib/db/schema.zmodel && node --import tsx scripts/apply-trgm-indexes.ts",
     "db:migrate:dev": "zen migrate dev --schema lib/db/schema.zmodel",
     "db:migrate:deploy": "zen migrate deploy --schema lib/db/schema.zmodel",
     "db:migrate:status": "zen migrate status --schema lib/db/schema.zmodel",
