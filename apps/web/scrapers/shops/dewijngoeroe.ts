@@ -20,7 +20,7 @@ import { CheerioScraper } from '../cheerio-scraper'
 
 const CONFIG = SHOP_CONFIGS.find((s) => s.slug === 'dewijngoeroe')!
 
-const PER_PAGE = 24 // Shopify default
+const _PER_PAGE = 24 // Shopify default
 
 export class DeWijngeroeScraper extends CheerioScraper {
   constructor() {

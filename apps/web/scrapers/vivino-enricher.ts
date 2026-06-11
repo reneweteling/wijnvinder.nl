@@ -7,6 +7,12 @@
  * - Update CanonicalWine with vivinoScore, vivinoScoreCount, vivinoUrl, imageUrl
  * - 3s delays between requests to be polite
  * - Skip wines checked within the last 7 days
+ *
+ * NOTE: As of 2026-06, the /api/wines/search endpoint returns 404 (Vivino removed it).
+ * The enricher logs a clear error when this happens and skips the wine.
+ * The /api/explore endpoint works but has no free-text wine name search.
+ * Fix options: use a Vivino API key, implement headless browser scraping,
+ * or construct URLs from wine slugs if available.
  */
 
 import { db } from '@/lib/db/client'
@@ -73,7 +79,16 @@ async function searchVivino(
   }
 
   if (!response.ok) {
-    console.warn(`[vivino] HTTP ${response.status} for query "${query}"`)
+    if (response.status === 404) {
+      // The /api/wines/search endpoint was removed by Vivino (returns 404 or WAF HTML).
+      // This is a permanent infrastructure issue, not a per-wine problem.
+      console.error(
+        `[vivino] /api/wines/search returned 404 — endpoint appears to be dead.` +
+        ` Vivino enrichment will not work until the search API is replaced.`,
+      )
+    } else {
+      console.warn(`[vivino] HTTP ${response.status} for query "${query}"`)
+    }
     return null
   }
 

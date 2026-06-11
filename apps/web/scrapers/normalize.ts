@@ -3,6 +3,84 @@
  * Strips accents, removes filler words, extracts vintage and producer hints.
  */
 
+// ---------------------------------------------------------------------------
+// Wine type classification
+// ---------------------------------------------------------------------------
+
+/**
+ * Keywords that, when present in a wine name, indicate a sparkling wine.
+ * Subset of common sparkling wine styles and terms.
+ */
+const SPARKLING_KEYWORDS = [
+  'prosecco',
+  'cava',
+  'champagne',
+  'spumante',
+  'crémant',
+  'cremant',
+  'sekt',
+  'sparkling',
+  'mousserend',
+  'mousserende',
+  'bubbel',
+  'bubbles',
+  'pétillant',
+  'petillant',
+]
+
+/**
+ * Matches a standalone rosé/rosado/rosato word in the wine name.
+ *
+ * \b doesn't work reliably with non-ASCII chars (é is char 233), so we use
+ * lookbehind/lookahead instead of word boundaries.
+ */
+const ROSE_WORD_RE = /(?<![a-zA-Z])(ros[eé]|roz[eé]|rosado|rosato)(?![a-zA-Z])/i
+
+/**
+ * Matches names that are spirits, not wines.
+ * "Nonino" produces a grappa that contains "Prosecco" in the name (grape variety),
+ * so we must skip it to avoid false sparkling classification.
+ */
+const NON_WINE_RE = /\bgrappa\b|\bnonino\b/i
+
+/**
+ * Classify a wine's type from its name and an optional category/type hint
+ * provided by the scraper.
+ *
+ * Rules (applied in order):
+ * 1. If the name matches a non-wine pattern (grappa, Nonino), return the hint as-is.
+ * 2. If the name contains a sparkling keyword AND no standalone rosé word → 'sparkling'.
+ * 3. If the name contains a standalone rosé word → 'rose'.
+ * 4. Otherwise return the hint unchanged (may be null/undefined).
+ *
+ * This is the canonical correction layer. It prevents sparkling wines from
+ * being misclassified as 'rose' or 'white' when the scraper's category signal
+ * is wrong (e.g. a shop puts "Prosecco Rosé" in the rosé category, or a
+ * scraper checks rosé keywords before sparkling keywords).
+ */
+export function classifyWineType(
+  name: string,
+  hint?: string | null,
+): string | null {
+  if (NON_WINE_RE.test(name)) return hint ?? null
+
+  const lower = name.toLowerCase()
+  const hasSparkling = SPARKLING_KEYWORDS.some((kw) => lower.includes(kw))
+
+  if (hasSparkling) {
+    // Sparkling rosé: keep as 'rose' so it shows up in both sparkling and rosé filters.
+    // Non-rosé sparkling: override to 'sparkling' regardless of the hint.
+    return ROSE_WORD_RE.test(name) ? 'rose' : 'sparkling'
+  }
+
+  // No sparkling keyword — trust the hint (or apply a rosé name override).
+  if (ROSE_WORD_RE.test(name)) return 'rose'
+
+  return hint ?? null
+}
+
+// ---------------------------------------------------------------------------
+
 export type NormalizedWine = {
   producer: string
   name: string

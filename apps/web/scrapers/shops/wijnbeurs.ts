@@ -29,7 +29,7 @@ export class WijnbeursScraper extends CheerioScraper {
     let page = 1
     // Wijnbeurs ignores product_list_limit and always returns 18 products per page
     // (infinite scroll site). We paginate through all pages using ?p= parameter.
-    const perPage = 18
+    const _perPage = 18
 
     while (true) {
       const url = `${CONFIG.baseUrl}/wijn?p=${page}`

@@ -7,6 +7,7 @@
 import { stringSimilarity } from 'string-similarity-js'
 import { db } from '@/lib/db/client'
 import type { ScrapedWine } from '@/lib/types'
+import { classifyWineType } from '@/scrapers/normalize'
 import type { NormalizedWine } from '@/scrapers/normalize'
 
 const MATCH_THRESHOLD = 0.9
@@ -60,8 +61,11 @@ export async function matchOrCreate(
     return bestId
   }
 
-  // No good match — create a new CanonicalWine
-  const wineType = scraped.type ?? inferWineType(scraped)
+  // No good match — create a new CanonicalWine.
+  // classifyWineType applies the canonical correction layer: sparkling keywords in the
+  // name override a wrong category hint (e.g. a shop that puts Prosecco in rosé).
+  const rawType = scraped.type ?? inferWineType(scraped) ?? null
+  const wineType = classifyWineType(scraped.name, rawType)
   const wineName = normalized.name || scraped.name
   // Prefer scraper-provided producer (explicit) over normalized (guessed from name)
   const producerName = scraped.producer || normalized.producer || null
