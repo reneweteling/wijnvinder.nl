@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { TrendingUp, Grape, MapPin, Wine, Sparkles, Tag, Star } from "lucide-react";
+import { useMemo } from "react";
+import { useSyncExternalStore } from "react";
+import Link from "next/link";
+import { TrendingUp, Grape, MapPin, Wine, Sparkles, Tag, Star, UserCircle } from "lucide-react";
 import { SCORING_WEIGHTS } from "@/lib/constants";
+import { buttonVariants } from "@/components/ui/button";
 import type { WineProfileData, RecommendationScore } from "@/lib/types";
 
 type MatchBreakdownProps = {
@@ -143,6 +146,12 @@ function readProfileCookie(): WineProfileData | null {
   }
 }
 
+// useSyncExternalStore: server snapshot returns null, client reads the cookie.
+function subscribeProfile(cb: () => void) {
+  void cb;
+  return () => {};
+}
+
 const CATEGORIES = [
   { key: "grapeScore" as const, label: "Druif", max: SCORING_WEIGHTS.grape, icon: Grape },
   { key: "regionScore" as const, label: "Regio", max: SCORING_WEIGHTS.region, icon: MapPin },
@@ -153,16 +162,33 @@ const CATEGORIES = [
 ];
 
 export function MatchBreakdown({ wine }: MatchBreakdownProps) {
-  const [score, setScore] = useState<(RecommendationScore & { matchPercentage: number }) | null>(null);
+  const profile = useSyncExternalStore(subscribeProfile, readProfileCookie, () => null);
+  const score = useMemo(
+    () => (profile ? scoreWineForBreakdown(profile, wine) : null),
+    [profile, wine]
+  );
 
-  useEffect(() => {
-    const profile = readProfileCookie();
-    if (profile) {
-      setScore(scoreWineForBreakdown(profile, wine));
-    }
-  }, [wine]);
-
-  if (!score) return null;
+  if (!score) {
+    return (
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-burgundy" />
+            Jouw Match
+          </h3>
+        </div>
+        <div className="p-5 flex flex-col items-center gap-4 text-center">
+          <UserCircle className="h-10 w-10 text-burgundy/40" />
+          <p className="text-sm text-text-light">
+            Maak een smaakprofiel aan om te zien hoe goed deze wijn bij je past.
+          </p>
+          <Link href="/profiel" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Maak smaakprofiel
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">

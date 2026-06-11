@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { authClient } from "@/lib/auth-client";
 import type { WineProfileData } from "@/lib/types";
 
 const LOCAL_STORAGE_KEY = "wine-profile";
@@ -69,32 +70,39 @@ export function useWineProfile() {
   const [profile, setProfile] = useState<WineProfileData>(defaultProfile);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, isPending: sessionPending } = authClient.useSession();
 
-  // Load profile on mount
+  // Load profile once the session state is known
   useEffect(() => {
+    if (sessionPending) return;
+
     async function loadProfile() {
       setIsLoading(true);
 
-      // Try to get from DB (authenticated users)
-      const dbProfile = await fetchProfileFromDb();
-
-      if (dbProfile) {
-        setProfile(dbProfile);
-        setIsAuthenticated(true);
-        saveLocalProfile(dbProfile); // sync to local storage as well
-      } else {
-        // Fall back to localStorage for anonymous users
-        const localProfile = getLocalProfile();
-        if (localProfile) {
-          setProfile(localProfile);
+      if (session) {
+        // Authenticated: fetch profile from DB
+        const dbProfile = await fetchProfileFromDb();
+        if (dbProfile) {
+          setProfile(dbProfile);
+          setIsAuthenticated(true);
+          saveLocalProfile(dbProfile); // sync to local storage as well
+        } else {
+          // Logged in but no DB profile yet, fall back to local storage
+          const localProfile = getLocalProfile();
+          if (localProfile) setProfile(localProfile);
+          setIsAuthenticated(true);
         }
+      } else {
+        // Anonymous visitor: use local storage only, skip the API call
+        const localProfile = getLocalProfile();
+        if (localProfile) setProfile(localProfile);
       }
 
       setIsLoading(false);
     }
 
-    loadProfile();
-  }, []);
+    void loadProfile();
+  }, [session, sessionPending]);
 
   const updateProfile = useCallback(
     async (updates: Partial<WineProfileData>) => {

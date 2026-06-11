@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { WineDetailHeader } from "@/components/wines/wine-detail-header";
 import { PriceComparison } from "@/components/wines/price-comparison";
 import { MatchBreakdown } from "@/components/wines/match-breakdown";
+import { WineCard } from "@/components/wines/wine-card";
 import type { Metadata } from "next";
 
 type PageProps = {
@@ -80,7 +82,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
   const bestPrice = cheapest?.price ?? null;
   const originalPrice = cheapest?.originalPrice ?? null;
   const bestShopName = cheapest?.shop?.name ?? null;
-  const bestShopUrl = cheapest?.url ?? null;
+  const bestListingId = cheapest?.id ?? null;
 
   // Find other wines from the same producer
   const relatedWines = wine.producerId
@@ -93,6 +95,39 @@ export default async function WijnDetailPage({ params }: PageProps) {
         take: 6,
       })
     : [];
+
+  // Find similar wines: same wineType, same grape OR same country, at least one available listing
+  const similarWinesCandidates = wine.wineType
+    ? await db.canonicalWine.findMany({
+        where: {
+          id: { not: wine.id },
+          wineType: wine.wineType,
+          listings: { some: { available: true } },
+          NOT: { name: { contains: "pakket", mode: "insensitive" } },
+          OR: [
+            ...(wine.grape ? [{ grape: wine.grape }] : []),
+            ...(wine.country ? [{ country: wine.country }] : []),
+          ],
+        },
+        include: {
+          producer: { select: { name: true } },
+          listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
+        },
+        orderBy: [{ vivinoScore: "desc" }],
+        take: 20,
+      })
+    : [];
+
+  // Filter to comparable price range (0.6x–1.6x current best price) then cap at 4
+  const similarWines = bestPrice
+    ? similarWinesCandidates
+        .filter((w) => {
+          const p = w.listings[0]?.price;
+          if (p == null) return false;
+          return p >= bestPrice * 0.6 && p <= bestPrice * 1.6;
+        })
+        .slice(0, 4)
+    : similarWinesCandidates.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,7 +187,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-1.5 text-sm text-text-light hover:text-burgundy transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Terug naar aanbevelingen
+          Terug naar alle wijnen
         </Link>
       </div>
 
@@ -177,7 +212,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
         bestPrice={bestPrice}
         originalPrice={originalPrice}
         bestShopName={bestShopName}
-        bestShopUrl={bestShopUrl}
+        bestListingId={bestListingId}
         producerSlug={wine.producer?.slug}
       />
 
@@ -232,6 +267,36 @@ export default async function WijnDetailPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Similar wines */}
+      {similarWines.length >= 2 && (
+        <div className="max-w-5xl mx-auto px-4 pb-10">
+          <h2 className="font-heading text-2xl font-semibold text-foreground mb-5">
+            Vergelijkbare wijnen
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {similarWines.map((similar) => (
+              <WineCard
+                key={similar.id}
+                wine={{
+                  id: similar.id,
+                  slug: similar.slug,
+                  name: similar.name,
+                  producer: similar.producer?.name ?? null,
+                  grape: similar.grape,
+                  country: similar.country,
+                  region: similar.region,
+                  wineType: similar.wineType,
+                  vivinoScore: similar.vivinoScore,
+                  imageUrl: similar.imageUrl,
+                  bestPrice: similar.listings[0]?.price ?? null,
+                  originalPrice: similar.listings[0]?.originalPrice ?? null,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Related wines from same producer */}
       {relatedWines.length > 0 && wine.producer?.name && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
@@ -254,10 +319,12 @@ export default async function WijnDetailPage({ params }: PageProps) {
                 className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:shadow-sm transition-shadow"
               >
                 {related.imageUrl && (
-                  <img
+                  <Image
                     src={related.imageUrl}
                     alt={related.name}
-                    className="w-12 h-16 object-contain rounded"
+                    width={48}
+                    height={64}
+                    className="object-contain rounded"
                   />
                 )}
                 <div className="flex-1 min-w-0">
