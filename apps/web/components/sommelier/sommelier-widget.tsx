@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Send, Wine, Info } from "lucide-react";
 import { WineCard } from "@/components/wines/wine-card";
@@ -99,16 +100,22 @@ export function SommelierWidget({ variant = "full" }: SommelierWidgetProps) {
     getServerProfileSnapshot
   );
 
-  const [question, setQuestion] = useState("");
+  const searchParams = useSearchParams();
+  const isCompact = variant === "compact";
+  const exampleChips = isCompact ? EXAMPLES.slice(0, 2) : EXAMPLES;
+
+  // Read the auto-ask param once at render time (stable for the lifetime of this mount)
+  const autoAskParam = !isCompact ? (searchParams.get("vraag") ?? "") : "";
+  const autoAskRef = useRef<string>(autoAskParam);
+  const autoAskFiredRef = useRef(false);
+
+  const [question, setQuestion] = useState(() => autoAskParam.trim() || "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SommelierResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quotaError, setQuotaError] = useState<QuotaError | null>(null);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  const isCompact = variant === "compact";
-  const exampleChips = isCompact ? EXAMPLES.slice(0, 2) : EXAMPLES;
 
   // Fetch quota on mount (no LLM call, no quota consumption)
   useEffect(() => {
@@ -123,6 +130,62 @@ export function SommelierWidget({ variant = "full" }: SommelierWidgetProps) {
         // Non-critical — quota counter stays hidden on error
       }
     })();
+  }, []);
+
+  // Auto-ask from ?vraag= param (full variant only, fires once on mount)
+  useEffect(() => {
+    const q = autoAskRef.current.trim();
+    if (!q || q.length < 3 || autoAskFiredRef.current) return;
+    autoAskFiredRef.current = true;
+    void (async () => {
+      setLoading(true);
+      setResult(null);
+      setError(null);
+      setQuotaError(null);
+      try {
+        const res = await fetch("/api/sommelier", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: q,
+            profile: profile as WineProfileData | null,
+          }),
+        });
+        const data = (await res.json()) as {
+          error?: string;
+          message?: string;
+          loginCta?: boolean;
+          remaining?: number;
+        } & Partial<SommelierResponse>;
+        if (!res.ok) {
+          if (data.error === "quota") {
+            setQuotaError({
+              isQuota: true,
+              message: data.message ?? "Daglimiet bereikt.",
+              loginCta: data.loginCta ?? false,
+            });
+            return;
+          }
+          setError(data.error ?? "Er is iets misgegaan. Probeer het opnieuw.");
+          return;
+        }
+        setResult(data as SommelierResponse);
+        if (typeof data.remaining === "number") {
+          setQuota((prev) =>
+            prev ? { ...prev, remaining: data.remaining!, used: prev.limit - data.remaining! } : prev
+          );
+        }
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      } catch {
+        setError("Er is iets misgegaan. Controleer je verbinding en probeer het opnieuw.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  // Only run on mount; profile is read at call time via closure
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const charCount = question.length;
@@ -286,12 +349,12 @@ export function SommelierWidget({ variant = "full" }: SommelierWidgetProps) {
             {loading ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                De sommelier denkt na...
+                Maurice denkt na...
               </>
             ) : (
               <>
                 <Send className="h-4 w-4" />
-                Vraag advies
+                Vraag Maurice
               </>
             )}
           </button>

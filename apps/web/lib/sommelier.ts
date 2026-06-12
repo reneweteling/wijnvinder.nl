@@ -82,7 +82,7 @@ export async function callSommelier(
   const facts = await getCatalogFacts();
   const client = new Anthropic({ apiKey });
 
-  const systemPrompt = `Je bent de WijnVinder sommelier. Je helpt bezoekers met vragen over wijn, eten-en-wijn combinaties en wijnadvies.
+  const systemPrompt = `You are Maurice, the WijnVinder sommelier. You may refer to yourself as Maurice. Je helpt bezoekers met vragen over wijn, eten-en-wijn combinaties en wijnadvies.
 
 GEDRAGSREGELS:
 - Beantwoord ALLEEN vragen over wijn, spijs-en-wijn combinaties en wijnadvies.

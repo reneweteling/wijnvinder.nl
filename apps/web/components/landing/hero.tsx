@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, Search, Sparkles } from "lucide-react";
 
 const QUICK_LINKS: { label: string; href: string }[] = [
   { label: "🔥 Aanbiedingen", href: "/wijnen?aanbiedingen=1" },
@@ -26,11 +26,19 @@ export function Hero({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [mauriceQuery, setMauriceQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
     router.push(q ? `/wijnen?q=${encodeURIComponent(q)}` : "/wijnen");
+  };
+
+  const handleMauriceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = mauriceQuery.trim();
+    if (!q) return;
+    router.push(`/sommelier?vraag=${encodeURIComponent(q)}`);
   };
 
   return (
@@ -98,7 +106,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="max-w-xl mx-auto mb-5"
+            className="max-w-xl mx-auto mb-4"
           >
             <div className="flex items-center gap-2 bg-white rounded-full p-2 pl-5 shadow-2xl">
               <Search className="h-5 w-5 text-burgundy shrink-0" />
@@ -117,6 +125,35 @@ export function Hero({
               >
                 <span className="hidden sm:inline">Zoeken</span>
                 <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.form>
+
+          {/* Maurice AI sommelier row */}
+          <motion.form
+            onSubmit={handleMauriceSubmit}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.52 }}
+            className="max-w-xl mx-auto mb-5"
+          >
+            <div className="flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 backdrop-blur-sm px-3 py-1.5 focus-within:border-gold/80 focus-within:bg-gold/15 transition-colors">
+              <Sparkles className="h-4 w-4 text-gold shrink-0" />
+              <input
+                type="text"
+                value={mauriceQuery}
+                onChange={(e) => setMauriceQuery(e.target.value)}
+                placeholder="Vraag Maurice: wat past bij garnalen in knoflookboter?"
+                className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-gold/60 focus:outline-none"
+                aria-label="Vraag Maurice"
+              />
+              <button
+                type="submit"
+                aria-label="Vraag Maurice"
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gold/20 hover:bg-gold/35 border border-gold/40 text-gold text-xs font-semibold px-3 py-1 transition-colors"
+              >
+                <span className="hidden sm:inline">Vraag</span>
+                <ArrowRight className="w-3 h-3" />
               </button>
             </div>
           </motion.form>

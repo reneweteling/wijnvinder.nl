@@ -127,19 +127,24 @@ function SommelierBanner() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-burgundy/20 bg-card overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-light hover:text-burgundy hover:bg-surface transition-colors"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-sm hover:bg-burgundy/5 transition-colors"
         aria-expanded={open}
       >
-        <span className="flex items-center gap-2">
-          <Wine className="h-4 w-4 text-burgundy shrink-0" />
-          Weet je niet wat je zoekt? Vraag de sommelier
+        <span className="flex items-center gap-3">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-burgundy shrink-0">
+            <Wine className="h-3.5 w-3.5 text-white" />
+          </span>
+          <span className="font-medium text-foreground">
+            Weet je niet wat je zoekt?{" "}
+            <span className="text-burgundy">Vraag Maurice, onze AI-sommelier</span>
+          </span>
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 text-text-light transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -151,7 +156,7 @@ function SommelierBanner() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden border-t border-border"
+            className="overflow-hidden border-t border-burgundy/10"
           >
             <div className="px-4 py-4">
               <SommelierWidget variant="compact" />
