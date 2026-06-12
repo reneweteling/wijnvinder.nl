@@ -1,20 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db/client";
 import { requireAdmin } from "@/lib/admin";
+import { WinesTable, type WineRow } from "./wines-table";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Wijnen — Beheer",
-};
-
-const WINE_TYPE_LABELS: Record<string, string> = {
-  red: "Rood",
-  white: "Wit",
-  rose: "Rosé",
-  sparkling: "Mousserend",
-  dessert: "Dessert",
 };
 
 const PAGE_SIZE = 50;
@@ -62,6 +54,20 @@ export default async function AdminWijnenPage({
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const rows: WineRow[] = wines.map((wine) => ({
+    id: wine.id,
+    slug: wine.slug,
+    name: wine.name,
+    producer: wine.producer?.name ?? null,
+    wineType: wine.wineType,
+    grape: wine.grape,
+    country: wine.country,
+    vintage: wine.vintage,
+    vivinoScore: wine.vivinoScore,
+    imageUrl: wine.imageUrl,
+    listingCount: wine._count.listings,
+  }));
 
   function buildHref(overrides: { page?: number; q?: string; type?: string }) {
     const params = new URLSearchParams();
@@ -114,87 +120,7 @@ export default async function AdminWijnenPage({
       </form>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden mb-6">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-surface text-text-light">
-              <th className="text-left px-4 py-3 font-medium w-12"></th>
-              <th className="text-left px-4 py-3 font-medium">Naam</th>
-              <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Producent</th>
-              <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Type</th>
-              <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Druif</th>
-              <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Land</th>
-              <th className="text-right px-4 py-3 font-medium hidden sm:table-cell">Jaar</th>
-              <th className="text-right px-4 py-3 font-medium hidden md:table-cell">Score</th>
-              <th className="text-right px-4 py-3 font-medium">Listings</th>
-            </tr>
-          </thead>
-          <tbody>
-            {wines.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-text-light">
-                  Geen wijnen gevonden.
-                </td>
-              </tr>
-            ) : (
-              wines.map((wine) => (
-                <tr
-                  key={wine.id}
-                  className="border-b border-border last:border-0 hover:bg-surface/50 transition-colors"
-                >
-                  <td className="px-4 py-2">
-                    {wine.imageUrl ? (
-                      <Image
-                        src={wine.imageUrl}
-                        alt={wine.name}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 object-contain rounded"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded bg-surface border border-border" />
-                    )}
-                  </td>
-                  <td className="px-4 py-2">
-                    <Link
-                      href={`/admin/wijnen/${wine.id}`}
-                      className="text-burgundy hover:underline font-medium"
-                    >
-                      {wine.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-text-light hidden md:table-cell">
-                    {wine.producer?.name ?? <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 hidden sm:table-cell">
-                    {wine.wineType
-                      ? WINE_TYPE_LABELS[wine.wineType] ?? wine.wineType
-                      : <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 text-text-light hidden lg:table-cell">
-                    {wine.grape ?? <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 text-text-light hidden lg:table-cell">
-                    {wine.country ?? <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 text-right tabular-nums hidden sm:table-cell text-text-light">
-                    {wine.vintage ?? <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 text-right tabular-nums hidden md:table-cell text-text-light">
-                    {wine.vivinoScore != null
-                      ? wine.vivinoScore.toFixed(1)
-                      : <span className="text-text-light/50">—</span>}
-                  </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-medium">
-                    {wine._count.listings}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <WinesTable data={rows} />
 
       {/* Pagination */}
       {totalPages > 1 && (

@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db/client";
-import { timeAgo } from "@/lib/time";
+import { JobsTable, type JobRow } from "./jobs-table";
 
 export const dynamic = "force-dynamic";
 
@@ -37,12 +37,6 @@ function statusBadge(status: string) {
   );
 }
 
-function formatDuration(startedAt: Date | null, completedAt: Date | null): string {
-  if (!startedAt || !completedAt) return "-";
-  const secs = Math.round((completedAt.getTime() - startedAt.getTime()) / 1000);
-  return `${secs}s`;
-}
-
 export default async function JobsPage() {
   await requireAdmin();
 
@@ -68,6 +62,26 @@ export default async function JobsPage() {
     queueError = true;
   }
 
+  const jobRows: JobRow[] = scrapeJobs.map((job) => {
+    const durationSeconds =
+      job.startedAt && job.completedAt
+        ? Math.round(
+            (job.completedAt.getTime() - job.startedAt.getTime()) / 1000
+          )
+        : null;
+    return {
+      id: job.id,
+      shopName: job.shop.name,
+      status: job.status,
+      listingsFound: job.listingsFound,
+      listingsMatched: job.listingsMatched,
+      startedAt: job.startedAt ? job.startedAt.toISOString() : null,
+      completedAt: job.completedAt ? job.completedAt.toISOString() : null,
+      durationSeconds,
+      error: job.error,
+    };
+  });
+
   return (
     <div className="space-y-10">
       {/* Scrape jobs */}
@@ -78,58 +92,7 @@ export default async function JobsPage() {
         {scrapeJobs.length === 0 ? (
           <p className="text-text-light text-sm">Geen scrape jobs gevonden.</p>
         ) : (
-          <div className="rounded-xl border border-border bg-card overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface text-text-light">
-                  <th className="text-left px-5 py-3 font-medium">Winkel</th>
-                  <th className="text-left px-5 py-3 font-medium">Status</th>
-                  <th className="text-right px-5 py-3 font-medium">Gevonden</th>
-                  <th className="text-right px-5 py-3 font-medium">Gematcht</th>
-                  <th className="text-left px-5 py-3 font-medium">Gestart</th>
-                  <th className="text-right px-5 py-3 font-medium">Duur</th>
-                  <th className="text-left px-5 py-3 font-medium">Fout</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scrapeJobs.map((job) => (
-                  <tr
-                    key={job.id}
-                    className="border-b border-border last:border-0 hover:bg-surface/50 transition-colors"
-                  >
-                    <td className="px-5 py-3 font-medium text-foreground">
-                      {job.shop.name}
-                    </td>
-                    <td className="px-5 py-3">{statusBadge(job.status)}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">
-                      {job.listingsFound}
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums">
-                      {job.listingsMatched}
-                    </td>
-                    <td className="px-5 py-3 text-text-light">
-                      {job.startedAt ? timeAgo(job.startedAt) : "-"}
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums text-text-light">
-                      {formatDuration(job.startedAt, job.completedAt)}
-                    </td>
-                    <td className="px-5 py-3 text-text-light max-w-[220px]">
-                      {job.error ? (
-                        <span
-                          title={job.error}
-                          className="block truncate text-red-600 cursor-default"
-                        >
-                          {job.error}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <JobsTable data={jobRows} />
         )}
       </section>
 
