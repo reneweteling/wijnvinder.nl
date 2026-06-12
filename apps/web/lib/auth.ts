@@ -106,6 +106,11 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: ["google", "microsoft"],
+      // Link OAuth sign-ins onto a local account even when its email is not
+      // verified yet. Google and Microsoft only hand out verified emails, so
+      // the sign-in itself proves ownership; better-auth then marks the local
+      // email as verified on link.
+      requireLocalEmailVerified: false,
     },
   },
   plugins: [nextCookies()],
