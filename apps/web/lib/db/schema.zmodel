@@ -283,3 +283,18 @@ model ScrapeJob {
   @@allow('read', true)
   @@map("scrape_job")
 }
+
+// Tracks AI sommelier questions for daily quota enforcement.
+// All reads/writes go through the raw db client; no user-facing policies needed.
+model SommelierQuestion {
+  id        String   @id @default(cuid())
+  userId    String?
+  ipHash    String
+  question  String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ipHash, createdAt])
+  @@deny('all', true)
+  @@map("sommelier_question")
+}

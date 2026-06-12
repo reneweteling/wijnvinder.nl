@@ -21,7 +21,13 @@ type PersonalResult = { text: string; wines: WineCardWine[] };
 
 type SommelierResponse =
   | { offTopic: true; message: string }
-  | { traditional: TraditionalResult; personal: PersonalResult | null };
+  | { traditional: TraditionalResult; personal: PersonalResult | null; remaining: number };
+
+type QuotaError = {
+  isQuota: true;
+  message: string;
+  loginCta: boolean;
+};
 
 // ---------------------------------------------------------------------------
 // Example chips
@@ -91,6 +97,8 @@ export default function SommelierPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SommelierResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quotaError, setQuotaError] = useState<QuotaError | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const charCount = question.length;
@@ -103,6 +111,7 @@ export default function SommelierPage() {
     setLoading(true);
     setResult(null);
     setError(null);
+    setQuotaError(null);
 
     try {
       const res = await fetch("/api/sommelier", {
@@ -114,14 +123,30 @@ export default function SommelierPage() {
         }),
       });
 
-      const data = (await res.json()) as { error?: string } & Partial<SommelierResponse>;
+      const data = (await res.json()) as {
+        error?: string;
+        message?: string;
+        loginCta?: boolean;
+        remaining?: number;
+      } & Partial<SommelierResponse>;
 
       if (!res.ok) {
+        if (data.error === "quota") {
+          setQuotaError({
+            isQuota: true,
+            message: data.message ?? "Daglimiet bereikt.",
+            loginCta: data.loginCta ?? false,
+          });
+          return;
+        }
         setError(data.error ?? "Er is iets misgegaan. Probeer het opnieuw.");
         return;
       }
 
       setResult(data as SommelierResponse);
+      if (typeof data.remaining === "number") {
+        setRemaining(data.remaining);
+      }
       // Scroll to results
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -137,6 +162,7 @@ export default function SommelierPage() {
     setQuestion(example);
     setResult(null);
     setError(null);
+    setQuotaError(null);
   }
 
   return (
@@ -237,26 +263,73 @@ export default function SommelierPage() {
             </span>
           </div>
 
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="inline-flex items-center gap-2 bg-burgundy hover:bg-burgundy/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-full px-6 py-2.5 transition-colors text-sm"
-          >
-            {loading ? (
-              <>
-                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                De sommelier denkt na...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Vraag advies
-              </>
+          <div className="flex items-center gap-4 flex-wrap">
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="inline-flex items-center gap-2 bg-burgundy hover:bg-burgundy/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-full px-6 py-2.5 transition-colors text-sm"
+            >
+              {loading ? (
+                <>
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  De sommelier denkt na...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Vraag advies
+                </>
+              )}
+            </button>
+
+            {/* Quota counter */}
+            {remaining !== null && (
+              <span className="text-xs text-text-light">
+                Nog {remaining} {remaining === 1 ? "vraag" : "vragen"} vandaag
+                {remaining < 20 && (
+                  <>
+                    {" · "}
+                    <Link
+                      href="/login"
+                      className="underline underline-offset-2 hover:text-burgundy transition-colors"
+                    >
+                      log in voor 20 per dag
+                    </Link>
+                  </>
+                )}
+              </span>
             )}
-          </button>
+          </div>
         </motion.form>
 
-        {/* Error */}
+        {/* Quota error */}
+        {quotaError && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-burgundy/20 bg-burgundy/5 px-5 py-5 space-y-4"
+          >
+            <p className="text-sm text-foreground leading-relaxed">{quotaError.message}</p>
+            {quotaError.loginCta && (
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-burgundy text-white text-sm font-semibold px-5 py-2 hover:bg-burgundy/90 transition-colors"
+                >
+                  Inloggen
+                </Link>
+                <Link
+                  href="/registreren"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-burgundy text-burgundy text-sm font-semibold px-5 py-2 hover:bg-burgundy/5 transition-colors"
+                >
+                  Gratis aanmelden
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Generic error */}
         {error && (
           <motion.div
             initial={{ opacity: 0 }}

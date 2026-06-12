@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { callSommelier, findWines, findPersonalWines } from "@/lib/sommelier";
+import { getServerAuthSession } from "@/lib/auth";
+import { hashIp, checkQuota, recordQuestion } from "@/lib/sommelier-quota";
 import type { WineProfileData } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
-// Rate limiting: simple in-memory sliding window
+// Rate limiting: simple in-memory sliding window (burst guard, 10/5min per IP)
 // ---------------------------------------------------------------------------
 
 type RateEntry = { timestamps: number[] };
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Rate limit by IP
+  // Burst rate limit by IP (keeps existing 10/5min guard)
   const forwarded = req.headers.get("x-forwarded-for");
   const ip = (forwarded ? forwarded.split(",")[0] : null)?.trim() ?? "unknown";
   if (isRateLimited(ip)) {
@@ -72,6 +74,39 @@ export async function POST(req: NextRequest) {
       { error: "Even rustig aan, probeer het over een paar minuten weer." },
       { status: 429 }
     );
+  }
+
+  // Resolve authenticated user (may be null for anonymous visitors)
+  const session = await getServerAuthSession();
+  const userId = session?.user?.id ?? null;
+
+  // Compute stable, privacy-safe IP fingerprint
+  const ipHash = hashIp(ip);
+
+  // Daily quota check — before we touch the LLM
+  const quota = await checkQuota({ userId, ipHash });
+  if (!quota.allowed) {
+    if (userId) {
+      return NextResponse.json(
+        {
+          error: "quota",
+          message:
+            "Je hebt je 20 vragen voor vandaag gebruikt. Morgen kun je weer verder proeven!",
+          loginCta: false,
+        },
+        { status: 429 }
+      );
+    } else {
+      return NextResponse.json(
+        {
+          error: "quota",
+          message:
+            "Je hebt je 3 gratis vragen voor vandaag gebruikt. Maak een gratis account of log in en stel tot 20 vragen per dag.",
+          loginCta: true,
+        },
+        { status: 429 }
+      );
+    }
   }
 
   // Parse and validate body
@@ -102,7 +137,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Off-topic response
+  // Off-topic: do NOT consume quota
   if (advice.off_topic) {
     return NextResponse.json({
       offTopic: true,
@@ -110,6 +145,12 @@ export async function POST(req: NextRequest) {
         "Daar kan ik je als sommelier helaas niet mee helpen. Stel me een vraag over wijn, of wat er lekker past bij je eten!",
     });
   }
+
+  // Record the question now that we know the LLM gave a real answer
+  await recordQuestion({ userId, ipHash, question });
+
+  // remaining after this question
+  const remaining = Math.max(0, quota.remaining - 1);
 
   const trad = advice.traditional!;
 
@@ -143,5 +184,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     traditional: { text: trad.text, wines: traditionalWines },
     personal: personalResult,
+    remaining,
   });
 }
