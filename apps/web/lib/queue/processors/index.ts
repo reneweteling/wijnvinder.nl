@@ -5,6 +5,8 @@ import { enrichWine } from "@/scrapers/vivino-enricher";
 import { fetchProductPage } from "@/scrapers/fetch-description";
 import { db } from "@/lib/db/client";
 import { processWeeklyDealsEmail } from "./weekly-deals-email";
+import { SHOP_CONFIGS } from "@/lib/constants";
+import { QueueClient } from "@/lib/queue/client";
 
 async function processScrapeShop(job: {
   id: string;
@@ -75,6 +77,25 @@ async function processEnrichVivino(job: {
   await enrichWine(job.data.canonicalWineId);
 }
 
+async function processNightlyScrape(_job: {
+  id: string;
+  data: JobPayload<JobType.NIGHTLY_SCRAPE>;
+}) {
+  console.log("[nightly-scrape] Starting nightly scrape fan-out");
+
+  const shops = SHOP_CONFIGS.filter(
+    (s) => s.enabled && getScraperForShop(s.slug) !== null,
+  );
+
+  let enqueued = 0;
+  for (const shop of shops) {
+    await QueueClient.enqueue(JobType.SCRAPE_SHOP, { shopSlug: shop.slug });
+    enqueued++;
+  }
+
+  console.log(`[nightly-scrape] Enqueued ${enqueued} SCRAPE_SHOP jobs`);
+}
+
 export const processors: {
   [K in JobType]: (job: {
     id: string;
@@ -85,4 +106,5 @@ export const processors: {
   [JobType.ENRICH_LISTING]: processEnrichListing,
   [JobType.ENRICH_VIVINO]: processEnrichVivino,
   [JobType.WEEKLY_DEALS_EMAIL]: processWeeklyDealsEmail,
+  [JobType.NIGHTLY_SCRAPE]: processNightlyScrape,
 };

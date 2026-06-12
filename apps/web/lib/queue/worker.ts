@@ -8,6 +8,9 @@ import { JobType, jobSchemas } from "./types";
 // Every Friday at 16:00 Europe/Amsterdam
 const WEEKLY_DEALS_CRON = "0 16 * * 5";
 
+// Every night at 03:00 Europe/Amsterdam
+const NIGHTLY_SCRAPE_CRON = "0 3 * * *";
+
 // Allow parallel enrichment fetches (different domains), keep other queues sequential
 const WORKER_OPTIONS: Partial<Record<JobType, { batchSize: number; localConcurrency: number }>> = {
   [JobType.ENRICH_LISTING]: { batchSize: 25, localConcurrency: 25 },
@@ -66,6 +69,25 @@ async function startWorker() {
   } catch (error) {
     console.warn(
       `[worker] Could not register schedule for ${JobType.WEEKLY_DEALS_EMAIL} (may already exist):`,
+      error,
+    );
+  }
+
+  // Schedule nightly scrape every night at 03:00 Europe/Amsterdam.
+  // Same guard as above: pg-boss throws when the schedule already exists.
+  try {
+    await boss.schedule(
+      JobType.NIGHTLY_SCRAPE,
+      NIGHTLY_SCRAPE_CRON,
+      {},
+      { tz: "Europe/Amsterdam" },
+    );
+    console.log(
+      `[worker] Scheduled ${JobType.NIGHTLY_SCRAPE} (${NIGHTLY_SCRAPE_CRON} Europe/Amsterdam)`,
+    );
+  } catch (error) {
+    console.warn(
+      `[worker] Could not register schedule for ${JobType.NIGHTLY_SCRAPE} (may already exist):`,
       error,
     );
   }
