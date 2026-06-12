@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSyncExternalStore } from "react";
+import Link from "next/link";
 
 const COOKIE_NAME = "cookie-consent";
 
@@ -20,23 +21,42 @@ function setConsentCookie(value: Consent) {
   document.cookie = `${COOKIE_NAME}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
 }
 
-function updateGtagConsent(value: Consent) {
-  window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  }
-  gtag("consent", "update", {
-    ad_storage: value,
-    ad_user_data: value,
-    ad_personalization: value,
-    analytics_storage: value,
-  });
-}
-
 declare global {
   interface Window {
     dataLayer: unknown[];
   }
+}
+
+// Loads Google Tag Manager once, after the visitor has granted consent.
+// Module-level guard so it never injects twice across re-renders or remounts.
+let gtmInjected = false;
+function loadGtm(gtmId: string) {
+  if (gtmInjected || !gtmId || typeof document === "undefined") return;
+  gtmInjected = true;
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
+  }
+  // Consent Mode v2: declare the default before the tag, then grant it.
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: "denied",
+  });
+  gtag("consent", "update", {
+    ad_storage: "granted",
+    ad_user_data: "granted",
+    ad_personalization: "granted",
+    analytics_storage: "granted",
+  });
+
+  window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
+  document.head.appendChild(script);
 }
 
 // useSyncExternalStore: server snapshot returns null (no cookie on server),
@@ -47,6 +67,9 @@ function subscribe(cb: () => void) {
   return () => {};
 }
 
+// Inlined at build time by Next.js. Must be present when `next build` runs.
+const GTM_ID = process.env.NEXT_PUBLIC_GOOGLE_GTM_ID ?? "";
+
 export function CookieConsent() {
   // consent: what the cookie says on the client (null = not yet set).
   // useSyncExternalStore gives the server a stable null snapshot so hydration matches.
@@ -54,20 +77,19 @@ export function CookieConsent() {
   // dismissed: true once the user clicks accept/decline in this session
   const [dismissed, setDismissed] = useState(false);
 
-  // Push existing consent to gtag. Not setState, so a plain useEffect is fine.
+  // Returning visitors who previously accepted get GTM loaded straight away.
   useEffect(() => {
-    if (consent) updateGtagConsent(consent);
+    if (consent === "granted") loadGtm(GTM_ID);
   }, [consent]);
 
   const handleAccept = useCallback(() => {
     setConsentCookie("granted");
-    updateGtagConsent("granted");
+    loadGtm(GTM_ID);
     setDismissed(true);
   }, []);
 
   const handleDecline = useCallback(() => {
     setConsentCookie("denied");
-    updateGtagConsent("denied");
     setDismissed(true);
   }, []);
 
@@ -81,9 +103,12 @@ export function CookieConsent() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-text leading-relaxed">
               We gebruiken cookies om je ervaring te verbeteren en ons verkeer te analyseren.{" "}
-              <a href="/privacy" className="text-burgundy underline underline-offset-2 hover:text-burgundy-dark">
+              <Link
+                href="/privacybeleid"
+                className="text-burgundy underline underline-offset-2 hover:text-burgundy-dark"
+              >
                 Privacybeleid
-              </a>
+              </Link>
             </p>
           </div>
           <div className="flex gap-3 shrink-0">
