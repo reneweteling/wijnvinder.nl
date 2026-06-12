@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  type OnChangeFn,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -20,18 +21,36 @@ export type ColMeta = {
 interface DataTableProps<T> {
   columns: ColumnDef<T, unknown>[];
   data: T[];
+  // Controlled/manual sorting for server-paginated tables.
+  // When manualSorting is true, the consumer owns sorting state and the table
+  // skips client-side row reordering.
+  manualSorting?: boolean;
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
 }
 
-export function DataTable<T>({ columns, data }: DataTableProps<T>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+export function DataTable<T>({
+  columns,
+  data,
+  manualSorting,
+  sorting: sortingProp,
+  onSortingChange,
+}: DataTableProps<T>) {
+  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+
+  const isManual = manualSorting === true;
+  const sorting = isManual ? (sortingProp ?? []) : internalSorting;
 
   const table = useReactTable({
     data,
     columns,
     state: { sorting },
-    onSortingChange: setSorting,
+    onSortingChange: isManual ? onSortingChange : setInternalSorting,
     getCoreRowModel: getCoreRowModel(),
+    // Always register getSortedRowModel; TanStack ignores it when
+    // manualSorting is true and skips client-side reordering.
     getSortedRowModel: getSortedRowModel(),
+    manualSorting: isManual,
   });
 
   return (

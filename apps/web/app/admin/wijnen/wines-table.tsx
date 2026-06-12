@@ -1,8 +1,10 @@
 "use client";
 
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type SortingState } from "@tanstack/react-table";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 import { DataTable, type ColMeta } from "@/components/admin/data-table";
 
 const WINE_TYPE_LABELS: Record<string, string> = {
@@ -48,6 +50,7 @@ const columns: ColumnDef<WineRow, unknown>[] = [
       ),
   },
   {
+    id: "name",
     accessorKey: "name",
     enableSorting: true,
     meta: { th: "text-left px-4 py-3 font-medium", td: "px-4 py-2" } satisfies ColMeta,
@@ -62,6 +65,7 @@ const columns: ColumnDef<WineRow, unknown>[] = [
     ),
   },
   {
+    id: "producer",
     accessorKey: "producer",
     enableSorting: true,
     meta: {
@@ -71,9 +75,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
     header: () => "Producent",
     cell: ({ row }) =>
       row.original.producer ?? <span className="text-text-light/50">—</span>,
-    sortUndefined: "last",
   },
   {
+    id: "wineType",
     accessorKey: "wineType",
     enableSorting: true,
     meta: {
@@ -87,9 +91,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
       ) : (
         <span className="text-text-light/50">—</span>
       ),
-    sortUndefined: "last",
   },
   {
+    id: "grape",
     accessorKey: "grape",
     enableSorting: true,
     meta: {
@@ -99,9 +103,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
     header: () => "Druif",
     cell: ({ row }) =>
       row.original.grape ?? <span className="text-text-light/50">—</span>,
-    sortUndefined: "last",
   },
   {
+    id: "country",
     accessorKey: "country",
     enableSorting: true,
     meta: {
@@ -111,9 +115,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
     header: () => "Land",
     cell: ({ row }) =>
       row.original.country ?? <span className="text-text-light/50">—</span>,
-    sortUndefined: "last",
   },
   {
+    id: "vintage",
     accessorKey: "vintage",
     enableSorting: true,
     meta: {
@@ -123,9 +127,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
     header: () => "Jaar",
     cell: ({ row }) =>
       row.original.vintage ?? <span className="text-text-light/50">—</span>,
-    sortUndefined: "last",
   },
   {
+    id: "vivinoScore",
     accessorKey: "vivinoScore",
     enableSorting: true,
     meta: {
@@ -139,9 +143,9 @@ const columns: ColumnDef<WineRow, unknown>[] = [
       ) : (
         <span className="text-text-light/50">—</span>
       ),
-    sortUndefined: "last",
   },
   {
+    id: "listings",
     accessorKey: "listingCount",
     enableSorting: true,
     meta: {
@@ -153,10 +157,67 @@ const columns: ColumnDef<WineRow, unknown>[] = [
   },
 ];
 
-export function WinesTable({ data }: { data: WineRow[] }) {
+type SortKey =
+  | "name"
+  | "producer"
+  | "wineType"
+  | "grape"
+  | "country"
+  | "vintage"
+  | "vivinoScore"
+  | "listings";
+
+interface WinesTableProps {
+  data: WineRow[];
+  sort: SortKey | null;
+  dir: "asc" | "desc" | null;
+  buildHref: (overrides: {
+    page?: number;
+    q?: string;
+    type?: string;
+    sort?: string | null;
+    dir?: string | null;
+  }) => string;
+}
+
+export function WinesTable({ data, sort, dir, buildHref }: WinesTableProps) {
+  const router = useRouter();
+
+  // Derive TanStack SortingState from URL props.
+  const sorting: SortingState =
+    sort != null ? [{ id: sort, desc: dir === "desc" }] : [];
+
+  const handleSortingChange = useCallback(
+    (updaterOrValue: SortingState | ((prev: SortingState) => SortingState)) => {
+      const prev: SortingState = sort != null ? [{ id: sort, desc: dir === "desc" }] : [];
+      const next =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(prev)
+          : updaterOrValue;
+
+      if (next.length === 0) {
+        // Cleared — go back to default (no sort param).
+        router.push(buildHref({ sort: null, dir: null, page: 1 }));
+        return;
+      }
+
+      const { id: newSort, desc } = next[0];
+      router.push(
+        buildHref({ sort: newSort, dir: desc ? "desc" : "asc", page: 1 })
+      );
+    },
+    [sort, dir, router, buildHref]
+  );
+
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden mb-6">
-      <DataTable columns={columns} data={data} />
+      <DataTable
+        columns={columns}
+        data={data}
+        manualSorting
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+      />
     </div>
   );
 }

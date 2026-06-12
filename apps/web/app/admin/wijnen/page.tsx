@@ -11,19 +11,86 @@ export const metadata = {
 
 const PAGE_SIZE = 50;
 
+type SortKey =
+  | "name"
+  | "producer"
+  | "wineType"
+  | "grape"
+  | "country"
+  | "vintage"
+  | "vivinoScore"
+  | "listings";
+
+const SORT_KEYS: SortKey[] = [
+  "name",
+  "producer",
+  "wineType",
+  "grape",
+  "country",
+  "vintage",
+  "vivinoScore",
+  "listings",
+];
+
+function buildOrderBy(sort: SortKey, dir: "asc" | "desc") {
+  switch (sort) {
+    case "producer":
+      return { producer: { name: dir } };
+    case "listings":
+      return { listings: { _count: dir } };
+    case "vintage":
+      return { vintage: { sort: dir, nulls: "last" as const } };
+    case "vivinoScore":
+      return { vivinoScore: { sort: dir, nulls: "last" as const } };
+    case "grape":
+      return { grape: { sort: dir, nulls: "last" as const } };
+    case "country":
+      return { country: { sort: dir, nulls: "last" as const } };
+    case "wineType":
+      return { wineType: { sort: dir, nulls: "last" as const } };
+    case "name":
+    default:
+      return { name: dir };
+  }
+}
+
 export default async function AdminWijnenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    type?: string;
+    page?: string;
+    sort?: string;
+    dir?: string;
+  }>;
 }) {
   await requireAdmin();
 
-  const { q, type, page: pageParam } = await searchParams;
+  const {
+    q,
+    type,
+    page: pageParam,
+    sort: sortParam,
+    dir: dirParam,
+  } = await searchParams;
+
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const skip = (page - 1) * PAGE_SIZE;
 
   const query = q?.trim() ?? "";
   const wineType = type?.trim() ?? "";
+
+  const sort: SortKey = SORT_KEYS.includes(sortParam as SortKey)
+    ? (sortParam as SortKey)
+    : "name";
+  const dir: "asc" | "desc" = dirParam === "asc" ? "asc" : "desc";
+
+  // When no explicit sort is in the URL, fall back to updatedAt desc.
+  const orderBy =
+    sortParam && SORT_KEYS.includes(sortParam as SortKey)
+      ? buildOrderBy(sort, dir)
+      : { updatedAt: "desc" as const };
 
   const where = {
     ...(query
@@ -43,7 +110,7 @@ export default async function AdminWijnenPage({
     db.canonicalWine.count({ where }),
     db.canonicalWine.findMany({
       where,
-      orderBy: { updatedAt: "desc" },
+      orderBy,
       take: PAGE_SIZE,
       skip,
       include: {
@@ -69,13 +136,31 @@ export default async function AdminWijnenPage({
     listingCount: wine._count.listings,
   }));
 
-  function buildHref(overrides: { page?: number; q?: string; type?: string }) {
+  // Active sort for URL — only set when a real sort key is active.
+  const activeSort = sortParam && SORT_KEYS.includes(sortParam as SortKey)
+    ? sort
+    : null;
+  const activeDir = activeSort ? dir : null;
+
+  function buildHref(overrides: {
+    page?: number;
+    q?: string;
+    type?: string;
+    sort?: string | null;
+    dir?: string | null;
+  }) {
     const params = new URLSearchParams();
     const newQ = overrides.q !== undefined ? overrides.q : query;
     const newType = overrides.type !== undefined ? overrides.type : wineType;
     const newPage = overrides.page ?? page;
+    const newSort =
+      overrides.sort !== undefined ? overrides.sort : activeSort;
+    const newDir =
+      overrides.dir !== undefined ? overrides.dir : activeDir;
     if (newQ) params.set("q", newQ);
     if (newType) params.set("type", newType);
+    if (newSort) params.set("sort", newSort);
+    if (newDir) params.set("dir", newDir);
     if (newPage > 1) params.set("page", String(newPage));
     const qs = params.toString();
     return `/admin/wijnen${qs ? `?${qs}` : ""}`;
@@ -90,7 +175,8 @@ export default async function AdminWijnenPage({
         </span>
       </div>
 
-      {/* Search form */}
+      {/* Search form — submitting resets to page 1; sort is NOT a form field
+          so it is dropped on new search (intentional). */}
       <form method="GET" className="flex flex-wrap gap-3 mb-6">
         <input
           type="text"
@@ -120,7 +206,12 @@ export default async function AdminWijnenPage({
       </form>
 
       {/* Table */}
-      <WinesTable data={rows} />
+      <WinesTable
+        data={rows}
+        sort={activeSort}
+        dir={activeDir}
+        buildHref={buildHref}
+      />
 
       {/* Pagination */}
       {totalPages > 1 && (
