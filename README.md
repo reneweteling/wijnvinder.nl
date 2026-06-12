@@ -51,6 +51,7 @@ Everything the project depends on, and which account it lives under. Replace any
 | -------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------ |
 | Dokku (weteling.com)       | App hosting (web + worker), managed Postgres, Let's Encrypt TLS          | Self-hosted, SSH `dokku@weteling.com`            |
 | GitHub                     | Source control + CI/CD (Actions)                                         | `github.com/reneweteling/wijnvinder.nl`          |
+| Sentry                     | Error monitoring, tracing, session replay (`org felobo` / `wijnvinder`)  | `<TODO>` login                                   |
 | Resend                     | Transactional email (verify, password reset). SMTP/Mailcatcher fallback in dev | `info@wijnvinder.nl`                       |
 | Microsoft Entra ID (Azure) | Microsoft SSO for users (OAuth)                                          | Azure portal, `rene@weteling.com` (Microsoft SSO)|
 | Google Cloud (Auth Platform)| Google SSO for users (OAuth)                                            | `<TODO>` Google account                          |
