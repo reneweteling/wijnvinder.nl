@@ -29,6 +29,7 @@
     "schema": "lib/db/schema.zmodel"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@sentry/nextjs": "^10.57.0",
     "@sentry/node": "^10.57.0",
     "@zenstackhq/orm": "^3.7.2",

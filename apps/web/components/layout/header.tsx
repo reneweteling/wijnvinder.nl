@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
   { href: "/aanbevelingen", label: "Wijnen" },
+  { href: "/sommelier", label: "Sommelier" },
   { href: "/aanbiedingen", label: "Aanbiedingen" },
   { href: "/winkels", label: "Winkels" },
 ];
