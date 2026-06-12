@@ -91,7 +91,7 @@ Managed via `.envrc` (direnv), not `.env` files. Variables prefixed `NEXT_PUBLIC
 | `MICROSOFT_CLIENT_ID` / `_SECRET` | no       | Microsoft Entra OAuth sign-in                                      |
 | `NEXT_PUBLIC_GOOGLE_GTM_ID`       | no       | GTM container, loaded only after cookie consent                    |
 | `NEXT_PUBLIC_BASE_URL`            | no       | Canonical site URL for metadata/sitemap                            |
-| `ADMIN_EMAILS`                    | no       | Comma-separated allowlist for `/stats`                             |
+| ~~`ADMIN_EMAILS`~~                | no       | Replaced by the `role` column on User; admins are seeded in `db:seed` |
 | `ENABLE_VIVINO_IMPORT` / `NEXT_PUBLIC_ENABLE_VIVINO_IMPORT` | no | Vivino import is behind this flag (the public search API is dead)  |
 
 ## Wine Shops

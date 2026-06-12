@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getServerAuthSession } from "@/lib/auth";
+import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db/client";
 
 export const dynamic = "force-dynamic";
@@ -8,16 +7,6 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Stats — WijnVinder",
 };
-
-// --- access control ---------------------------------------------------------
-
-function getAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS ?? "";
-  return raw
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
 
 // --- types ------------------------------------------------------------------
 
@@ -123,12 +112,7 @@ async function fetchStats() {
 // --- page -------------------------------------------------------------------
 
 export default async function StatsPage() {
-  const session = await getServerAuthSession();
-  const adminEmails = getAdminEmails();
-
-  if (!session?.user || !adminEmails.includes(session.user.email.toLowerCase())) {
-    redirect("/login");
-  }
+  await requireAdmin();
 
   const { totalClicks, clicks7d, clicks30d, shopStats, topWineRows, sourceRows } =
     await fetchStats();

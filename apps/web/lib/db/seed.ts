@@ -40,6 +40,15 @@ async function seed() {
   }
 
   console.log(`\n🎉 Seeded ${SHOP_CONFIGS.length} shops`);
+
+  // Promote known admin accounts. Using updateMany so this is idempotent
+  // and does not fail when the user does not exist yet.
+  const ADMIN_EMAILS_SEED = ["rene@weteling.com"];
+  const adminResult = await db.user.updateMany({
+    where: { email: { in: ADMIN_EMAILS_SEED } },
+    data: { role: "admin" },
+  });
+  console.log(`\n👑 Set role=admin for ${adminResult.count} user(s)`);
 }
 
 seed()

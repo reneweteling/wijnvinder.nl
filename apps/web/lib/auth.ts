@@ -49,6 +49,11 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_BASE_URL,
   secret: env.BETTER_AUTH_SECRET,
   database: pool,
+  user: {
+    additionalFields: {
+      role: { type: "string", input: false },
+    },
+  },
   rateLimit: {
     enabled: true,
     window: 60,

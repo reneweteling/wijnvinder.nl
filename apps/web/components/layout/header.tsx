@@ -112,6 +112,16 @@ export function Header() {
                   <Heart className="h-4 w-4" />
                   Favorieten
                 </Link>
+                {(session.user as { role?: string }).role === "admin" && (
+                  <Link
+                    href="/admin"
+                    className={`text-sm font-medium transition-colors hover:text-burgundy ${
+                      isSolid ? "text-foreground" : "text-white/90"
+                    }`}
+                  >
+                    Beheer
+                  </Link>
+                )}
                 <span
                   className={`text-sm font-medium ${
                     isSolid ? "text-foreground" : "text-white"
@@ -227,6 +237,15 @@ export function Header() {
                       <Heart className="h-4 w-4" />
                       Favorieten
                     </Link>
+                    {(session.user as { role?: string }).role === "admin" && (
+                      <Link
+                        href="/admin"
+                        className="text-base font-medium text-foreground hover:text-burgundy"
+                        onClick={() => setIsMobileOpen(false)}
+                      >
+                        Beheer
+                      </Link>
+                    )}
                     <p className="text-sm text-text-light">{session.user.name}</p>
                     <Button variant="outline" onClick={handleSignOut}>
                       Uitloggen

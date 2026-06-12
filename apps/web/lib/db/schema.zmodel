@@ -13,6 +13,7 @@ model User {
   email              String        @unique
   emailVerified      Boolean       @default(false)
   image              String?
+  role               String        @default("user")   // "user" | "admin"
   weeklyDealsOptIn   Boolean       @default(true)
   accounts           Account[]
   sessions           Session[]
