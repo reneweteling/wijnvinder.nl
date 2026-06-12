@@ -184,6 +184,7 @@ export default function LoginPage() {
           src="/images/hero-wine.jpg"
           alt="Wijn glazen"
           fill
+          sizes="(max-width: 1024px) 0vw, 45vw"
           className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-cream/20 to-burgundy/60" />
