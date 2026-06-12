@@ -52,6 +52,7 @@ export function Footer() {
               {[
                 { href: "/over-ons", label: "Over ons" },
                 { href: "/privacybeleid", label: "Privacybeleid" },
+                { href: "/algemene-voorwaarden", label: "Algemene voorwaarden" },
                 { href: "/contact", label: "Contact" },
               ].map((link) => (
                 <Link

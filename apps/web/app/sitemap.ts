@@ -10,6 +10,7 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/over-ons` },
   { url: `${BASE_URL}/contact` },
   { url: `${BASE_URL}/privacybeleid` },
+  { url: `${BASE_URL}/algemene-voorwaarden` },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

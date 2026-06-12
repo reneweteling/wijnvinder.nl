@@ -216,9 +216,13 @@ export default function RegistrerenPage() {
             </motion.div>
 
             <p className="text-xs text-text-light text-center">
-              Door aan te melden ga je akkoord met onze{" "}
+              Door aan te melden ga je akkoord met de{" "}
+              <a href="/algemene-voorwaarden" className="underline hover:text-foreground">
+                algemene voorwaarden
+              </a>{" "}
+              en het{" "}
               <a href="/privacybeleid" className="underline hover:text-foreground">
-                privacyvoorwaarden
+                privacybeleid
               </a>
               .
             </p>
