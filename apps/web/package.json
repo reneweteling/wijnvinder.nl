@@ -28,6 +28,7 @@
     "schema": "lib/db/schema.zmodel"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.57.0",
     "@zenstackhq/orm": "^3.7.2",
     "@zenstackhq/plugin-policy": "^3.7.2",
     "better-auth": "^1.6.16",
