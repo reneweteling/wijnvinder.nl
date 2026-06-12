@@ -9,8 +9,11 @@ Turborepo monorepo. All Next.js code lives in `apps/web/`.
 - `pnpm lint` — Run ESLint + type check (turbo)
 - `pnpm check-types` — Type check apps/web
 - `pnpm generate` — Generate ZenStack ORM client from schema
-- `pnpm db:push` — Push schema changes to database
+- `pnpm db:migrate:dev` — Create and apply a migration from schema changes (the normal way to change the schema)
+- `pnpm db:migrate:deploy` — Apply pending migrations (production and fresh local databases)
+- `pnpm db:migrate:status` — Show migration state
 - `pnpm db:seed` — Seed database
+- `pnpm db:push` — Direct schema push, no migration file. Avoid; it drifts the database from the migration history
 - `pnpm scrape` — Run wine shop scrapers
 - `pnpm worker` — Start background job worker (pg-boss)
 - `docker compose up -d` — Start PostgreSQL + Mailcatcher

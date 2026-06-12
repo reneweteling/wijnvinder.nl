@@ -5,11 +5,11 @@ Dutch wine recommendation platform. Create a taste profile, get personalized win
 ## Local development
 
 ```bash
-docker compose up -d          # PostgreSQL + Mailcatcher
+docker compose up -d                 # PostgreSQL + Mailcatcher
 pnpm install
-pnpm generate && pnpm db:push # Zenstack schema
-pnpm db:seed                  # OR: pnpm scrape -- --all --direct
-pnpm dev                      # http://localhost:3020 (Next.js + worker via turbo)
+pnpm generate && pnpm db:migrate:deploy  # apply all migrations (schema + trgm indexes)
+pnpm db:seed                         # OR: pnpm scrape -- --all --direct
+pnpm dev                             # http://localhost:3020 (Next.js + worker via turbo)
 ```
 
 - App: http://localhost:3020
@@ -24,6 +24,18 @@ pnpm scrape -- --all --direct     # Run inline (no pg-boss)
 pnpm scrape -- --shop=wijnbeurs   # Single shop via pg-boss
 pnpm scrape -- --enrich           # Vivino enrichment (requires headless browser)
 ```
+
+## Database migrations
+
+The schema is managed with migration files in `apps/web/lib/db/migrations`, not `db push`.
+
+- Change `schema.zmodel`, then run `pnpm db:migrate:dev` to create and apply a migration.
+- Fresh database (local or production): `pnpm db:migrate:deploy` applies every migration, including the pg_trgm GIN indexes.
+- `pnpm db:migrate:status` shows the current state.
+
+On deploy the `release` step in the `Procfile` runs `db:migrate:deploy` automatically, so production picks up new migrations on every push. Avoid `pnpm db:push`: it changes the database without a migration file and drifts it from the history.
+
+The trigram GIN indexes live in the `..._trgm_indexes` migration. `apps/web/lib/db/sql/trgm-indexes.sql` (via `pnpm db:trgm`) stays as an idempotent repair tool that applies them with `CONCURRENTLY` on a live database.
 
 ## Dokku deployment
 

@@ -20,7 +20,7 @@
     "db:trgm": "node --import tsx scripts/apply-trgm-indexes.ts",
     "db:migrate:reset:worker": "node --import tsx scripts/drop-pgboss-schema.ts",
     "db:seed": "node --import tsx lib/db/seed.ts",
-    "db:fresh": "pnpm db:migrate:reset:worker && pnpm db:migrate:reset && pnpm db:push && pnpm db:seed",
+    "db:fresh": "pnpm db:migrate:reset:worker && pnpm db:migrate:reset && pnpm db:seed",
     "scrape": "node --import tsx scrapers/run-scrape.ts",
     "postinstall": "zen generate --schema lib/db/schema.zmodel"
   },
