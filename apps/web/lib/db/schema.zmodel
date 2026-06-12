@@ -143,8 +143,9 @@ model Shop {
   baseUrl         String
   logoUrl         String?
   description     String?
-  referralParam   String?       // e.g. "?ref=wijnvinder" for affiliate tracking
-  referralEnabled Boolean       @default(false)
+  referralParam           String?       // e.g. "?ref=wijnvinder" for affiliate tracking
+  referralEnabled         Boolean       @default(false)
+  affiliateLinkTemplate   String?       // affiliate deeplink template; placeholders {path}, {url}, {ref}
   enabled         Boolean       @default(true)
   listings        ShopListing[]
   scrapeJobs      ScrapeJob[]

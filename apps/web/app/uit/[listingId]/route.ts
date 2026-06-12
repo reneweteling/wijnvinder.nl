@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { buildAffiliateUrl } from "@/lib/affiliate-link";
 
 export const dynamic = "force-dynamic";
 
@@ -72,10 +73,24 @@ export async function GET(
     console.error("[GET /uit]", error);
   }
 
-  const target = withReferral(
-    listing.url,
-    listing.shop.referralEnabled ? listing.shop.referralParam : null
-  );
+  let target: string;
+
+  if (listing.shop.referralEnabled && listing.shop.affiliateLinkTemplate) {
+    const affiliateUrl = buildAffiliateUrl(
+      listing.shop.affiliateLinkTemplate,
+      listing.url,
+      listing.id
+    );
+    if (affiliateUrl === null) {
+      return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    }
+    target = affiliateUrl;
+  } else {
+    target = withReferral(
+      listing.url,
+      listing.shop.referralEnabled ? listing.shop.referralParam : null
+    );
+  }
 
   return NextResponse.redirect(target, { status: 302 });
 }
