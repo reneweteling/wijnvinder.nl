@@ -1,9 +1,14 @@
 /**
  * Format a Date as a Dutch relative time string, e.g. "2 uur geleden".
+ *
+ * Accepts a string/number too: data that passes through unstable_cache is
+ * JSON-serialized, so Date fields come back as ISO strings at runtime even
+ * though their TypeScript type still says Date.
  */
-export function timeAgo(date: Date): string {
+export function timeAgo(date: Date | string | number): string {
+  const d = date instanceof Date ? date : new Date(date);
   const now = Date.now();
-  const seconds = Math.floor((now - date.getTime()) / 1000);
+  const seconds = Math.floor((now - d.getTime()) / 1000);
 
   if (seconds < 60) return "zojuist";
 
