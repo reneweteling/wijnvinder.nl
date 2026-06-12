@@ -97,34 +97,34 @@ export function CookieConsent() {
   if (consent !== null || dismissed) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 animate-in slide-in-from-bottom duration-300">
-      <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl shadow-lg p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-text leading-relaxed">
-              We gebruiken cookies om je ervaring te verbeteren en ons verkeer te analyseren.{" "}
-              <Link
-                href="/privacybeleid"
-                className="text-burgundy underline underline-offset-2 hover:text-burgundy-dark"
-              >
-                Privacybeleid
-              </Link>
-            </p>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <button
-              onClick={handleDecline}
-              className="px-4 py-2 text-sm font-medium text-text-light border border-border rounded-lg hover:bg-cream transition-colors"
-            >
-              Weigeren
-            </button>
-            <button
-              onClick={handleAccept}
-              className="px-4 py-2 text-sm font-medium text-white bg-burgundy rounded-lg hover:bg-burgundy-dark transition-colors"
-            >
-              Accepteren
-            </button>
-          </div>
+    <div className="fixed inset-x-0 bottom-0 z-50 p-4 sm:inset-x-auto sm:right-4 sm:bottom-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="mx-auto w-full max-w-md sm:max-w-sm bg-card border border-border rounded-xl shadow-xl p-5">
+        <h2 className="font-heading text-base font-semibold text-foreground mb-1.5">
+          Cookies
+        </h2>
+        <p className="text-sm text-text-light leading-relaxed">
+          We gebruiken een paar cookies om de site te laten werken en te
+          begrijpen hoe hij gebruikt wordt.{" "}
+          <Link
+            href="/privacybeleid"
+            className="text-burgundy font-medium underline underline-offset-2 hover:text-burgundy-dark"
+          >
+            Bekijk wat we gebruiken
+          </Link>
+        </p>
+        <div className="mt-4 flex gap-2.5">
+          <button
+            onClick={handleAccept}
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-burgundy rounded-lg hover:bg-burgundy-dark transition-colors"
+          >
+            Alles accepteren
+          </button>
+          <button
+            onClick={handleDecline}
+            className="flex-1 px-4 py-2 text-sm font-medium text-text-light border border-border rounded-lg hover:bg-cream transition-colors"
+          >
+            Alleen noodzakelijk
+          </button>
         </div>
       </div>
     </div>
