@@ -17,6 +17,7 @@
     "db:migrate:deploy": "zen migrate deploy --schema lib/db/schema.zmodel",
     "db:migrate:status": "zen migrate status --schema lib/db/schema.zmodel",
     "db:migrate:reset": "zen migrate reset --schema lib/db/schema.zmodel",
+    "db:migrate:resolve": "zen migrate resolve --schema lib/db/schema.zmodel",
     "db:trgm": "node --import tsx scripts/apply-trgm-indexes.ts",
     "db:migrate:reset:worker": "node --import tsx scripts/drop-pgboss-schema.ts",
     "db:seed": "node --import tsx lib/db/seed.ts",

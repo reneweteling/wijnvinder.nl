@@ -15,6 +15,7 @@
     "db:migrate:deploy": "pnpm --filter web db:migrate:deploy",
     "db:migrate:status": "pnpm --filter web db:migrate:status",
     "db:migrate:reset": "pnpm --filter web db:migrate:reset",
+    "db:migrate:resolve": "pnpm --filter web db:migrate:resolve",
     "db:seed": "pnpm --filter web db:seed",
     "db:fresh": "pnpm --filter web db:fresh",
     "scrape": "pnpm --filter web scrape",
