@@ -23,7 +23,7 @@ export default function RegistrerenPage() {
 
   const handleSocialSignIn = async (provider: "google" | "microsoft") => {
     setIsSocialLoading(provider);
-    await authClient.signIn.social({ provider, callbackURL: "/aanbevelingen" });
+    await authClient.signIn.social({ provider, callbackURL: "/wijnen" });
     setIsSocialLoading(null);
   };
 

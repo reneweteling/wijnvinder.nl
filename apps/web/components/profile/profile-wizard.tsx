@@ -76,7 +76,7 @@ export function ProfileWizard() {
     setIsSaving(true);
     await saveProfile();
     setIsSaving(false);
-    router.push("/aanbevelingen");
+    router.push("/wijnen");
   };
 
   const handleVivinoImport = (data: Partial<WineProfileData>) => {

@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   const handleSocialSignIn = async (provider: "google" | "microsoft") => {
     setIsSocialLoading(provider);
-    await authClient.signIn.social({ provider, callbackURL: "/aanbevelingen" });
+    await authClient.signIn.social({ provider, callbackURL: "/wijnen" });
     setIsSocialLoading(null);
   };
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
       if (result.error) {
         setError("Ongeldig e-mailadres of wachtwoord. Probeer het opnieuw.");
       } else {
-        router.push("/aanbevelingen");
+        router.push("/wijnen");
       }
     } catch {
       setError("Er is een fout opgetreden. Probeer het opnieuw.");

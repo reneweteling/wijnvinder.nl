@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   const priceMinParam = searchParams.get("priceMin");
   const priceMaxParam = searchParams.get("priceMax");
   const minRatingParam = searchParams.get("minRating");
+  const aanbiedingenParam = searchParams.get("aanbiedingen");
   const sortParam = searchParams.get("sort") ?? "rating-desc";
   const sort = ALLOWED_SORTS.has(sortParam) ? sortParam : "rating-desc";
   const pageParam = searchParams.get("page") ?? "1";
@@ -93,6 +94,17 @@ export async function GET(request: NextRequest) {
           available: true,
           ...(priceMin != null ? { price: { gte: priceMin } } : {}),
           ...(priceMax != null ? { price: { lte: priceMax } } : {}),
+        },
+      },
+    });
+  }
+
+  if (aanbiedingenParam === "1") {
+    andConditions.push({
+      listings: {
+        some: {
+          available: true,
+          originalPrice: { not: null },
         },
       },
     });

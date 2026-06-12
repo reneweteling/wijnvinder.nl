@@ -25,6 +25,7 @@ const DEFAULT_FILTERS: WineFiltersType = {
   priceMin: 5,
   priceMax: 100,
   minRating: 3,
+  aanbiedingen: false,
 };
 
 function filtersToParams(filters: WineFiltersType, sort: SortOption, query: string): URLSearchParams {
@@ -36,6 +37,7 @@ function filtersToParams(filters: WineFiltersType, sort: SortOption, query: stri
   if (filters.priceMin > 5) params.set("priceMin", String(filters.priceMin));
   if (filters.priceMax < 100) params.set("priceMax", String(filters.priceMax));
   if (filters.minRating > 3) params.set("minRating", String(filters.minRating));
+  if (filters.aanbiedingen) params.set("aanbiedingen", "1");
   if (sort !== "match") params.set("sort", sort);
   return params;
 }
@@ -57,6 +59,7 @@ function paramsToFilters(searchParams: URLSearchParams): { filters: WineFiltersT
       priceMin: priceMin ? Number(priceMin) : 5,
       priceMax: priceMax ? Number(priceMax) : 100,
       minRating: minRating ? Number(minRating) : 3,
+      aanbiedingen: searchParams.get("aanbiedingen") === "1",
     },
     sort,
     query: searchParams.get("q") ?? "",
@@ -71,6 +74,7 @@ function profileToFilters(profile: WineProfileData): WineFiltersType {
     priceMin: profile.priceMin ?? 5,
     priceMax: profile.priceMax ?? 100,
     minRating: 3,
+    aanbiedingen: false,
   };
 }
 
@@ -109,22 +113,22 @@ function scoreOrWrap(profile: WineProfileData | null, wines: WineListItem[]): Sc
   }));
 }
 
-export default function AanbevelingenPage() {
+export default function WijnenPage() {
   return (
     <Suspense>
-      <AanbevelingenContent />
+      <WijnenContent />
     </Suspense>
   );
 }
 
-function AanbevelingenContent() {
+function WijnenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   // Read profile cookie via useSyncExternalStore: server snapshot is null,
   // client snapshot reads the cached cookie (stable reference, no infinite loop).
   const profile = useSyncExternalStore(subscribeProfile, getProfileSnapshot, getServerProfileSnapshot);
 
-  // Pure URL-driven: /aanbevelingen = no filters, params = filters
+  // Pure URL-driven: /wijnen = no filters, params = filters
   const initial = paramsToFilters(searchParams);
   const [filters, setFilters] = useState<WineFiltersType>(initial.filters);
   const [sort, setSort] = useState<SortOption>(initial.sort);
@@ -145,7 +149,7 @@ function AanbevelingenContent() {
     }
     const params = filtersToParams(filters, sort, query);
     const qs = params.toString();
-    router.replace(`/aanbevelingen${qs ? `?${qs}` : ""}`, { scroll: false });
+    router.replace(`/wijnen${qs ? `?${qs}` : ""}`, { scroll: false });
   }, [filters, sort, query, router]);
 
   useEffect(() => {

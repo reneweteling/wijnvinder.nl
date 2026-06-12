@@ -7,8 +7,7 @@ export const dynamic = "force-dynamic";
 
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/` },
-  { url: `${BASE_URL}/aanbevelingen` },
-  { url: `${BASE_URL}/aanbiedingen` },
+  { url: `${BASE_URL}/wijnen` },
   { url: `${BASE_URL}/winkels` },
   { url: `${BASE_URL}/over-ons` },
   { url: `${BASE_URL}/contact` },

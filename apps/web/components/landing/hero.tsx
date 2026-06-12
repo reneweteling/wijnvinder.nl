@@ -8,13 +8,13 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown, Search } from "lucide-react";
 
 const QUICK_LINKS: { label: string; href: string }[] = [
-  { label: "🔥 Aanbiedingen", href: "/aanbiedingen" },
-  { label: "🍷 Rood", href: "/aanbevelingen?type=red" },
-  { label: "🥂 Wit", href: "/aanbevelingen?type=white" },
-  { label: "🌸 Rosé", href: "/aanbevelingen?type=rose" },
-  { label: "🍾 Mousserend", href: "/aanbevelingen?type=sparkling" },
-  { label: "💶 Onder €10", href: "/aanbevelingen?priceMax=10" },
-  { label: "⭐ Best beoordeeld", href: "/aanbevelingen?minRating=4&sort=rating-desc" },
+  { label: "🔥 Aanbiedingen", href: "/wijnen?aanbiedingen=1" },
+  { label: "🍷 Rood", href: "/wijnen?type=red" },
+  { label: "🥂 Wit", href: "/wijnen?type=white" },
+  { label: "🌸 Rosé", href: "/wijnen?type=rose" },
+  { label: "🍾 Mousserend", href: "/wijnen?type=sparkling" },
+  { label: "💶 Onder €10", href: "/wijnen?priceMax=10" },
+  { label: "⭐ Best beoordeeld", href: "/wijnen?minRating=4&sort=rating-desc" },
 ];
 
 export function Hero({
@@ -30,7 +30,7 @@ export function Hero({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/aanbevelingen?q=${encodeURIComponent(q)}` : "/aanbevelingen");
+    router.push(q ? `/wijnen?q=${encodeURIComponent(q)}` : "/wijnen");
   };
 
   return (
@@ -145,7 +145,7 @@ export function Hero({
             className="flex flex-col sm:flex-row gap-x-6 gap-y-2 justify-center items-center text-sm"
           >
             <Link
-              href="/aanbevelingen"
+              href="/wijnen"
               className="text-white font-medium underline underline-offset-4 decoration-gold/60 hover:decoration-gold transition-colors"
             >
               Bekijk alle wijnen

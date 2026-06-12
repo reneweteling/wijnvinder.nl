@@ -124,7 +124,7 @@ export default function FavorietenPage() {
             <p className="text-sm text-text-light mb-6">
               Klik op het hartje bij een wijn om deze op te slaan.
             </p>
-            <Link href="/aanbevelingen">
+            <Link href="/wijnen">
               <Button>Ontdek wijnen</Button>
             </Link>
           </motion.div>

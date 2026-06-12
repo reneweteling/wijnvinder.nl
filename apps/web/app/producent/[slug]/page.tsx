@@ -66,11 +66,11 @@ export default async function ProducentPage({ params }: PageProps) {
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-4">
         <Link
-          href="/aanbevelingen"
+          href="/wijnen"
           className="inline-flex items-center gap-1.5 text-sm text-text-light hover:text-burgundy transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Terug naar aanbevelingen
+          Terug naar wijnen
         </Link>
       </div>
 

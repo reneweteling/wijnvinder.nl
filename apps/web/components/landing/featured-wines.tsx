@@ -47,7 +47,7 @@ export async function FeaturedWines({ wineCount }: { wineCount: number }) {
             </h2>
           </div>
           <Link
-            href="/aanbevelingen"
+            href="/wijnen"
             className="flex items-center gap-2 text-burgundy font-medium hover:text-burgundy/80 transition-colors"
           >
             Bekijk alle {wineCount.toLocaleString("nl-NL")} wijnen

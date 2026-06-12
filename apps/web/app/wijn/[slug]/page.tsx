@@ -261,7 +261,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
           "@type": "BreadcrumbList",
           "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
-            { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": `${SITE_URL}/aanbevelingen` },
+            { "@type": "ListItem", "position": 2, "name": "Wijnen", "item": `${SITE_URL}/wijnen` },
             { "@type": "ListItem", "position": 3, "name": buildWineName(wine.producer?.name, wine.name, null) },
           ]
         }) }}
@@ -269,7 +269,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
       {/* Breadcrumb */}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <Link
-          href="/aanbevelingen"
+          href="/wijnen"
           className="inline-flex items-center gap-1.5 text-sm text-text-light hover:text-burgundy transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />

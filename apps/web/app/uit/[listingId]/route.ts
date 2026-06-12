@@ -24,7 +24,7 @@ export async function GET(
   });
 
   if (!listing) {
-    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    return NextResponse.redirect(new URL("/wijnen", request.url));
   }
 
   // Validate that the listing URL is https and belongs to the shop's own domain.
@@ -32,18 +32,18 @@ export async function GET(
   try {
     const targetUrl = new URL(listing.url);
     if (targetUrl.protocol !== "https:") {
-      return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+      return NextResponse.redirect(new URL("/wijnen", request.url));
     }
     targetUrlHostname = targetUrl.hostname;
   } catch {
-    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    return NextResponse.redirect(new URL("/wijnen", request.url));
   }
 
   let shopBaseHostname: string;
   try {
     shopBaseHostname = new URL(listing.shop.baseUrl).hostname;
   } catch {
-    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    return NextResponse.redirect(new URL("/wijnen", request.url));
   }
 
   // Allow exact match or subdomain (e.g. shop.example.com for example.com)
@@ -52,7 +52,7 @@ export async function GET(
     targetUrlHostname.endsWith(`.${shopBaseHostname}`);
 
   if (!isAllowedHost) {
-    return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+    return NextResponse.redirect(new URL("/wijnen", request.url));
   }
 
   const source = request.nextUrl.searchParams.get("bron");
@@ -82,7 +82,7 @@ export async function GET(
       listing.id
     );
     if (affiliateUrl === null) {
-      return NextResponse.redirect(new URL("/aanbevelingen", request.url));
+      return NextResponse.redirect(new URL("/wijnen", request.url));
     }
     target = affiliateUrl;
   } else {

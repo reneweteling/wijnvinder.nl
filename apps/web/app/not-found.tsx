@@ -18,7 +18,7 @@ export default function NotFound() {
           Terug naar home
         </Link>
         <Link
-          href="/aanbevelingen"
+          href="/wijnen"
           className="inline-flex items-center gap-2 border border-burgundy text-burgundy px-6 py-3 rounded-lg font-medium hover:bg-burgundy/10 transition-colors"
         >
           Bekijk wijnen

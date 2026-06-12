@@ -6,20 +6,20 @@ export const metadata: Metadata = {
   description:
     "Doorzoek en vergelijk 1700+ wijnen bij Nederlandse wijnwinkels. Filter op druif, regio, smaak en prijs.",
   alternates: {
-    canonical: `${SITE_URL}/aanbevelingen`,
+    canonical: `${SITE_URL}/wijnen`,
   },
   openGraph: {
     title: "Wijnen ontdekken | WijnVinder",
     description:
       "Doorzoek en vergelijk 1700+ wijnen bij Nederlandse wijnwinkels. Filter op druif, regio, smaak en prijs.",
-    url: `${SITE_URL}/aanbevelingen`,
+    url: `${SITE_URL}/wijnen`,
     siteName: "WijnVinder",
     locale: "nl_NL",
     type: "website",
   },
 };
 
-export default function AanbevelingenLayout({
+export default function WijnenLayout({
   children,
 }: {
   children: React.ReactNode;

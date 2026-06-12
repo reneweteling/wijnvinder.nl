@@ -27,8 +27,8 @@ export function Footer() {
               {[
                 { href: "/", label: "Home" },
                 { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-                { href: "/aanbevelingen", label: "Wijnen" },
-                { href: "/aanbiedingen", label: "Aanbiedingen" },
+                { href: "/wijnen", label: "Wijnen" },
+                { href: "/wijnen?aanbiedingen=1", label: "Aanbiedingen" },
                 { href: "/winkels", label: "Winkels" },
                 { href: "/profiel", label: "Mijn profiel" },
               ].map((link) => (

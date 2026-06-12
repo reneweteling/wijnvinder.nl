@@ -16,6 +16,7 @@ export type WineFilters = {
   priceMin: number;
   priceMax: number;
   minRating: number;
+  aanbiedingen: boolean;
 };
 
 type WineFiltersProps = {
@@ -41,7 +42,8 @@ function FilterPanel({
     filters.countries.length > 0 ||
     filters.priceMin > FILTER_DEFAULTS.priceMin ||
     filters.priceMax < FILTER_DEFAULTS.priceMax ||
-    filters.minRating > FILTER_DEFAULTS.minRating;
+    filters.minRating > FILTER_DEFAULTS.minRating ||
+    filters.aanbiedingen;
 
   const handleClear = () => {
     onChange({
@@ -51,6 +53,7 @@ function FilterPanel({
       priceMin: FILTER_DEFAULTS.priceMin,
       priceMax: FILTER_DEFAULTS.priceMax,
       minRating: FILTER_DEFAULTS.minRating,
+      aanbiedingen: false,
     });
   };
 
@@ -98,6 +101,27 @@ function FilterPanel({
           Gebruik mijn profiel
         </Button>
       )}
+
+      {/* Aanbiedingen toggle */}
+      <div>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <button
+            role="checkbox"
+            aria-checked={filters.aanbiedingen}
+            onClick={() => onChange({ ...filters, aanbiedingen: !filters.aanbiedingen })}
+            className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${
+              filters.aanbiedingen ? "bg-burgundy" : "bg-surface border border-border"
+            }`}
+          >
+            <span
+              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                filters.aanbiedingen ? "translate-x-5" : "translate-x-1"
+              }`}
+            />
+          </button>
+          <span className="text-sm font-medium text-foreground">Alleen aanbiedingen</span>
+        </label>
+      </div>
 
       {/* Wine type toggles */}
       <div className="space-y-2">
@@ -203,7 +227,8 @@ export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: W
     filters.grapes.length +
     filters.countries.length +
     (filters.priceMin > FILTER_DEFAULTS.priceMin || filters.priceMax < FILTER_DEFAULTS.priceMax ? 1 : 0) +
-    (filters.minRating > FILTER_DEFAULTS.minRating ? 1 : 0);
+    (filters.minRating > FILTER_DEFAULTS.minRating ? 1 : 0) +
+    (filters.aanbiedingen ? 1 : 0);
 
   return (
     <>

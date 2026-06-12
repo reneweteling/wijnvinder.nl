@@ -73,7 +73,7 @@ export default function RootLayout({
               "inLanguage": "nl",
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": `${SITE_URL}/aanbevelingen?q={search_term_string}`,
+                "target": `${SITE_URL}/wijnen?q={search_term_string}`,
                 "query-input": "required name=search_term_string"
               }
             }) }}
