@@ -1,11 +1,14 @@
 import Image from "next/image";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
 import { timeAgo } from "@/lib/time";
 import { ExternalLink, Store, Wine } from "lucide-react";
 import { SITE_URL, CONTACT_EMAIL } from "@/lib/site";
 import type { Metadata } from "next";
 
-export const revalidate = 86400;
+// Rendered at runtime so the production build never needs a database.
+// The query result is cached for a day via unstable_cache.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Winkels",
@@ -22,18 +25,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function WinkelsPage() {
-  const shops = await db.shop.findMany({
-    where: { enabled: true },
-    include: {
-      scrapeJobs: {
-        where: { status: "completed" },
-        take: 1,
-        orderBy: { completedAt: "desc" },
+const getShops = unstable_cache(
+  async () =>
+    db.shop.findMany({
+      where: { enabled: true },
+      include: {
+        scrapeJobs: {
+          where: { status: "completed" },
+          take: 1,
+          orderBy: { completedAt: "desc" },
+        },
       },
-    },
-    orderBy: { name: "asc" },
-  });
+      orderBy: { name: "asc" },
+    }),
+  ["winkels-shops"],
+  { revalidate: 86400 },
+);
+
+export default async function WinkelsPage() {
+  const shops = await getShops();
 
   return (
     <div className="min-h-screen bg-background">

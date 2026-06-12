@@ -1,28 +1,36 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
 import { WineCard } from "@/components/wines/wine-card";
 
-export async function FeaturedWines({ wineCount }: { wineCount: number }) {
-  const wines = await db.canonicalWine.findMany({
-    where: {
-      vivinoScore: { gte: 4, lte: 4.9 },
-      imageUrl: { not: null },
-      listings: { some: { available: true } },
-      // Keep sample/surprise packages out of the showcase
-      NOT: { name: { contains: "pakket", mode: "insensitive" } },
-    },
-    orderBy: [{ vivinoScore: "desc" }, { name: "asc" }],
-    take: 8,
-    include: {
-      producer: { select: { name: true } },
-      listings: {
-        where: { available: true },
-        orderBy: { price: "asc" },
-        take: 1,
+const getFeaturedWines = unstable_cache(
+  async () =>
+    db.canonicalWine.findMany({
+      where: {
+        vivinoScore: { gte: 4, lte: 4.9 },
+        imageUrl: { not: null },
+        listings: { some: { available: true } },
+        // Keep sample/surprise packages out of the showcase
+        NOT: { name: { contains: "pakket", mode: "insensitive" } },
       },
-    },
-  });
+      orderBy: [{ vivinoScore: "desc" }, { name: "asc" }],
+      take: 8,
+      include: {
+        producer: { select: { name: true } },
+        listings: {
+          where: { available: true },
+          orderBy: { price: "asc" },
+          take: 1,
+        },
+      },
+    }),
+  ["featured-wines"],
+  { revalidate: 3600 },
+);
+
+export async function FeaturedWines({ wineCount }: { wineCount: number }) {
+  const wines = await getFeaturedWines();
 
   if (wines.length === 0) return null;
 

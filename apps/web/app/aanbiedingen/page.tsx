@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
 import { WineCard } from "@/components/wines/wine-card";
 import type { WineCardWine } from "@/components/wines/wine-card";
 import { SITE_URL } from "@/lib/site";
 
-export const revalidate = 1800;
+// Rendered at runtime so the production build never needs a database.
+// The query result is cached for 30 minutes via unstable_cache.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Aanbiedingen",
@@ -26,32 +29,39 @@ export const metadata: Metadata = {
 
 const LIMIT = 48;
 
+// Prisma can't compare two columns in a where clause, so we fetch wines
+// with at least one available listing that has an originalPrice, then
+// filter in JS for the real discount (originalPrice > price).
+const getDiscountedWines = unstable_cache(
+  async () =>
+    db.canonicalWine.findMany({
+      where: {
+        listings: {
+          some: {
+            available: true,
+            originalPrice: { not: null },
+          },
+        },
+      },
+      include: {
+        listings: {
+          where: {
+            available: true,
+            originalPrice: { not: null },
+          },
+          orderBy: { price: "asc" },
+        },
+        producer: {
+          select: { name: true },
+        },
+      },
+    }),
+  ["aanbiedingen-wines"],
+  { revalidate: 1800 },
+);
+
 export default async function AanbiedingenPage() {
-  // Prisma can't compare two columns in a where clause, so we fetch wines
-  // with at least one available listing that has an originalPrice, then
-  // filter in JS for the real discount (originalPrice > price).
-  const rawWines = await db.canonicalWine.findMany({
-    where: {
-      listings: {
-        some: {
-          available: true,
-          originalPrice: { not: null },
-        },
-      },
-    },
-    include: {
-      listings: {
-        where: {
-          available: true,
-          originalPrice: { not: null },
-        },
-        orderBy: { price: "asc" },
-      },
-      producer: {
-        select: { name: true },
-      },
-    },
-  });
+  const rawWines = await getDiscountedWines();
 
   // Keep only wines where the cheapest eligible listing is actually discounted
   type RawWine = (typeof rawWines)[number];
