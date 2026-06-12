@@ -43,6 +43,44 @@ git push dokku main:main
 # dokku postgres:expose wijnvinder-db 5400
 ```
 
+## Third-party services
+
+Everything the project depends on, and which account it lives under. Replace any `<TODO>` once confirmed.
+
+| Service                    | Function                                                                 | Account                                          |
+| -------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------ |
+| Dokku (weteling.com)       | App hosting (web + worker), managed Postgres, Let's Encrypt TLS          | Self-hosted, SSH `dokku@weteling.com`            |
+| GitHub                     | Source control + CI/CD (Actions)                                         | `github.com/reneweteling/wijnvinder.nl`          |
+| Resend                     | Transactional email (verify, password reset). SMTP/Mailcatcher fallback in dev | `info@wijnvinder.nl`                       |
+| Microsoft Entra ID (Azure) | Microsoft SSO for users (OAuth)                                          | Azure portal, `rene@weteling.com` (Microsoft SSO)|
+| Google Cloud (Auth Platform)| Google SSO for users (OAuth)                                            | `<TODO>` Google account                          |
+| Google Tag Manager         | Tag/analytics loading, only after cookie consent. Container `GTM-PL683HW8` | `<TODO>` Google account                        |
+| Domain / DNS registrar     | `wijnvinder.nl` zone + records                                          | `<TODO>`                                         |
+| TradeTracker               | Main affiliate network (Wijnvoordeel, Wijnbeurs, DrankDozijn, e.a.)     | `reneweteling`                                   |
+| LinkPizza                  | Secondary affiliate network                                             | `rene@weteling.com`                              |
+| Awin                       | Affiliate network for Gall & Gall                                       | `<TODO>`                                         |
+| Partnerize                 | Affiliate network for Albert Heijn                                      | `<TODO>`                                         |
+
+Per-shop affiliate status and the network details are in the [Wine Shops](#wine-shops) section below.
+
+## Environment variables
+
+Managed via `.envrc` (direnv), not `.env` files. Variables prefixed `NEXT_PUBLIC_` are inlined into the client bundle at build time, so they must be present when `next build` runs (pass them as Docker build args on deploy).
+
+| Variable                          | Required | Notes                                                              |
+| --------------------------------- | -------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`                    | yes      | Postgres connection string                                         |
+| `BETTER_AUTH_SECRET`              | yes      | 32+ chars. Generate with `openssl rand -base64 32`                 |
+| `BETTER_AUTH_BASE_URL`            | yes      | e.g. `http://localhost:3020` in dev                                |
+| `RESEND_API_KEY`                  | no       | When unset, email falls back to SMTP (`SMTP_HOST`/`SMTP_PORT`)     |
+| `EMAIL_FROM`                      | no       | From-address for transactional mail                                |
+| `GOOGLE_CLIENT_ID` / `_SECRET`    | no       | Google OAuth sign-in                                               |
+| `MICROSOFT_CLIENT_ID` / `_SECRET` | no       | Microsoft Entra OAuth sign-in                                      |
+| `NEXT_PUBLIC_GOOGLE_GTM_ID`       | no       | GTM container, loaded only after cookie consent                    |
+| `NEXT_PUBLIC_BASE_URL`            | no       | Canonical site URL for metadata/sitemap                            |
+| `ADMIN_EMAILS`                    | no       | Comma-separated allowlist for `/stats`                             |
+| `ENABLE_VIVINO_IMPORT` / `NEXT_PUBLIC_ENABLE_VIVINO_IMPORT` | no | Vivino import is behind this flag (the public search API is dead)  |
+
 ## Wine Shops
 
 TradeTracker - Luuc bellen wanneer hij live staat
@@ -111,11 +149,7 @@ Note: Many smaller shops (marked ❌) may still have unlisted programs — check
 - [ ] **More shop scrapers**: Add remaining 50+ Dutch wine shops (see plan for full list).
 - [ ] **Wine description scraping**: Fetch individual product pages for full descriptions (listing pages only have short excerpts).
 - [ ] **Scrape pagination**: Wijnvoordeel/Wijnbeurs currently only scrape page 1 (~18 wines each). Need to handle multi-page pagination.
-- [ ] **Privacy/about/contact pages**: Currently placeholder links.
-- [ ] **Email templates**: Branded HTML verification emails.
+- [x] **Privacy/about/contact pages**: Live, plus an algemene voorwaarden page.
+- [x] **Email templates**: Branded HTML for verification and password reset.
 
-
-## Credentials
-Resend - info@wijnvinder.nl
-https://linkpizza.com/ - rene@weteling.com
-https://affiliate.tradetracker.com/ - reneweteling
+Account logins for all external services are in the [Third-party services](#third-party-services) section above.
