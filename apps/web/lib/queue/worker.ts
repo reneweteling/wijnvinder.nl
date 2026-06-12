@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { Sentry } from "./instrument";
 import { getWorkerClient, shutdownQueue } from "./config";
 import { processors } from "./processors";
 import { JobType, jobSchemas } from "./types";
@@ -35,7 +36,12 @@ async function startWorker() {
           console.log(`[worker: ${jobType}] Processing job ${job.id}`);
           const schema = jobSchemas[jobType as JobType];
           const data = schema.parse(job.data);
-          await (processor as (job: { id: string; data: unknown }) => Promise<unknown>)({ id: job.id, data });
+          try {
+            await (processor as (job: { id: string; data: unknown }) => Promise<unknown>)({ id: job.id, data });
+          } catch (error) {
+            Sentry.captureException(error, { tags: { jobType }, extra: { jobId: job.id } });
+            throw error;
+          }
           console.log(`[worker: ${jobType}] Job ${job.id}: completed`);
         }));
       },
@@ -69,6 +75,7 @@ async function startWorker() {
   const shutdown = async () => {
     console.log("[worker] Shutting down...");
     await shutdownQueue();
+    await Sentry.flush(2000);
     process.exit(0);
   };
 
@@ -76,7 +83,9 @@ async function startWorker() {
   process.on("SIGINT", shutdown);
 }
 
-startWorker().catch((error) => {
+startWorker().catch(async (error) => {
   console.error("[worker] Failed to start worker:", error);
+  Sentry.captureException(error);
+  await Sentry.flush(2000);
   process.exit(1);
 });
