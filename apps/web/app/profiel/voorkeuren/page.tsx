@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 
-export default function VoorkeurenPage() {
+function VoorkeurenContent() {
   const { data: session, isPending } = authClient.useSession();
   const searchParams = useSearchParams();
   const afmelden = searchParams.get("afmelden") === "1";
@@ -164,5 +164,21 @@ export default function VoorkeurenPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VoorkeurenPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background pt-24 pb-16">
+          <div className="max-w-xl mx-auto px-4">
+            <div className="h-20 rounded-xl border border-border bg-card animate-pulse" />
+          </div>
+        </div>
+      }
+    >
+      <VoorkeurenContent />
+    </Suspense>
   );
 }
