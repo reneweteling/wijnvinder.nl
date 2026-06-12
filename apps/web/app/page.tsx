@@ -1,5 +1,6 @@
 import { Hero } from "@/components/landing/hero";
 import { FeaturedWines } from "@/components/landing/featured-wines";
+import { SommelierPromo } from "@/components/landing/sommelier-promo";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { CtaSection } from "@/components/landing/cta-section";
@@ -29,6 +30,7 @@ export default async function Home() {
     <main>
       <Hero shopCount={shopCount} wineCount={wineCount} />
       <FeaturedWines wineCount={wineCount} />
+      <SommelierPromo />
       <HowItWorks shopCount={shopCount} />
       <FeaturesSection shopCount={shopCount} />
       <CtaSection shopCount={shopCount} />

@@ -41,6 +41,7 @@ export function Hero({
           src="/images/hero-wine.jpg"
           alt="Wijn glazen"
           fill
+          sizes="100vw"
           className="object-cover object-center"
           priority
         />

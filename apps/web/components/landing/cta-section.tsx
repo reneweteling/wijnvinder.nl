@@ -15,6 +15,7 @@ export function CtaSection({ shopCount }: { shopCount: number }) {
           src="/images/cta-vineyard.jpg"
           alt="Wijnkelder"
           fill
+          sizes="100vw"
           className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-burgundy-dark/90 via-black/70 to-black/50" />

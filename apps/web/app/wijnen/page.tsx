@@ -4,12 +4,14 @@ import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSyncExternalStore } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getProfileSnapshot, getServerProfileSnapshot, subscribeProfile } from "@/lib/profile-cookie";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Wine, ChevronDown } from "lucide-react";
 import { WineGrid } from "@/components/wines/wine-grid";
 import { WineFilters } from "@/components/wines/wine-filters";
 import { SearchBar } from "@/components/wines/search-bar";
 import { SortControls } from "@/components/wines/sort-controls";
 import { EmptyState } from "@/components/wines/empty-state";
+import { SommelierWidget } from "@/components/sommelier/sommelier-widget";
 import type { WineFilters as WineFiltersType } from "@/components/wines/wine-filters";
 import type { SortOption } from "@/components/wines/sort-controls";
 import { scoreWines } from "@/lib/recommendation-engine";
@@ -118,6 +120,46 @@ export default function WijnenPage() {
     <Suspense>
       <WijnenContent />
     </Suspense>
+  );
+}
+
+function SommelierBanner() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-light hover:text-burgundy hover:bg-surface transition-colors"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2">
+          <Wine className="h-4 w-4 text-burgundy shrink-0" />
+          Weet je niet wat je zoekt? Vraag de sommelier
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="sommelier-panel"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden border-t border-border"
+          >
+            <div className="px-4 py-4">
+              <SommelierWidget variant="compact" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -286,6 +328,9 @@ function WijnenContent() {
 
           {/* Wine listing */}
           <div className="flex-1 min-w-0 space-y-6">
+            {/* Sommelier helper */}
+            <SommelierBanner />
+
             {/* Search */}
             <SearchBar value={query} onChange={setQuery} />
 
