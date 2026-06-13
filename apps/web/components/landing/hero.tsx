@@ -14,6 +14,7 @@ import {
   Star,
   Tag,
 } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 type QuickLink = {
   label: string;
@@ -81,6 +82,7 @@ export function Hero({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
+    if (q) track("search", { search_term: q, source: "hero" });
     router.push(q ? `/wijnen?q=${encodeURIComponent(q)}` : "/wijnen");
   };
 
@@ -88,11 +90,12 @@ export function Hero({
     e.preventDefault();
     const q = mauriceQuery.trim();
     if (!q) return;
+    track("ask_maurice", { question_length: q.length, source: "hero" });
     router.push(`/sommelier?vraag=${encodeURIComponent(q)}`);
   };
 
   return (
-    <section className="relative -mt-16 h-[100svh] sm:h-[88vh] sm:min-h-[680px] flex flex-col sm:flex-row sm:items-center sm:justify-center overflow-hidden">
+    <section className="relative -mt-16 h-[100svh] sm:h-screen sm:min-h-[680px] flex flex-col overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -112,22 +115,23 @@ export function Hero({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-white/[0.04] pointer-events-none z-[1]" />
 
       {/* Header clearance spacer — mobile only, matches the 64px fixed header */}
-      <div className="shrink-0 h-16 sm:hidden" aria-hidden="true" />
+      <div className="shrink-0 h-16" aria-hidden="true" />
 
       {/* Content — flex-1 so it fills the space between header spacer and chevron on mobile.
           pb-14 on mobile reserves space for the absolute chevron so centering is balanced. */}
-      <div className="relative z-10 flex-1 sm:flex-none flex items-center justify-center sm:block w-full px-4 sm:px-6 pb-14 sm:pb-0">
-      <div className="text-center text-white max-w-4xl mx-auto w-full sm:pt-0">
+      <div className="relative z-10 flex-1 flex items-stretch justify-center w-full px-4 sm:px-6 pb-14 sm:pb-8">
+      <div className="text-center text-white max-w-4xl mx-auto w-full flex flex-col h-full sm:pt-0">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex-1 flex flex-col justify-evenly"
         >
           <motion.span
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-block text-gold font-medium text-sm uppercase tracking-[0.2em] mb-2 sm:mb-6 border border-gold/30 rounded-full px-5 py-1.5"
+            className="inline-block self-center text-gold font-medium text-sm uppercase tracking-[0.2em] mb-2 sm:mb-0 border border-gold/30 rounded-full px-5 py-1.5"
           >
             Persoonlijk &bull; Slim &bull; Betaalbaar
           </motion.span>
@@ -136,7 +140,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-heading font-bold text-3xl sm:text-5xl md:text-6xl leading-tight mb-2 sm:mb-5"
+            className="font-heading font-bold text-3xl sm:text-5xl md:text-6xl leading-tight mb-2 sm:mb-0"
           >
             Ontdek Jouw{" "}
             <span className="text-gold">Perfecte Wijn</span>
@@ -146,7 +150,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-sm sm:text-lg text-white/80 max-w-2xl mx-auto mb-3 sm:mb-8 leading-relaxed"
+            className="text-sm sm:text-lg text-white/80 max-w-2xl mx-auto mb-3 sm:mb-0 leading-relaxed"
           >
             Vergelijk {wineCount.toLocaleString("nl-NL")} wijnen bij{" "}
             <Link href="/winkels" className="text-gold underline underline-offset-2 hover:text-gold/80">
@@ -161,7 +165,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="max-w-xl mx-auto mb-2 sm:mb-4"
+            className="w-full max-w-xl mx-auto mb-2 sm:mb-0"
           >
             <div className="flex items-center gap-2 bg-white rounded-full p-2 pl-5 shadow-2xl">
               <Search className="h-5 w-5 text-burgundy shrink-0" />
@@ -189,7 +193,7 @@ export function Hero({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.52 }}
-            className="max-w-xl mx-auto mb-2 sm:mb-5"
+            className="w-full max-w-xl mx-auto mb-2 sm:mb-0"
           >
             {/* Eyebrow label */}
             <div className="flex items-center justify-center gap-1.5 mb-1 sm:mb-2">
@@ -202,7 +206,7 @@ export function Hero({
             {/* Maurice card */}
             <form
               onSubmit={handleMauriceSubmit}
-              className="rounded-2xl border border-gold/40 bg-gold/[0.12] backdrop-blur-sm px-4 py-2 sm:py-3 shadow-lg focus-within:border-gold/70 focus-within:bg-gold/[0.18] transition-all"
+              className="rounded-2xl border border-gold/60 bg-gold/20 backdrop-blur-md px-4 py-2 sm:py-3 shadow-[0_6px_28px_-6px_rgba(212,194,122,0.45)] ring-1 ring-gold/20 focus-within:border-gold focus-within:bg-gold/25 transition-all"
             >
               <p className="hidden sm:block text-gold/80 text-xs mb-2.5 text-left">
                 Vertel wat je eet, Maurice kiest de wijn.
@@ -234,7 +238,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.55 }}
-            className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-8"
+            className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-0"
           >
             {QUICK_LINKS.map((link) => (
               <Link
