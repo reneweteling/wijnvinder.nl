@@ -13,6 +13,7 @@ export type UserRow = {
   emailVerified: boolean;
   weeklyDealsOptIn: boolean;
   favoriteCount: number;
+  lastLoginAt: string | null; // ISO string or null
   createdAt: string; // ISO string
 };
 
@@ -115,6 +116,30 @@ function buildColumns(adminId: string): ColumnDef<UserRow, unknown>[] {
       cell: ({ row }) => timeAgo(row.original.createdAt),
     },
     {
+      accessorKey: "lastLoginAt",
+      enableSorting: true,
+      meta: {
+        th: "text-left px-5 py-3 font-medium",
+        td: "px-5 py-3 text-text-light",
+      } satisfies ColMeta,
+      header: () => "Laatst ingelogd",
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.lastLoginAt
+          ? new Date(rowA.original.lastLoginAt).getTime()
+          : 0;
+        const b = rowB.original.lastLoginAt
+          ? new Date(rowB.original.lastLoginAt).getTime()
+          : 0;
+        return a - b;
+      },
+      cell: ({ row }) =>
+        row.original.lastLoginAt ? (
+          timeAgo(row.original.lastLoginAt)
+        ) : (
+          <span className="text-text-light/60 italic">Nooit</span>
+        ),
+    },
+    {
       id: "action",
       enableSorting: false,
       meta: {
@@ -140,9 +165,5 @@ export function UsersTable({
   data: UserRow[];
   adminId: string;
 }) {
-  return (
-    <div className="rounded-xl border border-border bg-card overflow-x-auto">
-      <DataTable columns={buildColumns(adminId)} data={data} />
-    </div>
-  );
+  return <DataTable columns={buildColumns(adminId)} data={data} />;
 }

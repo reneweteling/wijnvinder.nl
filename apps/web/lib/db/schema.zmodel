@@ -15,6 +15,7 @@ model User {
   image              String?
   role               String        @default("user")   // "user" | "admin"
   weeklyDealsOptIn   Boolean       @default(true)
+  lastLoginAt        DateTime?
   accounts           Account[]
   sessions           Session[]
   wineProfile        WineProfile?

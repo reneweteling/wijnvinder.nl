@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
-import { pool } from "@/lib/db/client";
+import { pool, db } from "@/lib/db/client";
 import { sendEmail } from "@/lib/email";
 import { env } from "@/lib/env";
 
@@ -111,6 +111,22 @@ export const auth = betterAuth({
       // the sign-in itself proves ownership; better-auth then marks the local
       // email as verified on link.
       requireLocalEmailVerified: false,
+    },
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          try {
+            await db.user.update({
+              where: { id: session.userId },
+              data: { lastLoginAt: new Date() },
+            });
+          } catch {
+            // Never block login on a hook failure
+          }
+        },
+      },
     },
   },
   plugins: [nextCookies()],

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db/client";
 import { JobsTable, type JobRow } from "./jobs-table";
@@ -13,6 +14,11 @@ type QueueRow = {
   state: string;
   count: number;
 };
+
+const PAGE_SIZE = 25;
+
+const VALID_STATUSES = ["completed", "running", "pending", "failed"] as const;
+type JobStatus = (typeof VALID_STATUSES)[number];
 
 function statusBadge(status: string) {
   if (status === "completed") {
@@ -37,16 +43,56 @@ function statusBadge(status: string) {
   );
 }
 
-export default async function JobsPage() {
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+}) {
   await requireAdmin();
 
-  const scrapeJobs = await db.scrapeJob.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: {
-      shop: { select: { name: true } },
-    },
-  });
+  const { q, status: statusParam, page: pageParam } = await searchParams;
+
+  const query = q?.trim() ?? "";
+  const statusFilter = VALID_STATUSES.includes(statusParam as JobStatus)
+    ? (statusParam as JobStatus)
+    : "";
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const where = {
+    ...(query
+      ? { shop: { name: { contains: query, mode: "insensitive" as const } } }
+      : {}),
+    ...(statusFilter ? { status: statusFilter } : {}),
+  };
+
+  function buildHref(overrides: { page?: number; q?: string; status?: string }) {
+    const params = new URLSearchParams();
+    const newQ = overrides.q !== undefined ? overrides.q : query;
+    const newStatus =
+      overrides.status !== undefined ? overrides.status : statusFilter;
+    const newPage = overrides.page ?? page;
+    if (newQ) params.set("q", newQ);
+    if (newStatus) params.set("status", newStatus);
+    if (newPage > 1) params.set("page", String(newPage));
+    const qs = params.toString();
+    return `/admin/jobs${qs ? `?${qs}` : ""}`;
+  }
+
+  const [total, scrapeJobs] = await Promise.all([
+    db.scrapeJob.count({ where }),
+    db.scrapeJob.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: PAGE_SIZE,
+      skip,
+      include: {
+        shop: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   let queueRows: QueueRow[] | null = null;
   let queueError = false;
@@ -86,13 +132,80 @@ export default async function JobsPage() {
     <div className="space-y-10">
       {/* Scrape jobs */}
       <section>
-        <h2 className="font-heading text-xl font-semibold text-burgundy mb-4">
-          Scrape jobs
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading text-xl font-semibold text-burgundy">
+            Scrape jobs
+          </h2>
+          <span className="text-sm text-text-light">
+            {total.toLocaleString("nl-NL")} jobs gevonden
+          </span>
+        </div>
+
+        {/* Search form */}
+        <form method="GET" className="flex flex-wrap gap-3 mb-4">
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder="Zoek op winkel"
+            className="h-10 rounded-lg border border-border bg-card px-3 py-2 text-sm flex-1 min-w-48 placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-burgundy focus:border-transparent"
+          />
+          <select
+            name="status"
+            defaultValue={statusFilter}
+            className="h-10 rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-burgundy focus:border-transparent"
+          >
+            <option value="">Alle statussen</option>
+            <option value="completed">completed</option>
+            <option value="running">running</option>
+            <option value="pending">pending</option>
+            <option value="failed">failed</option>
+          </select>
+          <button
+            type="submit"
+            className="h-10 px-4 rounded-lg bg-burgundy text-white text-sm font-medium hover:bg-burgundy/90 transition-colors"
+          >
+            Zoeken
+          </button>
+        </form>
+
         {scrapeJobs.length === 0 ? (
           <p className="text-text-light text-sm">Geen scrape jobs gevonden.</p>
         ) : (
           <JobsTable data={jobRows} />
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center gap-3 mt-4">
+            {page > 1 ? (
+              <Link
+                href={buildHref({ page: page - 1 })}
+                className="px-4 py-2 text-sm rounded-lg border border-border bg-card hover:bg-surface transition-colors"
+              >
+                Vorige
+              </Link>
+            ) : (
+              <span className="px-4 py-2 text-sm rounded-lg border border-border bg-surface text-text-light/50 cursor-not-allowed">
+                Vorige
+              </span>
+            )}
+            <span className="text-sm text-text-light">
+              Pagina {page} van {totalPages}
+            </span>
+            {page < totalPages ? (
+              <Link
+                href={buildHref({ page: page + 1 })}
+                className="px-4 py-2 text-sm rounded-lg border border-border bg-card hover:bg-surface transition-colors"
+              >
+                Volgende
+              </Link>
+            ) : (
+              <span className="px-4 py-2 text-sm rounded-lg border border-border bg-surface text-text-light/50 cursor-not-allowed">
+                Volgende
+              </span>
+            )}
+          </div>
         )}
       </section>
 
