@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useFavoritesContext } from "@/lib/favorites-context";
+import { track } from "@/lib/analytics";
 
 type FavoriteButtonProps = {
   wineId: string;
@@ -29,6 +30,9 @@ export function FavoriteButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        track(active ? "remove_from_favorites" : "add_to_favorites", {
+          wine_id: wineId,
+        });
         toggleFavorite(wineId);
       }}
       className={`${padding} rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow ${className}`}

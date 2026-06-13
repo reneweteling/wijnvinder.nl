@@ -11,6 +11,7 @@ import {
   Import,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/analytics";
 import { useWineProfile } from "@/lib/hooks/use-wine-profile";
 import { StepWineTypes } from "./step-wine-types";
 import { StepGrapes } from "./step-grapes";
@@ -75,6 +76,7 @@ export function ProfileWizard() {
   const handleFinish = async () => {
     setIsSaving(true);
     await saveProfile();
+    track("profile_completed");
     setIsSaving(false);
     router.push("/wijnen");
   };

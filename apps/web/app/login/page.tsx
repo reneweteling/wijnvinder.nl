@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Wine, Mail, Lock, AlertCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SocialSignInButtons } from "@/components/auth/social-sign-in-buttons";
@@ -21,6 +22,7 @@ export default function LoginPage() {
 
   const handleSocialSignIn = async (provider: "google" | "microsoft") => {
     setIsSocialLoading(provider);
+    track("login", { method: provider });
     await authClient.signIn.social({ provider, callbackURL: "/wijnen" });
     setIsSocialLoading(null);
   };
@@ -39,6 +41,7 @@ export default function LoginPage() {
       if (result.error) {
         setError("Ongeldig e-mailadres of wachtwoord. Probeer het opnieuw.");
       } else {
+        track("login", { method: "email" });
         router.push("/wijnen");
       }
     } catch {

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Wine, User, Mail, Lock, AlertCircle, CheckCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ENABLED_SHOP_COUNT } from "@/lib/constants";
@@ -23,6 +24,7 @@ export default function RegistrerenPage() {
 
   const handleSocialSignIn = async (provider: "google" | "microsoft") => {
     setIsSocialLoading(provider);
+    track("sign_up", { method: provider });
     await authClient.signIn.social({ provider, callbackURL: "/wijnen" });
     setIsSocialLoading(null);
   };
@@ -52,6 +54,7 @@ export default function RegistrerenPage() {
           setError("Aanmelden mislukt. Controleer je gegevens en probeer opnieuw.");
         }
       } else {
+        track("sign_up", { method: "email" });
         router.push("/profiel");
       }
     } catch {

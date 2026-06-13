@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ExternalLink, CheckCircle, XCircle, Star } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 type ShopListing = {
   id: string;
@@ -128,7 +129,14 @@ export function PriceComparison({ listings }: PriceComparisonProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 flex items-center gap-1 text-xs text-burgundy hover:text-burgundy-dark font-medium transition-colors"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  track("shop_clickthrough", {
+                    shop_name: listing.shopName,
+                    price: listing.price,
+                    source: "prijsvergelijking",
+                  });
+                }}
               >
                 Bekijk
                 <ExternalLink className="h-3 w-3" />

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Wine, Heart, ChevronDown } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
@@ -61,6 +62,7 @@ export function Header() {
   }, [isUserMenuOpen]);
 
   const handleSignOut = async () => {
+    track("logout");
     await authClient.signOut();
     setIsMobileOpen(false);
     setIsUserMenuOpen(false);

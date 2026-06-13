@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Send, Wine, Info } from "lucide-react";
 import { WineCard } from "@/components/wines/wine-card";
+import { track } from "@/lib/analytics";
 import {
   getProfileSnapshot,
   getServerProfileSnapshot,
@@ -199,6 +200,12 @@ export function SommelierWidget({ variant = "full" }: SommelierWidgetProps) {
     setResult(null);
     setError(null);
     setQuotaError(null);
+
+    track("ask_maurice", {
+      question_length: question.trim().length,
+      has_profile: profile != null,
+      source: "sommelier",
+    });
 
     try {
       const res = await fetch("/api/sommelier", {

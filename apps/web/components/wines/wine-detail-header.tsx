@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { RatingStars } from "@/components/wines/rating-stars";
 import { buttonVariants } from "@/components/ui/button";
 import { WINE_TYPES } from "@/lib/constants";
 import { FavoriteButton } from "@/components/wines/favorite-button";
+import { track } from "@/lib/analytics";
 
 type WineDetailHeaderProps = {
   wine: {
@@ -46,6 +48,17 @@ export function WineDetailHeader({
 }: WineDetailHeaderProps) {
   const wineTypeLabel =
     WINE_TYPES.find((t) => t.value === wine.wineType)?.label ?? wine.wineType;
+
+  // Fire a view event once per wine when the detail header mounts.
+  useEffect(() => {
+    track("view_wine", {
+      wine_id: wine.id,
+      wine_name: wine.name,
+      wine_type: wine.wineType ?? undefined,
+      price: bestPrice ?? undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wine.id]);
 
   const onSale =
     originalPrice != null && bestPrice != null && originalPrice > bestPrice;
@@ -202,6 +215,15 @@ export function WineDetailHeader({
                     href={`/uit/${bestListingId}?bron=detail-header`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() =>
+                      track("shop_clickthrough", {
+                        wine_id: wine.id,
+                        wine_name: wine.name,
+                        shop_name: bestShopName ?? undefined,
+                        price: bestPrice ?? undefined,
+                        source: "detail-header",
+                      })
+                    }
                     className={`${buttonVariants({ variant: "primary", size: "lg" })} flex items-center gap-2`}
                   >
                     Bekijk aanbieding
