@@ -92,7 +92,7 @@ export function Hero({
   };
 
   return (
-    <section className="relative -mt-16 h-[100svh] sm:h-[88vh] sm:min-h-[680px] flex items-start sm:items-center justify-center overflow-hidden">
+    <section className="relative -mt-16 h-[100svh] sm:h-[88vh] sm:min-h-[680px] flex flex-col sm:flex-row sm:items-center sm:justify-center overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -111,8 +111,13 @@ export function Hero({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-gold/[0.08] pointer-events-none z-[1]" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-white/[0.04] pointer-events-none z-[1]" />
 
-      {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 sm:px-6 max-w-4xl mx-auto w-full pt-20 sm:pt-0">
+      {/* Header clearance spacer — mobile only, matches the 64px fixed header */}
+      <div className="shrink-0 h-16 sm:hidden" aria-hidden="true" />
+
+      {/* Content — flex-1 so it fills the space between header spacer and chevron on mobile.
+          pb-14 on mobile reserves space for the absolute chevron so centering is balanced. */}
+      <div className="relative z-10 flex-1 sm:flex-none flex items-center justify-center sm:block w-full px-4 sm:px-6 pb-14 sm:pb-0">
+      <div className="text-center text-white max-w-4xl mx-auto w-full sm:pt-0">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -263,6 +268,7 @@ export function Hero({
             </Link>
           </motion.div>
         </motion.div>
+      </div>
       </div>
 
       {/* Scroll indicator */}
