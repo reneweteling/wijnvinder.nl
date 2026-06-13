@@ -152,6 +152,7 @@ function buildColumns(adminId: string): ColumnDef<UserRow, unknown>[] {
           userId={row.original.id}
           currentRole={row.original.role}
           isSelf={row.original.id === adminId}
+          userLabel={row.original.name ?? row.original.email}
         />
       ),
     },
