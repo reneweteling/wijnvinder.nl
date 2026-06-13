@@ -5,6 +5,7 @@ import { useState } from "react";
 type ShopFormProps = {
   shopId: string;
   enabled: boolean;
+  priority: number;
   referralEnabled: boolean;
   referralParam: string | null;
   affiliateLinkTemplate: string | null;
@@ -13,11 +14,13 @@ type ShopFormProps = {
 export function ShopForm({
   shopId,
   enabled: initialEnabled,
+  priority: initialPriority,
   referralEnabled: initialReferralEnabled,
   referralParam: initialReferralParam,
   affiliateLinkTemplate: initialAffiliateLinkTemplate,
 }: ShopFormProps) {
   const [enabled, setEnabled] = useState(initialEnabled);
+  const [priority, setPriority] = useState(String(initialPriority));
   const [referralEnabled, setReferralEnabled] = useState(
     initialReferralEnabled,
   );
@@ -44,6 +47,7 @@ export function ShopForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         enabled,
+        priority: Number.parseInt(priority, 10) || 0,
         referralEnabled,
         referralParam: referralParam.trim() || null,
         affiliateLinkTemplate: affiliateLinkTemplate.trim() || null,
@@ -80,6 +84,28 @@ export function ShopForm({
           Winkel actief
         </span>
       </label>
+
+      {/* Prioriteit */}
+      <div>
+        <label
+          htmlFor={`priority-${shopId}`}
+          className="block text-sm font-medium text-foreground mb-1"
+        >
+          Prioriteit
+        </label>
+        <input
+          id={`priority-${shopId}`}
+          type="number"
+          step={1}
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="w-full max-w-[8rem] rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-burgundy"
+        />
+        <p className="mt-1 text-xs text-text-light">
+          Hoger = wordt eerder aangeprezen als dezelfde wijn bij meerdere winkels
+          staat. Bij gelijke prioriteit wint de laagste prijs.
+        </p>
+      </div>
 
       {/* Affiliate-links actief */}
       <label className="flex items-center gap-3 cursor-pointer select-none">

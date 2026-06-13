@@ -7,6 +7,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
+import { pickPromotedListing } from "@/lib/listings";
 import { scoreWines } from "@/lib/recommendation-engine";
 import type { WineCardWine, WineProfileData } from "@/lib/types";
 
@@ -225,12 +226,17 @@ function toWineCard(
     vivinoScore: number | null;
     imageUrl: string | null;
     producer: { name: string } | null;
-    listings: { price: number; originalPrice: number | null; available: boolean }[];
+    listings: {
+      price: number;
+      originalPrice: number | null;
+      available: boolean;
+      shop: { priority: number | null } | null;
+    }[];
   }
 ): WineCardWine {
+  // Promoted listing wins on shop priority first, then lowest price.
   const availableListings = wine.listings.filter((l) => l.available);
-  availableListings.sort((a, b) => a.price - b.price);
-  const cheapest = availableListings[0];
+  const promoted = pickPromotedListing(wine.listings);
 
   return {
     id: wine.id,
@@ -243,8 +249,8 @@ function toWineCard(
     wineType: wine.wineType,
     vivinoScore: wine.vivinoScore,
     imageUrl: wine.imageUrl,
-    bestPrice: cheapest?.price ?? null,
-    originalPrice: cheapest?.originalPrice ?? null,
+    bestPrice: promoted?.price ?? null,
+    originalPrice: promoted?.originalPrice ?? null,
     shopCount: availableListings.length,
   };
 }
@@ -283,9 +289,10 @@ async function queryWines(
   // Build listing filter
   type ListingWhere = {
     available: boolean;
+    shop: { enabled: boolean };
     price?: { lte: number };
   };
-  const listingFilter: ListingWhere = { available: true };
+  const listingFilter: ListingWhere = { available: true, shop: { enabled: true } };
   if (price_max != null) listingFilter.price = { lte: price_max };
 
   // Build grape filter: OR over all provided grapes (case-insensitive contains)
@@ -322,8 +329,13 @@ async function queryWines(
     include: {
       producer: { select: { name: true } },
       listings: {
-        where: { available: true },
-        select: { price: true, originalPrice: true, available: true },
+        where: { available: true, shop: { enabled: true } },
+        select: {
+          price: true,
+          originalPrice: true,
+          available: true,
+          shop: { select: { priority: true } },
+        },
       },
     },
     orderBy: [{ vivinoScore: "desc" }],

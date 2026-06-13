@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Star, Globe } from "lucide-react";
 import { db } from "@/lib/db/client";
+import { pickPromotedListing } from "@/lib/listings";
 import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -45,9 +46,8 @@ export default async function ProducentPage({ params }: PageProps) {
       wines: {
         include: {
           listings: {
-            where: { available: true },
-            orderBy: { price: "asc" },
-            take: 1,
+            where: { available: true, shop: { enabled: true } },
+            include: { shop: { select: { priority: true } } },
           },
         },
         orderBy: { name: "asc" },
@@ -108,7 +108,7 @@ export default async function ProducentPage({ params }: PageProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {producer.wines.map((wine) => {
-            const bestPrice = wine.listings[0]?.price ?? null;
+            const bestPrice = pickPromotedListing(wine.listings)?.price ?? null;
 
             return (
               <Link

@@ -102,6 +102,7 @@ export async function processWeeklyDealsEmail(_job: {
     where: {
       available: true,
       originalPrice: { not: null },
+      shop: { enabled: true },
     },
     select: {
       price: true,

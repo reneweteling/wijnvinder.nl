@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { pickPromotedListing } from "@/lib/listings";
 import type { CanonicalWineWhereInput } from "@/lib/db/input";
 
 const ALLOWED_SORTS = new Set(["rating-desc", "price-asc", "price-desc"]);
@@ -34,6 +35,11 @@ export async function GET(request: NextRequest) {
 
   // Build where clause as a single AND array so conditions never overwrite each other.
   const andConditions: CanonicalWineWhereInput[] = [];
+
+  // Only show wines that have at least one available listing at an active shop.
+  andConditions.push({
+    listings: { some: { available: true, shop: { enabled: true } } },
+  });
 
   if (q) {
     // Each search term must match at least one field.
@@ -92,6 +98,7 @@ export async function GET(request: NextRequest) {
       listings: {
         some: {
           available: true,
+          shop: { enabled: true },
           ...(priceMin != null ? { price: { gte: priceMin } } : {}),
           ...(priceMax != null ? { price: { lte: priceMax } } : {}),
         },
@@ -104,6 +111,7 @@ export async function GET(request: NextRequest) {
       listings: {
         some: {
           available: true,
+          shop: { enabled: true },
           originalPrice: { not: null },
         },
       },
@@ -142,7 +150,7 @@ export async function GET(request: NextRequest) {
         take: pageSize,
         include: {
           listings: {
-            where: { available: true },
+            where: { available: true, shop: { enabled: true } },
             orderBy: { price: "asc" },
             select: {
               id: true,
@@ -150,7 +158,7 @@ export async function GET(request: NextRequest) {
               originalPrice: true,
               available: true,
               url: true,
-              shop: { select: { slug: true, name: true } },
+              shop: { select: { slug: true, name: true, priority: true } },
             },
           },
         },
@@ -161,12 +169,13 @@ export async function GET(request: NextRequest) {
     // Enrich each wine with computed fields
     const enriched = wines.map((wine) => {
       const availableListings = wine.listings.filter((l) => l.available);
-      const cheapest = availableListings[0];
+      // The promoted listing wins on shop priority first, then lowest price.
+      const promoted = pickPromotedListing(availableListings);
 
       return {
         ...wine,
-        bestPrice: cheapest?.price ?? null,
-        originalPrice: cheapest?.originalPrice ?? null,
+        bestPrice: promoted?.price ?? null,
+        originalPrice: promoted?.originalPrice ?? null,
         shopCount: availableListings.length,
       };
     });

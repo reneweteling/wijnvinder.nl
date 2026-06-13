@@ -149,6 +149,7 @@ model Shop {
   referralEnabled         Boolean       @default(false)
   affiliateLinkTemplate   String?       // affiliate deeplink template; placeholders {path}, {url}, {ref}
   enabled         Boolean       @default(true)
+  priority        Int           @default(0)   // higher = promoted first when the same wine sells at multiple shops (max commission)
   listings        ShopListing[]
   scrapeJobs      ScrapeJob[]
   outboundClicks  OutboundClick[]

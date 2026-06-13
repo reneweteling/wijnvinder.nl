@@ -9,6 +9,7 @@ import { PriceComparison } from "@/components/wines/price-comparison";
 import { PriceHistoryChart } from "@/components/wines/price-history-chart";
 import { MatchBreakdown } from "@/components/wines/match-breakdown";
 import { WineCard } from "@/components/wines/wine-card";
+import { pickPromotedListing } from "@/lib/listings";
 import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -38,7 +39,7 @@ const fetchWineForMetadata = cache(async (slug: string) => {
     where: { slug },
     include: {
       producer: true,
-      listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
+      listings: { where: { available: true, shop: { enabled: true } }, orderBy: { price: "asc" }, take: 1 },
     },
   });
 });
@@ -48,11 +49,14 @@ const fetchWineForPage = cache(async (slug: string) => {
     where: { slug },
     include: {
       producer: true,
-      // Include ALL listings (available and unavailable) — the price-comparison
-      // table shows unavailable entries with a strikethrough price, so we need them.
+      // Include all listings (available and unavailable) from active shops — the
+      // price-comparison table shows unavailable entries with a strikethrough price,
+      // so we need them. Disabled shops are excluded entirely. Ordered by price for
+      // the comparison table; the promoted shop is picked separately via priority.
       listings: {
+        where: { shop: { enabled: true } },
         orderBy: { price: "asc" },
-        include: { shop: { select: { slug: true, name: true } } },
+        include: { shop: { select: { slug: true, name: true, priority: true } } },
       },
     },
   });
@@ -130,14 +134,20 @@ export default async function WijnDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Compute best price from available listings
+  // The promoted listing (highest shop priority, then lowest price) is the shop we
+  // actively push: header CTA, price shown on cards, redirect target.
   const availableListings = wine.listings.filter((l) => l.available);
-  const cheapest = availableListings[0] ?? null;
+  const promoted = pickPromotedListing(availableListings);
 
-  const bestPrice = cheapest?.price ?? null;
-  const originalPrice = cheapest?.originalPrice ?? null;
-  const bestShopName = cheapest?.shop?.name ?? null;
-  const bestListingId = cheapest?.id ?? null;
+  const bestPrice = promoted?.price ?? null;
+  const originalPrice = promoted?.originalPrice ?? null;
+  const bestShopName = promoted?.shop?.name ?? null;
+  const bestListingId = promoted?.id ?? null;
+
+  // Price range across available listings (independent of promotion order) for JSON-LD.
+  const availablePrices = availableListings.map((l) => l.price);
+  const lowPrice = availablePrices.length ? Math.min(...availablePrices) : null;
+  const highPrice = availablePrices.length ? Math.max(...availablePrices) : null;
 
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - PRICE_HISTORY_DAYS * 24 * 60 * 60 * 1000);
@@ -150,11 +160,11 @@ export default async function WijnDetailPage({ params }: PageProps) {
 
   // Run all secondary queries in parallel
   const [rawHistory, relatedWines, similarWinesCandidates] = await Promise.all([
-    // Price history for the cheapest listing (last 90 days, max 30 points)
-    cheapest
+    // Price history for the promoted listing (last 90 days, max 30 points)
+    promoted
       ? db.priceHistory.findMany({
           where: {
-            listingId: cheapest.id,
+            listingId: promoted.id,
             recordedAt: { gte: ninetyDaysAgo },
           },
           orderBy: { recordedAt: "asc" },
@@ -169,7 +179,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
             producerId: wine.producerId,
             id: { not: wine.id },
           },
-          include: { listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 } },
+          include: { listings: { where: { available: true, shop: { enabled: true } }, include: { shop: { select: { priority: true } } } } },
           take: 6,
         })
       : Promise.resolve([]),
@@ -181,13 +191,13 @@ export default async function WijnDetailPage({ params }: PageProps) {
           where: {
             id: { not: wine.id },
             wineType: wine.wineType,
-            listings: { some: { available: true } },
+            listings: { some: { available: true, shop: { enabled: true } } },
             NOT: { name: { contains: "pakket", mode: "insensitive" } },
             OR: similarOrConditions,
           },
           include: {
             producer: { select: { name: true } },
-            listings: { where: { available: true }, orderBy: { price: "asc" }, take: 1 },
+            listings: { where: { available: true, shop: { enabled: true } }, include: { shop: { select: { priority: true } } } },
           },
           orderBy: [{ vivinoScore: "desc" }],
           take: 20,
@@ -206,7 +216,7 @@ export default async function WijnDetailPage({ params }: PageProps) {
   const similarWines = bestPrice
     ? similarWinesCandidates
         .filter((w) => {
-          const p = w.listings[0]?.price;
+          const p = pickPromotedListing(w.listings)?.price;
           if (p == null) return false;
           return p >= bestPrice * 0.6 && p <= bestPrice * 1.6;
         })
@@ -239,8 +249,8 @@ export default async function WijnDetailPage({ params }: PageProps) {
             "offers": {
               "@type": "AggregateOffer",
               "priceCurrency": "EUR",
-              "lowPrice": availableListings[0].price,
-              "highPrice": availableListings[availableListings.length - 1].price,
+              "lowPrice": lowPrice,
+              "highPrice": highPrice,
               "offerCount": availableListings.length,
               "offers": availableListings.map(l => ({
                 "@type": "Offer",
@@ -373,25 +383,28 @@ export default async function WijnDetailPage({ params }: PageProps) {
             Vergelijkbare wijnen
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {similarWines.map((similar) => (
-              <WineCard
-                key={similar.id}
-                wine={{
-                  id: similar.id,
-                  slug: similar.slug,
-                  name: similar.name,
-                  producer: similar.producer?.name ?? null,
-                  grape: similar.grape,
-                  country: similar.country,
-                  region: similar.region,
-                  wineType: similar.wineType,
-                  vivinoScore: similar.vivinoScore,
-                  imageUrl: similar.imageUrl,
-                  bestPrice: similar.listings[0]?.price ?? null,
-                  originalPrice: similar.listings[0]?.originalPrice ?? null,
-                }}
-              />
-            ))}
+            {similarWines.map((similar) => {
+              const promo = pickPromotedListing(similar.listings);
+              return (
+                <WineCard
+                  key={similar.id}
+                  wine={{
+                    id: similar.id,
+                    slug: similar.slug,
+                    name: similar.name,
+                    producer: similar.producer?.name ?? null,
+                    grape: similar.grape,
+                    country: similar.country,
+                    region: similar.region,
+                    wineType: similar.wineType,
+                    vivinoScore: similar.vivinoScore,
+                    imageUrl: similar.imageUrl,
+                    bestPrice: promo?.price ?? null,
+                    originalPrice: promo?.originalPrice ?? null,
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -411,34 +424,37 @@ export default async function WijnDetailPage({ params }: PageProps) {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {relatedWines.map((related) => (
-              <Link
-                key={related.id}
-                href={`/wijn/${related.slug}`}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:shadow-sm transition-shadow"
-              >
-                {related.imageUrl && (
-                  <Image
-                    src={related.imageUrl}
-                    alt={related.name}
-                    width={48}
-                    height={64}
-                    className="object-contain rounded"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-foreground truncate">{related.name}</p>
-                  {related.vintage && (
-                    <p className="text-xs text-text-light">{related.vintage}</p>
+            {relatedWines.map((related) => {
+              const promo = pickPromotedListing(related.listings);
+              return (
+                <Link
+                  key={related.id}
+                  href={`/wijn/${related.slug}`}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:shadow-sm transition-shadow"
+                >
+                  {related.imageUrl && (
+                    <Image
+                      src={related.imageUrl}
+                      alt={related.name}
+                      width={48}
+                      height={64}
+                      className="object-contain rounded"
+                    />
                   )}
-                  {related.listings[0] && (
-                    <p className="text-sm font-semibold text-burgundy">
-                      €{related.listings[0].price.toFixed(2)}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-foreground truncate">{related.name}</p>
+                    {related.vintage && (
+                      <p className="text-xs text-text-light">{related.vintage}</p>
+                    )}
+                    {promo && (
+                      <p className="text-sm font-semibold text-burgundy">
+                        €{promo.price.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

@@ -27,6 +27,11 @@ export async function GET(
     return NextResponse.redirect(new URL("/wijnen", request.url));
   }
 
+  // Never send traffic to a deactivated shop, even via a stale link.
+  if (!listing.shop.enabled) {
+    return NextResponse.redirect(new URL("/wijnen", request.url));
+  }
+
   // Validate that the listing URL is https and belongs to the shop's own domain.
   let targetUrlHostname: string;
   try {

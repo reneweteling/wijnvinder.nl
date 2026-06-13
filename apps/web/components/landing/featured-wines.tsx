@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
+import { pickPromotedListing } from "@/lib/listings";
 import { WineCard } from "@/components/wines/wine-card";
 
 const getFeaturedWines = unstable_cache(
@@ -10,7 +11,7 @@ const getFeaturedWines = unstable_cache(
       where: {
         vivinoScore: { gte: 4, lte: 4.9 },
         imageUrl: { not: null },
-        listings: { some: { available: true } },
+        listings: { some: { available: true, shop: { enabled: true } } },
         // Keep sample/surprise packages out of the showcase
         NOT: { name: { contains: "pakket", mode: "insensitive" } },
       },
@@ -19,9 +20,8 @@ const getFeaturedWines = unstable_cache(
       include: {
         producer: { select: { name: true } },
         listings: {
-          where: { available: true },
-          orderBy: { price: "asc" },
-          take: 1,
+          where: { available: true, shop: { enabled: true } },
+          include: { shop: { select: { priority: true } } },
         },
       },
     }),
@@ -56,25 +56,28 @@ export async function FeaturedWines({ wineCount }: { wineCount: number }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {wines.map((wine) => (
-            <WineCard
-              key={wine.id}
-              wine={{
-                id: wine.id,
-                slug: wine.slug,
-                name: wine.name,
-                producer: wine.producer?.name ?? null,
-                grape: wine.grape,
-                country: wine.country,
-                region: wine.region,
-                wineType: wine.wineType,
-                vivinoScore: wine.vivinoScore,
-                imageUrl: wine.imageUrl,
-                bestPrice: wine.listings[0]?.price ?? null,
-                originalPrice: wine.listings[0]?.originalPrice ?? null,
-              }}
-            />
-          ))}
+          {wines.map((wine) => {
+            const promo = pickPromotedListing(wine.listings);
+            return (
+              <WineCard
+                key={wine.id}
+                wine={{
+                  id: wine.id,
+                  slug: wine.slug,
+                  name: wine.name,
+                  producer: wine.producer?.name ?? null,
+                  grape: wine.grape,
+                  country: wine.country,
+                  region: wine.region,
+                  wineType: wine.wineType,
+                  vivinoScore: wine.vivinoScore,
+                  imageUrl: wine.imageUrl,
+                  bestPrice: promo?.price ?? null,
+                  originalPrice: promo?.originalPrice ?? null,
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

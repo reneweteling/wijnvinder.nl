@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authDb } from "@/lib/db/client";
+import { pickPromotedListing } from "@/lib/listings";
 import { getServerAuthSession } from "@/lib/auth";
 
 export async function GET() {
@@ -12,8 +13,8 @@ export async function GET() {
       wine: {
         include: {
           listings: {
-            where: { available: true },
-            orderBy: { price: "asc" as const },
+            where: { available: true, shop: { enabled: true } },
+            include: { shop: { select: { priority: true } } },
           },
         },
       },
@@ -22,7 +23,8 @@ export async function GET() {
   });
 
   const enriched = favorites.map((fav) => {
-    const cheapest = fav.wine.listings[0];
+    // Promoted listing wins on shop priority first, then lowest price.
+    const promoted = pickPromotedListing(fav.wine.listings);
     return {
       id: fav.id,
       wineId: fav.wineId,
@@ -31,8 +33,8 @@ export async function GET() {
       wine: {
         ...fav.wine,
         listings: undefined,
-        bestPrice: cheapest?.price ?? null,
-        originalPrice: cheapest?.originalPrice ?? null,
+        bestPrice: promoted?.price ?? null,
+        originalPrice: promoted?.originalPrice ?? null,
         shopCount: fav.wine.listings.length,
       },
     };

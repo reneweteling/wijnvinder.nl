@@ -11,6 +11,7 @@ export type ShopItem = {
   baseUrl: string;
   logoUrl: string | null;
   enabled: boolean;
+  priority: number;
   referralEnabled: boolean;
   referralParam: string | null;
   affiliateLinkTemplate: string | null;
@@ -56,6 +57,9 @@ function ShopCard({ shop }: { shop: ShopItem }) {
                 inactief
               </span>
             )}
+            <span className="text-xs font-medium text-burgundy bg-burgundy-light border border-border rounded-full px-2 py-0.5">
+              prio {shop.priority}
+            </span>
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-text-light">
@@ -73,6 +77,7 @@ function ShopCard({ shop }: { shop: ShopItem }) {
           <ShopForm
             shopId={shop.id}
             enabled={shop.enabled}
+            priority={shop.priority}
             referralEnabled={shop.referralEnabled}
             referralParam={shop.referralParam}
             affiliateLinkTemplate={shop.affiliateLinkTemplate}

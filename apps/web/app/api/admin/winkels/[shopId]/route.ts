@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 
 const patchSchema = z.object({
   enabled: z.boolean().optional(),
+  priority: z.number().int().optional(),
   referralEnabled: z.boolean().optional(),
   referralParam: z.string().optional().nullable(),
   affiliateLinkTemplate: z.string().optional().nullable(),
@@ -70,6 +71,7 @@ export async function PATCH(
       where: { id: shopId },
       data: {
         ...(body.enabled !== undefined && { enabled: body.enabled }),
+        ...(body.priority !== undefined && { priority: body.priority }),
         ...(body.referralEnabled !== undefined && {
           referralEnabled: body.referralEnabled,
         }),
@@ -81,6 +83,7 @@ export async function PATCH(
         name: true,
         slug: true,
         enabled: true,
+        priority: true,
         referralEnabled: true,
         referralParam: true,
         affiliateLinkTemplate: true,
