@@ -5,16 +5,66 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Search, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Flame,
+  Search,
+  Sparkles,
+  Star,
+  Tag,
+} from "lucide-react";
 
-const QUICK_LINKS: { label: string; href: string }[] = [
-  { label: "🔥 Aanbiedingen", href: "/wijnen?aanbiedingen=1" },
-  { label: "🍷 Rood", href: "/wijnen?type=red" },
-  { label: "🥂 Wit", href: "/wijnen?type=white" },
-  { label: "🌸 Rosé", href: "/wijnen?type=rose" },
-  { label: "🍾 Mousserend", href: "/wijnen?type=sparkling" },
-  { label: "💶 Onder €10", href: "/wijnen?priceMax=10" },
-  { label: "⭐ Best beoordeeld", href: "/wijnen?minRating=4&sort=rating-desc" },
+type QuickLink = {
+  label: string;
+  href: string;
+  icon?: React.ReactNode;
+};
+
+const QUICK_LINKS: QuickLink[] = [
+  {
+    label: "Aanbiedingen",
+    href: "/wijnen?aanbiedingen=1",
+    icon: <Flame className="w-3.5 h-3.5 text-orange-400" />,
+  },
+  {
+    label: "Rood",
+    href: "/wijnen?type=red",
+    icon: (
+      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#7B1F2E] ring-1 ring-white/20 shrink-0" />
+    ),
+  },
+  {
+    label: "Wit",
+    href: "/wijnen?type=white",
+    icon: (
+      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#D4C27A] ring-1 ring-white/20 shrink-0" />
+    ),
+  },
+  {
+    label: "Rosé",
+    href: "/wijnen?type=rose",
+    icon: (
+      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#E8A0A8] ring-1 ring-white/20 shrink-0" />
+    ),
+  },
+  {
+    label: "Mousserend",
+    href: "/wijnen?type=sparkling",
+    icon: (
+      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#C9B97A] ring-1 ring-white/20 shrink-0" />
+    ),
+  },
+  {
+    label: "Onder €10",
+    href: "/wijnen?priceMax=10",
+    icon: <Tag className="w-3.5 h-3.5 text-white/70" />,
+  },
+  {
+    label: "Best beoordeeld",
+    href: "/wijnen?minRating=4&sort=rating-desc",
+    icon: <Star className="w-3.5 h-3.5 text-gold" />,
+  },
 ];
 
 export function Hero({
@@ -42,7 +92,7 @@ export function Hero({
   };
 
   return (
-    <section className="relative -mt-16 h-[88vh] min-h-[620px] flex items-start sm:items-center justify-center overflow-hidden">
+    <section className="relative -mt-16 h-[100svh] sm:h-[88vh] sm:min-h-[680px] flex items-start sm:items-center justify-center overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -129,34 +179,50 @@ export function Hero({
             </div>
           </motion.form>
 
-          {/* Maurice AI sommelier row */}
-          <motion.form
-            onSubmit={handleMauriceSubmit}
+          {/* Maurice AI sommelier block */}
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.52 }}
             className="max-w-xl mx-auto mb-3 sm:mb-5"
           >
-            <div className="flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 backdrop-blur-sm px-3 py-1.5 focus-within:border-gold/80 focus-within:bg-gold/15 transition-colors">
-              <Sparkles className="h-4 w-4 text-gold shrink-0" />
-              <input
-                type="text"
-                value={mauriceQuery}
-                onChange={(e) => setMauriceQuery(e.target.value)}
-                placeholder="Vraag Maurice: wat past bij garnalen in knoflookboter?"
-                className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-gold/60 focus:outline-none"
-                aria-label="Vraag Maurice"
-              />
-              <button
-                type="submit"
-                aria-label="Vraag Maurice"
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gold/20 hover:bg-gold/35 border border-gold/40 text-gold text-xs font-semibold px-3 py-1 transition-colors"
-              >
-                <span className="hidden sm:inline">Vraag</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
+            {/* Eyebrow label */}
+            <div className="flex items-center justify-center gap-1.5 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-gold" />
+              <span className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">
+                Nieuw · AI-sommelier
+              </span>
             </div>
-          </motion.form>
+
+            {/* Maurice card */}
+            <form
+              onSubmit={handleMauriceSubmit}
+              className="rounded-2xl border border-gold/40 bg-gold/[0.12] backdrop-blur-sm px-4 py-3 shadow-lg focus-within:border-gold/70 focus-within:bg-gold/[0.18] transition-all"
+            >
+              <p className="text-gold/80 text-xs mb-2.5 text-left">
+                Vertel wat je eet, Maurice kiest de wijn.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={mauriceQuery}
+                  onChange={(e) => setMauriceQuery(e.target.value)}
+                  placeholder="Bijv. garnalen in knoflookboter, lamskotelet..."
+                  className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
+                  aria-label="Vraag Maurice"
+                />
+                <button
+                  type="submit"
+                  aria-label="Vraag Maurice"
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gold hover:bg-gold/90 text-[#1a0a00] text-xs font-bold px-4 py-1.5 transition-colors"
+                >
+                  <span className="hidden sm:inline">Vraag Maurice</span>
+                  <span className="sm:hidden">Vraag</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </form>
+          </motion.div>
 
           {/* Quick links into the catalog */}
           <motion.div
@@ -169,8 +235,9 @@ export function Hero({
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm text-white/90 hover:bg-white/20 hover:border-white/50 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-sm text-white/90 hover:bg-white/20 hover:border-white/50 transition-colors"
               >
+                {link.icon}
                 {link.label}
               </Link>
             ))}
