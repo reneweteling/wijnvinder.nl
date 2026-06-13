@@ -4,13 +4,12 @@ import { SommelierPromo } from "@/components/landing/sommelier-promo";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { CtaSection } from "@/components/landing/cta-section";
-import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/client";
 import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
-// Rendered at runtime so the production build never needs a database.
-// The query result is cached for an hour via unstable_cache.
+// Rendered fresh per request so the wine/shop counts always reflect the
+// currently active shops (toggling a shop in admin shows up immediately).
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -71,17 +70,16 @@ function faqJsonLd(wineCount: number, shopCount: number): string {
   return JSON.stringify(faq).replace(/</g, "\\u003c");
 }
 
-const getHomeStats = unstable_cache(
-  async () => {
-    const [shopCount, wineCount] = await Promise.all([
-      db.shop.count({ where: { enabled: true } }),
-      db.canonicalWine.count(),
-    ]);
-    return { shopCount, wineCount };
-  },
-  ["home-stats"],
-  { revalidate: 3600 },
-);
+async function getHomeStats() {
+  const [shopCount, wineCount] = await Promise.all([
+    db.shop.count({ where: { enabled: true } }),
+    // Only count wines that are actually browsable: available at an active shop.
+    db.canonicalWine.count({
+      where: { listings: { some: { available: true, shop: { enabled: true } } } },
+    }),
+  ]);
+  return { shopCount, wineCount };
+}
 
 export default async function Home() {
   const { shopCount, wineCount } = await getHomeStats();
