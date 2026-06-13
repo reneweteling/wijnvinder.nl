@@ -42,7 +42,7 @@ export function Hero({
   };
 
   return (
-    <section className="relative -mt-16 h-[88vh] min-h-[620px] flex items-center justify-center overflow-hidden">
+    <section className="relative -mt-16 h-[88vh] min-h-[620px] flex items-start sm:items-center justify-center overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -62,7 +62,7 @@ export function Hero({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-white/[0.04] pointer-events-none z-[1]" />
 
       {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 sm:px-6 max-w-4xl mx-auto w-full">
+      <div className="relative z-10 text-center text-white px-4 sm:px-6 max-w-4xl mx-auto w-full pt-24 sm:pt-0">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export function Hero({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-block text-gold font-medium text-sm uppercase tracking-[0.2em] mb-6 border border-gold/30 rounded-full px-5 py-1.5"
+            className="inline-block text-gold font-medium text-sm uppercase tracking-[0.2em] mb-4 sm:mb-6 border border-gold/30 rounded-full px-5 py-1.5"
           >
             Persoonlijk &bull; Slim &bull; Betaalbaar
           </motion.span>
@@ -81,7 +81,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-heading font-bold text-4xl sm:text-5xl md:text-6xl leading-tight mb-5"
+            className="font-heading font-bold text-3xl sm:text-5xl md:text-6xl leading-tight mb-3 sm:mb-5"
           >
             Ontdek Jouw{" "}
             <span className="text-gold">Perfecte Wijn</span>
@@ -91,7 +91,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-sm sm:text-lg text-white/80 max-w-2xl mx-auto mb-4 sm:mb-8 leading-relaxed"
           >
             Vergelijk {wineCount.toLocaleString("nl-NL")} wijnen bij{" "}
             <Link href="/winkels" className="text-gold underline underline-offset-2 hover:text-gold/80">
@@ -106,7 +106,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="max-w-xl mx-auto mb-4"
+            className="max-w-xl mx-auto mb-3 sm:mb-4"
           >
             <div className="flex items-center gap-2 bg-white rounded-full p-2 pl-5 shadow-2xl">
               <Search className="h-5 w-5 text-burgundy shrink-0" />
@@ -135,7 +135,7 @@ export function Hero({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.52 }}
-            className="max-w-xl mx-auto mb-5"
+            className="max-w-xl mx-auto mb-3 sm:mb-5"
           >
             <div className="flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 backdrop-blur-sm px-3 py-1.5 focus-within:border-gold/80 focus-within:bg-gold/15 transition-colors">
               <Sparkles className="h-4 w-4 text-gold shrink-0" />
@@ -163,7 +163,7 @@ export function Hero({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.55 }}
-            className="flex flex-wrap justify-center gap-2 mb-8"
+            className="flex flex-wrap justify-center gap-2 mb-4 sm:mb-8"
           >
             {QUICK_LINKS.map((link) => (
               <Link

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FavoritesProvider } from "@/lib/favorites-context";
 import { CookieConsent } from "@/components/cookie-consent";
+import { PwaRegister } from "@/components/pwa-register";
 import { SITE_URL } from "@/lib/site";
 
 const playfair = Playfair_Display({
@@ -19,6 +20,10 @@ const inter = Inter({
   weight: ["300", "400", "500", "600"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#722f37",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -27,6 +32,16 @@ export const metadata: Metadata = {
   },
   description:
     "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "WijnVinder",
+  },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: "/icons/apple-touch-icon.png",
+  },
   openGraph: {
     title: "WijnVinder - Vind jouw perfecte wijn",
     description:
@@ -86,6 +101,7 @@ export default function RootLayout({
             <Footer />
           </FavoritesProvider>
           <CookieConsent />
+          <PwaRegister />
         </body>
     </html>
   );
