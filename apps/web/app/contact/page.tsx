@@ -1,11 +1,19 @@
 import { Mail } from "lucide-react";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact - WijnVinder",
   description:
     "Neem contact op met WijnVinder.nl (Felobo B.V.) voor vragen of opmerkingen.",
+  alternates: { canonical: "/contact" },
+  openGraph: {
+    title: "Contact - WijnVinder",
+    description:
+      "Neem contact op met WijnVinder.nl (Felobo B.V.) voor vragen of opmerkingen.",
+    url: `${SITE_URL}/contact`,
+    type: "website",
+  },
 };
 
 export default function ContactPage() {

@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacybeleid - WijnVinder",
   description: "Het privacybeleid van WijnVinder.nl (Felobo B.V.).",
+  alternates: { canonical: "/privacybeleid" },
+  openGraph: {
+    title: "Privacybeleid - WijnVinder",
+    description: "Het privacybeleid van WijnVinder.nl (Felobo B.V.).",
+    url: `${SITE_URL}/privacybeleid`,
+    type: "website",
+  },
 };
 
 export default function PrivacybeleidPage() {

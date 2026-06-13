@@ -1,0 +1,31 @@
+# WijnVinder
+
+> WijnVinder is een Nederlandse wijnvergelijker die de prijzen van duizenden wijnen bij Nederlandse wijnwinkels naast elkaar zet en persoonlijk wijnadvies geeft via AI-sommelier Maurice. Gratis te gebruiken, zonder account.
+
+WijnVinder helpt consumenten in Nederland om de beste prijs voor een wijn te vinden en om wijnen te ontdekken die bij hun smaak of gerecht passen. De prijzen worden dagelijks bijgewerkt op basis van data van aangesloten wijnwinkels.
+
+## Kernfuncties
+
+- Prijsvergelijking: per wijn worden de prijzen van meerdere Nederlandse wijnwinkels vergeleken, inclusief aanbiedingen en prijsgeschiedenis.
+- AI-sommelier Maurice: vertel wat je eet of welke smaak je zoekt en Maurice kiest passende wijnen.
+- Smaakprofiel: stel je voorkeuren in (druiven, landen, smaken, prijs) voor persoonlijke aanbevelingen.
+- Beoordelingen: wijnen tonen Vivino-scores en winkelinformatie.
+
+## Belangrijke pagina's
+
+- Homepage: https://wijnvinder.nl/
+- Alle wijnen vergelijken: https://wijnvinder.nl/wijnen
+- AI-sommelier Maurice: https://wijnvinder.nl/sommelier
+- Wijnwinkels: https://wijnvinder.nl/winkels
+- Over ons: https://wijnvinder.nl/over-ons
+- Contact: https://wijnvinder.nl/contact
+
+## Wijndetailpagina's
+
+Elke wijn heeft een eigen pagina op https://wijnvinder.nl/wijn/{slug} met prijsvergelijking, beoordeling, herkomst, druivensoort en winkellinks. Producenten hebben een overzichtspagina op https://wijnvinder.nl/producent/{slug}.
+
+## Contact
+
+E-mail: info@wijnvinder.nl
+Taal: Nederlands
+Regio: Nederland

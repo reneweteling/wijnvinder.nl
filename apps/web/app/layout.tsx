@@ -31,7 +31,19 @@ export const metadata: Metadata = {
     template: "%s | WijnVinder",
   },
   description:
-    "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
+    "Vergelijk prijzen van duizenden wijnen bij Nederlandse wijnwinkels en krijg persoonlijke aanbevelingen van AI-sommelier Maurice op basis van jouw smaakprofiel.",
+  alternates: {
+    canonical: "/",
+  },
+  keywords: [
+    "wijn vergelijken",
+    "wijn prijsvergelijking",
+    "goedkope wijn",
+    "wijn aanbiedingen",
+    "wijnsommelier",
+    "wijn kopen",
+    "Nederlandse wijnwinkels",
+  ],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -81,16 +93,40 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "WijnVinder",
-              "url": SITE_URL,
-              "description": "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
-              "inLanguage": "nl",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": `${SITE_URL}/wijnen?q={search_term_string}`,
-                "query-input": "required name=search_term_string"
-              }
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": `${SITE_URL}/#organization`,
+                  "name": "WijnVinder",
+                  "url": SITE_URL,
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": `${SITE_URL}/icons/icon-512.png`,
+                    "width": 512,
+                    "height": 512,
+                  },
+                  "description": "WijnVinder vergelijkt prijzen van wijnen bij Nederlandse wijnwinkels en geeft persoonlijke aanbevelingen via AI-sommelier Maurice.",
+                  "email": "info@wijnvinder.nl",
+                  "areaServed": { "@type": "Country", "name": "Nederland" },
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${SITE_URL}/#website`,
+                  "name": "WijnVinder",
+                  "url": SITE_URL,
+                  "description": "Persoonlijke wijnaanbevelingen op basis van jouw smaakprofiel. Vergelijk prijzen bij Nederlandse wijnwinkels.",
+                  "inLanguage": "nl-NL",
+                  "publisher": { "@id": `${SITE_URL}/#organization` },
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                      "@type": "EntryPoint",
+                      "urlTemplate": `${SITE_URL}/wijnen?q={search_term_string}`,
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
             }) }}
           />
           <FavoritesProvider>

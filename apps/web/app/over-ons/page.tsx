@@ -1,11 +1,19 @@
 import { Wine, Users, Target, Heart } from "lucide-react";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Over ons - WijnVinder",
   description:
     "Leer meer over WijnVinder.nl en Felobo B.V. — wij helpen je de perfecte wijn te vinden.",
+  alternates: { canonical: "/over-ons" },
+  openGraph: {
+    title: "Over ons - WijnVinder",
+    description:
+      "Leer meer over WijnVinder.nl en Felobo B.V. — wij helpen je de perfecte wijn te vinden.",
+    url: `${SITE_URL}/over-ons`,
+    type: "website",
+  },
 };
 
 export default function OverOnsPage() {

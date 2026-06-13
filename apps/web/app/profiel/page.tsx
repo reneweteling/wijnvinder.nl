@@ -1,13 +1,23 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ProfileWizard } from "@/components/profile/profile-wizard";
 import { db } from "@/lib/db/client";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Maak je Smaakprofiel – WijnVinder",
   description:
     "Stel je smaakprofiel in en ontvang persoonlijke wijnaanbevelingen van Nederlandse wijnwinkels.",
+  alternates: { canonical: "/profiel" },
+  openGraph: {
+    title: "Maak je Smaakprofiel – WijnVinder",
+    description:
+      "Stel je smaakprofiel in en ontvang persoonlijke wijnaanbevelingen van Nederlandse wijnwinkels.",
+    url: `${SITE_URL}/profiel`,
+    type: "website",
+  },
 };
 
 export default async function ProfielPage() {

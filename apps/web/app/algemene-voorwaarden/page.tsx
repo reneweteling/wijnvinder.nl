@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Algemene voorwaarden - WijnVinder",
   description: "De algemene voorwaarden van WijnVinder.nl (Felobo B.V.).",
+  alternates: { canonical: "/algemene-voorwaarden" },
+  openGraph: {
+    title: "Algemene voorwaarden - WijnVinder",
+    description: "De algemene voorwaarden van WijnVinder.nl (Felobo B.V.).",
+    url: `${SITE_URL}/algemene-voorwaarden`,
+    type: "website",
+  },
 };
 
 export default function AlgemeneVoorwaardenPage() {

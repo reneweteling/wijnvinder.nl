@@ -11,13 +11,14 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Winkels",
+  title: "Wijnwinkels die we vergelijken",
   description:
-    "Bekijk alle wijnwinkels die we vergelijken. WijnVinder doorzoekt tientallen Nederlandse wijnwinkels om de beste prijs voor jou te vinden.",
+    "Bekijk alle Nederlandse wijnwinkels waarvan WijnVinder de prijzen vergelijkt, met dagelijks bijgewerkte aanbiedingen en het aantal beschikbare wijnen per winkel.",
+  alternates: { canonical: "/winkels" },
   openGraph: {
-    title: "Winkels | WijnVinder",
+    title: "Wijnwinkels die we vergelijken | WijnVinder",
     description:
-      "Bekijk alle wijnwinkels die we vergelijken. WijnVinder doorzoekt tientallen Nederlandse wijnwinkels om de beste prijs voor jou te vinden.",
+      "Alle Nederlandse wijnwinkels waarvan WijnVinder de prijzen vergelijkt.",
     url: `${SITE_URL}/winkels`,
     siteName: "WijnVinder",
     locale: "nl_NL",
@@ -45,8 +46,30 @@ const getShops = unstable_cache(
 export default async function WinkelsPage() {
   const shops = await getShops();
 
+  const shopsJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Nederlandse wijnwinkels op WijnVinder",
+    numberOfItems: shops.length,
+    itemListElement: shops.map((shop, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Store",
+        name: shop.name,
+        url: shop.baseUrl ?? undefined,
+        ...(shop.logoUrl ? { image: shop.logoUrl } : {}),
+        ...(shop.description ? { description: shop.description } : {}),
+      },
+    })),
+  }).replace(/</g, "\\u003c");
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: shopsJsonLd }}
+      />
       {/* Hero section */}
       <section className="relative bg-gradient-to-b from-burgundy to-burgundy/90 pt-28 pb-16 text-center text-white">
         <div className="absolute inset-0 bg-[url('/images/hero-wine.jpg')] bg-cover bg-center opacity-10" />

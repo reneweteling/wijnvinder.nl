@@ -32,7 +32,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title,
       description,
+      url: `${SITE_URL}/producent/${slug}`,
       type: "website",
+      ...(producer.imageUrl ? { images: [{ url: producer.imageUrl }] } : {}),
     },
   };
 }
@@ -62,8 +64,25 @@ export default async function ProducentPage({ params }: PageProps) {
   const countries = [...new Set(producer.wines.map((w) => w.country).filter(Boolean))];
   const regions = [...new Set(producer.wines.map((w) => w.region).filter(Boolean))];
 
+  const producerJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `Wijnen van ${producer.name}`,
+    numberOfItems: producer.wines.length,
+    itemListElement: producer.wines.map((wine, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/wijn/${wine.slug}`,
+      name: wine.name,
+    })),
+  }).replace(/</g, "\\u003c");
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: producerJsonLd }}
+      />
       <div className="max-w-5xl mx-auto px-4 py-4">
         <Link
           href="/wijnen"

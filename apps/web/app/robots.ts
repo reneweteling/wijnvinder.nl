@@ -1,12 +1,26 @@
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/login", "/registreren", "/favorieten"],
+      // Keep private, transactional and non-content routes out of the index.
+      disallow: [
+        "/api/",
+        "/uit/",
+        "/admin",
+        "/login",
+        "/registreren",
+        "/wachtwoord-vergeten",
+        "/wachtwoord-resetten",
+        "/favorieten",
+        "/profiel",
+        "/stats",
+      ],
     },
-    sitemap: "https://wijnvinder.nl/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }
