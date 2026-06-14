@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { FavoritesProvider } from "@/lib/favorites-context";
 import { CookieConsent } from "@/components/cookie-consent";
 import { PwaRegister } from "@/components/pwa-register";
+import { AppleSplashLinks } from "@/components/apple-splash";
 import { SITE_URL } from "@/lib/site";
 
 const playfair = Playfair_Display({
@@ -89,6 +90,7 @@ export default function RootLayout({
   return (
     <html lang="nl" data-scroll-behavior="smooth" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased flex flex-col min-h-screen">
+          <AppleSplashLinks />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify({
