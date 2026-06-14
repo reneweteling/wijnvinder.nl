@@ -1,4 +1,4 @@
-const CACHE_NAME = "wijnvinder-v7";
+const CACHE_NAME = "wijnvinder-v8";
 
 const PRECACHE_URLS = [
   "/offline",
@@ -19,10 +19,41 @@ function shouldBypass(url) {
   );
 }
 
+// Personal / auth / transactional pages: never served from a stale cache, so a
+// logged-in or just-changed state is always correct.
+function isPrivatePage(url) {
+  const { pathname } = url;
+  return (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/registreren") ||
+    pathname.startsWith("/wachtwoord-") ||
+    pathname.startsWith("/favorieten") ||
+    pathname.startsWith("/profiel") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/stats")
+  );
+}
+
+function offlineFallback() {
+  return caches.match("/offline").then(
+    (cached) =>
+      cached ??
+      new Response("Je bent offline", {
+        status: 200,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      })
+  );
+}
+
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(PRECACHE_URLS);
+      // Warm the app shell so the first PWA launch paints instantly. Non-fatal:
+      // a slow/failed homepage fetch must not break the install.
+      await cache.add("/").catch(() => {});
+    })
   );
 });
 
@@ -55,17 +86,27 @@ self.addEventListener("fetch", (event) => {
   if (shouldBypass(url)) return;
 
   if (request.mode === "navigate") {
-    // Network-first for navigation: fall back to /offline when the network fails.
+    // Private pages stay network-first so auth/changed state is never stale.
+    if (isPrivatePage(url)) {
+      event.respondWith(fetch(request).catch(offlineFallback));
+      return;
+    }
+
+    // Public pages: stale-while-revalidate. Show the last cached page instantly
+    // (so opening the PWA is immediate), then refresh the cache in the
+    // background for the next visit. Falls back to /offline when there is
+    // neither cache nor network.
     event.respondWith(
-      fetch(request).catch(() =>
-        caches.match("/offline").then(
-          (cached) =>
-            cached ??
-            new Response("Je bent offline", {
-              status: 200,
-              headers: { "Content-Type": "text/html; charset=utf-8" },
+      caches.open(CACHE_NAME).then((cache) =>
+        cache.match(request).then((cached) => {
+          const networkFetch = fetch(request)
+            .then((response) => {
+              if (response.ok) cache.put(request, response.clone());
+              return response;
             })
-        )
+            .catch(() => cached ?? offlineFallback());
+          return cached ?? networkFetch;
+        })
       )
     );
     return;
