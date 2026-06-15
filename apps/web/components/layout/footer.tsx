@@ -28,6 +28,8 @@ export function Footer() {
                 { href: "/", label: "Home" },
                 { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
                 { href: "/wijnen", label: "Wijnen" },
+                { href: "/sommelier", label: "AI-sommelier" },
+                { href: "/wijn-bij", label: "Wijn bij gerecht" },
                 { href: "/wijnen?aanbiedingen=1", label: "Aanbiedingen" },
                 { href: "/winkels", label: "Winkels" },
                 { href: "/profiel", label: "Mijn profiel" },
