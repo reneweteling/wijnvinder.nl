@@ -136,7 +136,7 @@ export const SHOP_CONFIGS: ShopConfig[] = [
     slug: 'drinkheroes',
     name: 'Drink Heroes',
     baseUrl: 'https://www.drinkheroes.nl',
-    enabled: false, // GraphQL API returns 0 prices — needs Playwright
+    enabled: true, // GraphQL has no prices; price + stock read from product-page JSON-LD
     description: 'Gepassioneerde wijnspecialist met topwijnen in rood, wit, rosé, mousserende en alcoholvrij.',
   },
   {

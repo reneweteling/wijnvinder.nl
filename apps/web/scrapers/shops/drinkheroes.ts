@@ -136,12 +136,13 @@ export class DrinkHeroesScraper extends BaseScraper {
       console.log(`[drinkheroes] Got ${items.length} products (${total_count} total)`)
 
       for (const item of items) {
-        if (!item.name || !item.price_range) continue
+        if (!item.name || !item.url_key) continue
 
-        const finalPrice = item.price_range.minimum_price.final_price.value
-        const regularPrice = item.price_range.minimum_price.regular_price.value
-
-        if (finalPrice <= 0) continue
+        // The GraphQL API returns 0 for every price (the price index isn't exposed
+        // to GraphQL on this store), so the actual price + stock come from the
+        // product page's JSON-LD instead.
+        const priced = await this.fetchProductPrice(item.url_key)
+        if (!priced || !priced.available || priced.price <= 0) continue
 
         const productUrl = `${CONFIG.baseUrl}/nl/${item.url_key}`
 
@@ -164,8 +165,8 @@ export class DrinkHeroesScraper extends BaseScraper {
           name: item.name,
           url: productUrl,
           imageUrl: item.small_image?.url,
-          price: finalPrice,
-          originalPrice: regularPrice > finalPrice ? regularPrice : undefined,
+          price: priced.price,
+          originalPrice: priced.originalPrice,
           vintage,
           country,
           type: wineType,
@@ -178,6 +179,70 @@ export class DrinkHeroesScraper extends BaseScraper {
 
       currentPage++
     }
+  }
+
+  /**
+   * Fetch a product page and read price + availability from its JSON-LD Product
+   * block. Returns null when the page can't be fetched or has no usable price.
+   */
+  private async fetchProductPrice(
+    urlKey: string,
+  ): Promise<{ price: number; originalPrice?: number; available: boolean } | null> {
+    // Polite delay between product-page requests.
+    await new Promise((resolve) => setTimeout(resolve, 350))
+
+    let html: string
+    try {
+      const res = await fetch(`${CONFIG.baseUrl}/nl/${urlKey}`, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          Accept: 'text/html',
+        },
+      })
+      if (!res.ok) return null
+      html = await res.text()
+    } catch {
+      return null
+    }
+
+    const blocks = html.match(
+      /<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi,
+    )
+    if (!blocks) return null
+
+    for (const block of blocks) {
+      const json = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '').trim()
+      let data: unknown
+      try {
+        data = JSON.parse(json)
+      } catch {
+        continue
+      }
+      if (
+        typeof data !== 'object' ||
+        data === null ||
+        (data as { '@type'?: string })['@type'] !== 'Product'
+      ) {
+        continue
+      }
+
+      const offersRaw = (data as { offers?: unknown }).offers
+      const offer = Array.isArray(offersRaw) ? offersRaw[0] : offersRaw
+      if (typeof offer !== 'object' || offer === null) continue
+
+      const o = offer as { price?: unknown; availability?: unknown }
+      const price = typeof o.price === 'number' ? o.price : Number(o.price)
+      if (!Number.isFinite(price) || price <= 0) continue
+
+      const availability = typeof o.availability === 'string' ? o.availability : ''
+      // Treat anything that is not explicitly out of stock as available.
+      const available = !/OutOfStock|SoldOut|Discontinued/i.test(availability)
+
+      return { price, available }
+    }
+
+    return null
   }
 
   private async fetchGraphQL(
