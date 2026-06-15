@@ -225,45 +225,54 @@ export default async function WijnDetailPage({ params }: PageProps) {
 
   const productName = buildWineName(wine.producer?.name, wine.name, wine.vintage);
 
+  // Google requires a Product to specify at least one of offers / review /
+  // aggregateRating. Only emit the Product schema when we actually have an
+  // available offer or a rating; otherwise it would be an invalid rich result.
+  const hasOffers = availableListings.length > 0;
+  const hasRating = wine.vivinoScore != null;
+  const showProductJsonLd = hasOffers || hasRating;
+
   return (
     <div className="min-h-screen bg-background">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": productName,
-          "description": wine.description || `${wine.name} - vergelijk prijzen bij Nederlandse wijnwinkels`,
-          ...(wine.imageUrl ? { "image": wine.imageUrl } : {}),
-          ...(wine.producer?.name ? { "brand": { "@type": "Brand", "name": wine.producer.name } } : {}),
-          ...(wine.vivinoScore ? {
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": wine.vivinoScore,
-              "bestRating": 5,
-              "worstRating": 1,
-              ...(wine.vivinoScoreCount ? { "ratingCount": wine.vivinoScoreCount } : {}),
-            }
-          } : {}),
-          ...(availableListings.length > 0 ? {
-            "offers": {
-              "@type": "AggregateOffer",
-              "priceCurrency": "EUR",
-              "lowPrice": lowPrice,
-              "highPrice": highPrice,
-              "offerCount": availableListings.length,
-              "offers": availableListings.map(l => ({
-                "@type": "Offer",
-                "url": l.url,
-                "price": l.price,
+      {showProductJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": productName,
+            "description": wine.description || `${wine.name} - vergelijk prijzen bij Nederlandse wijnwinkels`,
+            ...(wine.imageUrl ? { "image": wine.imageUrl } : {}),
+            ...(wine.producer?.name ? { "brand": { "@type": "Brand", "name": wine.producer.name } } : {}),
+            ...(hasRating ? {
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": wine.vivinoScore,
+                "bestRating": 5,
+                "worstRating": 1,
+                ...(wine.vivinoScoreCount ? { "ratingCount": wine.vivinoScoreCount } : {}),
+              }
+            } : {}),
+            ...(hasOffers ? {
+              "offers": {
+                "@type": "AggregateOffer",
                 "priceCurrency": "EUR",
-                "seller": { "@type": "Organization", "name": l.shop.name },
-                "availability": "https://schema.org/InStock",
-              })),
-            }
-          } : {}),
-        }) }}
-      />
+                "lowPrice": lowPrice,
+                "highPrice": highPrice,
+                "offerCount": availableListings.length,
+                "offers": availableListings.map(l => ({
+                  "@type": "Offer",
+                  "url": l.url,
+                  "price": l.price,
+                  "priceCurrency": "EUR",
+                  "seller": { "@type": "Organization", "name": l.shop.name },
+                  "availability": "https://schema.org/InStock",
+                })),
+              }
+            } : {}),
+          }) }}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd({
