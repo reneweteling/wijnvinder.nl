@@ -30,6 +30,8 @@ export function Footer() {
                 { href: "/wijnen", label: "Wijnen" },
                 { href: "/sommelier", label: "AI-sommelier" },
                 { href: "/wijn-bij", label: "Wijn bij gerecht" },
+                { href: "/druiven", label: "Druivensoorten" },
+                { href: "/wijn-uit", label: "Wijn per land" },
                 { href: "/wijnen?aanbiedingen=1", label: "Aanbiedingen" },
                 { href: "/winkels", label: "Winkels" },
                 { href: "/profiel", label: "Mijn profiel" },

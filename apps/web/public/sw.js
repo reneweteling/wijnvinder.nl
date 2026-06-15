@@ -1,4 +1,4 @@
-const CACHE_NAME = "wijnvinder-v17";
+const CACHE_NAME = "wijnvinder-v18";
 
 const PRECACHE_URLS = [
   "/offline",
