@@ -34,7 +34,27 @@ export default async function DruifPage({ params }: PageProps) {
   if (!guide) notFound();
 
   const wines = await fetchGuideWines({
-    OR: guide.match.map((g) => ({ grape: { contains: g, mode: "insensitive" as const } })),
+    AND: [
+      // Match the grape field as well as the name: a lot of single-varietal
+      // wines (Argentinian Malbec, South-African Chenin) carry the grape in the
+      // name but not the structured field, so this keeps the pages well filled.
+      {
+        OR: guide.match.flatMap((g) => [
+          { grape: { contains: g, mode: "insensitive" as const } },
+          { name: { contains: g, mode: "insensitive" as const } },
+        ]),
+      },
+      // A varietal page should show the grape as its own wine, not as a minor
+      // component of a sparkling blend (e.g. Chardonnay in Champagne) or a
+      // dessert wine. Keep untyped wines (wineType null) so we don't lose the
+      // large pool of wines without a structured type.
+      {
+        OR: [
+          { wineType: null },
+          { wineType: { notIn: ["sparkling", "dessert"] } },
+        ],
+      },
+    ],
   });
 
   const related = GRAPE_GUIDES.filter((g) => g.slug !== slug)

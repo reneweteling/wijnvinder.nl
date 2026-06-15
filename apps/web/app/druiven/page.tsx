@@ -58,20 +58,20 @@ export default function DruivenHubPage() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {GRAPE_GUIDES.map((g) => (
             <Link
               key={g.slug}
               href={`/druiven/${g.slug}`}
-              className="group rounded-xl border border-border bg-card p-5 hover:shadow-md hover:border-burgundy/40 transition-all"
+              className="group flex flex-col rounded-2xl border border-border bg-card p-6 hover:shadow-lg hover:border-burgundy/50 transition-all"
             >
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-heading text-lg font-semibold text-foreground group-hover:text-burgundy transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-heading text-xl font-semibold text-foreground group-hover:text-burgundy transition-colors">
                   {g.name}
                 </h2>
-                <ArrowRight className="h-4 w-4 text-text-light group-hover:text-burgundy transition-colors shrink-0" />
+                <ArrowRight className="h-5 w-5 mt-1 text-text-light group-hover:text-burgundy group-hover:translate-x-0.5 transition-all shrink-0" />
               </div>
-              <p className="mt-1.5 text-sm text-text-light line-clamp-2">{g.intro}</p>
+              <p className="mt-2 text-sm text-text-light leading-relaxed">{g.intro}</p>
             </Link>
           ))}
         </div>

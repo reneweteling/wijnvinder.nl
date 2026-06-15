@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { WineCard } from "@/components/wines/wine-card";
 import { SITE_URL } from "@/lib/site";
@@ -21,6 +22,8 @@ export type GuideLayoutProps = {
   /** Related links shown as chips at the bottom. */
   related: { href: string; label: string }[];
   relatedHeading: string;
+  /** Optional node (e.g. a map) shown under the header. */
+  map?: ReactNode;
 };
 
 export function GuideLayout({
@@ -33,6 +36,7 @@ export function GuideLayout({
   current,
   related,
   relatedHeading,
+  map,
 }: GuideLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
@@ -83,6 +87,7 @@ export function GuideLayout({
             {h1}
           </h1>
           <p className="mt-4 text-text-light leading-relaxed">{advice}</p>
+          {map}
         </header>
 
         {wines.length > 0 ? (

@@ -166,6 +166,160 @@ export const FOOD_PAIRINGS: FoodPairing[] = [
     grapes: ["glera", "chardonnay", "pinot noir", "macabeo", "parellada"],
     wineTypes: ["sparkling", "rose"],
   },
+  {
+    slug: "wild",
+    label: "Wild",
+    question: "Welke wijn bij wild?",
+    intro:
+      "Bij wild zoals hert, ree of fazant past een krachtige, aardse rode wijn. Vergelijk de beste flessen.",
+    advice:
+      "Wild heeft een rijke, licht aardse smaak die vraagt om een rode wijn met body en complexiteit. Denk aan een Nebbiolo (Barolo), een rijpe Bourgogne of een stevige Rhône. De aardse en kruidige tonen in de wijn versterken het wild, terwijl de tannine het rijke vlees in balans houdt.",
+    grapes: ["nebbiolo", "pinot noir", "syrah", "grenache", "mourvèdre", "cabernet sauvignon"],
+    wineTypes: ["red"],
+  },
+  {
+    slug: "eend",
+    label: "Eend",
+    question: "Welke wijn bij eend?",
+    intro:
+      "Bij eend past een soepele rode wijn met rood fruit en een frisse zuurgraad. Bekijk de aanraders.",
+    advice:
+      "Eend is vetter en voller van smaak dan kip, maar geen rood vlees. Een Pinot Noir is de klassieke keuze: het rode fruit en de frisse zuren snijden mooi door het vet. Ook een fruitige Merlot of een wijn op basis van Grenache werkt goed, zeker bij eend met een zoete saus.",
+    grapes: ["pinot noir", "merlot", "grenache", "garnacha", "syrah"],
+    wineTypes: ["red"],
+  },
+  {
+    slug: "stoofvlees",
+    label: "Stoofvlees",
+    question: "Welke wijn bij stoofvlees?",
+    intro:
+      "Bij stoofvlees en stoofpotten past een stevige, rijpe rode wijn. Vergelijk de beste flessen en prijzen.",
+    advice:
+      "Langzaam gegaard stoofvlees heeft een diepe, rijke smaak die vraagt om een gulle rode wijn. Een Rioja op basis van Tempranillo, een Zuid-Franse Grenache of een stevige Italiaan past prima. Vaak gaat dezelfde wijn die je in de pan gebruikt ook goed in het glas.",
+    grapes: ["tempranillo", "grenache", "garnacha", "syrah", "merlot", "sangiovese"],
+    wineTypes: ["red"],
+  },
+  {
+    slug: "risotto",
+    label: "Risotto",
+    question: "Welke wijn bij risotto?",
+    intro:
+      "Bij een romige risotto past een frisse tot volle witte wijn. Bekijk de geschikte flessen.",
+    advice:
+      "Risotto is romig en hartig, dus je wilt een witte wijn met genoeg frisheid om door te snijden. Een Italiaanse witte zoals Verdejo, een Pinot Grigio of een lichte Chardonnay werkt mooi. Bij een risotto met paddenstoelen mag het ook een lichte rode wijn zijn, zoals Pinot Noir.",
+    grapes: ["chardonnay", "pinot grigio", "verdejo", "vermentino", "pinot noir"],
+    wineTypes: ["white"],
+  },
+  {
+    slug: "oesters",
+    label: "Oesters",
+    question: "Welke wijn bij oesters?",
+    intro:
+      "Bij oesters past een knisperend droge, minerale witte wijn of Champagne. Vergelijk de aanraders.",
+    advice:
+      "Oesters vragen om frisheid en zout-minerale tonen. De klassiekers zijn een Chablis, een Muscadet of een Sauvignon Blanc: strak, droog en knisperend. Een brut Champagne of Cava doet het door de bubbels en hoge zuren minstens zo goed.",
+    grapes: ["chardonnay", "sauvignon blanc", "chablis", "muscadet"],
+    wineTypes: ["white", "sparkling"],
+  },
+  {
+    slug: "mosselen",
+    label: "Mosselen",
+    question: "Welke wijn bij mosselen?",
+    intro:
+      "Bij mosselen past een frisse, droge witte wijn. Bekijk de best beoordeelde flessen en prijzen.",
+    advice:
+      "Mosselen zijn licht en zilt, dus een frisse witte wijn is ideaal. Een Muscadet, Sauvignon Blanc of een droge Pinot Grigio past perfect en kun je meteen in de pan gebruiken. Hou de wijn strak en droog, zodat hij de zilte smaak van de mosselen niet overstemt.",
+    grapes: ["sauvignon blanc", "pinot grigio", "chardonnay", "muscadet", "verdejo"],
+    wineTypes: ["white"],
+  },
+  {
+    slug: "gerookte-zalm",
+    label: "Gerookte zalm",
+    question: "Welke wijn bij gerookte zalm?",
+    intro:
+      "Bij gerookte zalm past een frisse witte wijn of Champagne met genoeg zuren. Vergelijk de aanraders.",
+    advice:
+      "De vette, rokerige smaak van gerookte zalm vraagt om frisheid en zuren als tegenwicht. Een droge Riesling, een Sauvignon Blanc of een brut Champagne snijdt mooi door het vet. Bubbels en een hoge zuurgraad maken de zalm lichter en verfrissen het palet.",
+    grapes: ["riesling", "sauvignon blanc", "chardonnay", "pinot noir"],
+    wineTypes: ["white", "sparkling"],
+  },
+  {
+    slug: "aziatisch",
+    label: "Aziatisch",
+    question: "Welke wijn bij Aziatisch eten?",
+    intro:
+      "Bij Aziatische gerechten past een aromatische, licht zoete witte wijn. Bekijk de beste flessen.",
+    advice:
+      "Aziatisch eten combineert zoet, zout, zuur en pittig, vaak in één gerecht. Een off-dry Riesling of een aromatische Gewürztraminer brengt balans: het beetje restzoet temt de pit en de aroma's passen bij gember, kruiden en sojasaus. Bij milde gerechten werkt ook een frisse Pinot Grigio.",
+    grapes: ["riesling", "gewürztraminer", "pinot grigio", "sauvignon blanc", "chenin blanc"],
+    wineTypes: ["white"],
+  },
+  {
+    slug: "pittig-eten",
+    label: "Pittig eten",
+    question: "Welke wijn bij pittig eten?",
+    intro:
+      "Bij pittige gerechten past een fruitige, licht zoete wijn die de scherpte tempert. Vergelijk de aanraders.",
+    advice:
+      "Pit en hoge alcohol versterken elkaar, dus een zware, droge rode wijn maakt een pittig gerecht juist heter. Kies een off-dry Riesling of een fruitige rosé: het restzoet en de frisheid temperen de scherpte en koelen het palet. Vermijd stevige tannine bij echt heet eten.",
+    grapes: ["riesling", "gewürztraminer", "garnacha", "grenache"],
+    wineTypes: ["white", "rose"],
+  },
+  {
+    slug: "chocolade",
+    label: "Chocolade & dessert",
+    question: "Welke wijn bij chocolade?",
+    intro:
+      "Bij chocolade en zoete desserts past een rijke, zoete wijn zoals Port. Bekijk de geschikte flessen.",
+    advice:
+      "Bij een dessert wil je een wijn die zelf zeker zo zoet is, anders smaakt hij flets. Port is de klassieke partner bij chocolade: rijk, zoet en krachtig genoeg om tegen de cacao op te boksen. Ook een zoete oogstwijn of Moscato past mooi bij fruitige toetjes.",
+    grapes: ["port", "moscato", "muscat"],
+    wineTypes: ["dessert"],
+  },
+  {
+    slug: "tapas",
+    label: "Tapas",
+    question: "Welke wijn bij tapas?",
+    intro:
+      "Bij tapas passen veelzijdige Spaanse wijnen: een frisse witte, een fruitige rode of Cava. Vergelijk de aanraders.",
+    advice:
+      "Tapas zijn divers, dus je wilt een veelzijdige wijn die bij van alles past. Een frisse Verdejo bij de vis- en groentehapjes, een soepele Tempranillo bij de vlees- en worsthapjes, of gewoon een Cava die het hele tafereel feestelijk maakt. Spaanse wijn bij Spaanse hapjes werkt zelden tegen.",
+    grapes: ["verdejo", "tempranillo", "garnacha", "macabeo", "albariño"],
+    wineTypes: ["white", "red", "sparkling"],
+  },
+  {
+    slug: "paella",
+    label: "Paella",
+    question: "Welke wijn bij paella?",
+    intro:
+      "Bij paella past een frisse witte wijn of een droge rosé. Bekijk de best beoordeelde flessen.",
+    advice:
+      "Paella zit vol smaak van saffraan, zeevruchten en soms kip of chorizo. Een frisse Spaanse witte zoals Verdejo of Albariño houdt het licht, terwijl een droge rosé prima past bij een gemengde paella met vlees en vis. Hou de wijn fris zodat hij de hartige rijst aanvult.",
+    grapes: ["verdejo", "albariño", "garnacha", "tempranillo", "macabeo"],
+    wineTypes: ["white", "rose"],
+  },
+  {
+    slug: "kalkoen",
+    label: "Kalkoen & kerstdiner",
+    question: "Welke wijn bij kalkoen?",
+    intro:
+      "Bij kalkoen en het kerstdiner past een soepele rode wijn of een volle witte. Vergelijk de aanraders.",
+    advice:
+      "Kalkoen is mild en mager, dus een wijn die niet overheerst werkt het best. Een Pinot Noir met rood fruit en frisse zuren is de klassieke kerstkeuze, en een volle witte Chardonnay past mooi bij het wittere vlees en de bijgerechten. Houd het elegant in plaats van zwaar.",
+    grapes: ["pinot noir", "chardonnay", "merlot", "grenache"],
+    wineTypes: ["red", "white"],
+  },
+  {
+    slug: "gegrilde-groenten",
+    label: "Gegrilde groenten",
+    question: "Welke wijn bij gegrilde groenten?",
+    intro:
+      "Bij gegrilde groente past een frisse witte wijn of een droge rosé. Bekijk de geschikte flessen.",
+    advice:
+      "Gegrilde groente krijgt door de grill een lichte rooktoon en zoetheid. Een frisse witte zoals Verdejo of Sauvignon Blanc houdt het licht, en een droge rosé past mooi bij een gemengd groentebord. Bij stevig gegrilde paddenstoelen of aubergine kan ook een lichte rode wijn.",
+    grapes: ["sauvignon blanc", "verdejo", "pinot grigio", "grenache"],
+    wineTypes: ["white", "rose"],
+  },
 ];
 
 export function getPairing(slug: string): FoodPairing | undefined {

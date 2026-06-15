@@ -1,0 +1,286 @@
+/**
+ * Wine region guides. Each entry powers a dynamic, DB-backed /streek/{slug}
+ * landing page: the prose is curated, the wines/prices/ratings are queried live.
+ * Wines are matched on the region field OR the wine name (a lot of wines carry
+ * the region in the name but not the structured field), so the pages stay
+ * filled. Targets searches like "rioja wijn", "barolo kopen" and "wijn uit de
+ * bordeaux". `map` is [lat, lon, span] for the little OpenStreetMap card.
+ */
+export type RegionGuide = {
+  slug: string;
+  name: string;
+  /** Country the region sits in, for the breadcrumb and grouping. */
+  country: string;
+  h1: string;
+  intro: string;
+  advice: string;
+  faqQuestion: string;
+  /** Matched case-insensitively against both the region field and the name. */
+  match: string[];
+  /** [latitude, longitude, half-width in degrees of longitude]. */
+  map: [number, number, number];
+};
+
+export const REGION_GUIDES: RegionGuide[] = [
+  // ---- Frankrijk ----
+  {
+    slug: "bordeaux",
+    name: "Bordeaux",
+    country: "Frankrijk",
+    h1: "Wijn uit de Bordeaux: de beste flessen",
+    intro: "De Bordeaux is het bekendste wijngebied ter wereld. Ontdek de beste Bordeaux-wijnen en vergelijk de prijzen.",
+    advice: "De Bordeaux staat bekend om zijn rode blends op basis van Cabernet Sauvignon en Merlot: krachtig, met stevige tannine en bewaarpotentieel. De linkeroever (Médoc) is Cabernet-gedreven en steviger, de rechteroever (Saint-Émilion, Pomerol) Merlot-gedreven en ronder. Naast rood maakt de regio ook droge en zoete witte wijnen. Een klassieke partner voor rood vlees.",
+    faqQuestion: "Wat kenmerkt een Bordeaux-wijn?",
+    match: ["bordeaux", "médoc", "medoc", "saint-émilion", "saint-emilion", "pauillac", "margaux", "pomerol", "graves", "sauternes"],
+    map: [44.84, -0.58, 1.2],
+  },
+  {
+    slug: "bourgogne",
+    name: "Bourgogne",
+    country: "Frankrijk",
+    h1: "Wijn uit de Bourgogne: de beste flessen",
+    intro: "De Bourgogne is het thuis van Pinot Noir en Chardonnay. Ontdek de beste Bourgogne-wijnen en vergelijk de prijzen.",
+    advice: "De Bourgogne draait om twee druiven: Pinot Noir voor de elegante rode wijnen en Chardonnay voor de verfijnde witte. Het is een gebied van terroir, waar de exacte ligging van de wijngaard alles bepaalt. Verwacht finesse boven kracht: rode Bourgogne is licht en aards, witte Bourgogne mineralig tot romig.",
+    faqQuestion: "Welke druiven groeien in de Bourgogne?",
+    match: ["bourgogne", "burgundy", "mâcon", "macon", "pouilly-fuissé", "mercurey", "givry", "côte de"],
+    map: [47.05, 4.6, 1.0],
+  },
+  {
+    slug: "chablis",
+    name: "Chablis",
+    country: "Frankrijk",
+    h1: "Chablis: de beste flessen en prijzen",
+    intro: "Chablis is de strakke, minerale Chardonnay uit het noorden van de Bourgogne. Vergelijk de beste flessen.",
+    advice: "Chablis is Chardonnay in zijn puurste vorm: kurkdroog, knisperend fris en mineralig, vaak zonder eikenhout. De kalkrijke bodem geeft de wijn een typische vuursteen-toon. Het is de klassieke partner bij oesters, schaaldieren en witvis.",
+    faqQuestion: "Wat voor wijn is Chablis?",
+    match: ["chablis"],
+    map: [47.81, 3.8, 0.6],
+  },
+  {
+    slug: "champagne",
+    name: "Champagne",
+    country: "Frankrijk",
+    h1: "Champagne: de beste flessen en prijzen",
+    intro: "Champagne is de beroemdste mousserende wijn ter wereld. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "Echte Champagne komt alleen uit de gelijknamige streek en wordt gemaakt volgens de traditionele methode, met een tweede gisting op fles. Dat geeft de fijne, aanhoudende bubbels en de typische tonen van brioche en gele appel. Gemaakt van Chardonnay, Pinot Noir en Pinot Meunier, van brut tot rosé.",
+    faqQuestion: "Waarom is Champagne anders dan andere bubbels?",
+    match: ["champagne"],
+    map: [49.05, 4.0, 1.0],
+  },
+  {
+    slug: "rhone",
+    name: "Rhône",
+    country: "Frankrijk",
+    h1: "Wijn uit de Rhône: de beste flessen",
+    intro: "De Rhône-vallei staat bekend om krachtige, kruidige rode wijnen. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "De Rhône valt in tweeën. Het noorden is het rijk van de Syrah, met diepe, kruidige rode wijnen zoals Hermitage en Côte-Rôtie. Het zuiden draait om blends van Grenache, Syrah en Mourvèdre, met Châteauneuf-du-Pape als boegbeeld. Gulle, warme rode wijnen voor bij stoofvlees, wild en de BBQ.",
+    faqQuestion: "Welke wijn komt uit de Rhône?",
+    match: ["rhône", "rhone", "châteauneuf", "chateauneuf", "gigondas", "crozes", "hermitage", "vacqueyras", "côtes du rhône", "cotes du rhone"],
+    map: [44.7, 4.83, 1.2],
+  },
+  {
+    slug: "loire",
+    name: "Loire",
+    country: "Frankrijk",
+    h1: "Wijn uit de Loire: de beste flessen",
+    intro: "De Loire is een lange rivierstreek met frisse witte wijnen en lichte reds. Ontdek de beste flessen.",
+    advice: "De Loire is een lang gebied langs de rivier met veel stijlen. Sancerre en Pouilly-Fumé geven knisperende Sauvignon Blanc, Vouvray staat voor Chenin Blanc van droog tot zoet, en Muscadet is de zilte wijn bij schaaldieren. De rode wijnen op basis van Cabernet Franc (Chinon) zijn licht en kruidig.",
+    faqQuestion: "Welke wijnen komen uit de Loire?",
+    match: ["loire", "sancerre", "vouvray", "muscadet", "pouilly-fumé", "pouilly fumé", "chinon", "bourgueil", "saumur", "anjou"],
+    map: [47.4, 0.7, 2.2],
+  },
+  {
+    slug: "provence",
+    name: "Provence",
+    country: "Frankrijk",
+    h1: "Wijn uit de Provence: de beste rosés en meer",
+    intro: "De Provence is de bakermat van de droge rosé. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "De Provence is wereldberoemd om zijn bleke, droge rosé: fris, elegant en perfect voor op het terras. De wijnen worden gemaakt van onder meer Grenache, Cinsault en Syrah. Naast rosé maakt het zonnige zuiden ook kruidige rode wijnen, zoals die uit Bandol op basis van Mourvèdre.",
+    faqQuestion: "Waarom is Provence bekend om rosé?",
+    match: ["provence", "bandol", "côtes de provence", "cotes de provence"],
+    map: [43.5, 6.0, 1.5],
+  },
+  {
+    slug: "languedoc-roussillon",
+    name: "Languedoc-Roussillon",
+    country: "Frankrijk",
+    h1: "Wijn uit de Languedoc-Roussillon: de beste flessen",
+    intro: "De Languedoc-Roussillon levert volop karaktervolle wijn voor een eerlijke prijs. Ontdek de beste flessen.",
+    advice: "Dit uitgestrekte zuiden van Frankrijk is een schatkamer voor prijs-kwaliteit. Het warme klimaat geeft gulle, kruidige rode wijnen op basis van Grenache, Syrah, Carignan en Mourvèdre. Van toegankelijke dagelijkse wijnen tot serieuze flessen uit appellaties als Corbières en Pic Saint-Loup.",
+    faqQuestion: "Waarom is de Languedoc goed voor prijs-kwaliteit?",
+    match: ["languedoc", "roussillon", "corbières", "corbieres", "minervois", "pic saint", "faugères", "faugeres", "fitou"],
+    map: [43.4, 3.0, 1.8],
+  },
+  // ---- Italië ----
+  {
+    slug: "toscane",
+    name: "Toscane",
+    country: "Italië",
+    h1: "Wijn uit Toscane: de beste flessen",
+    intro: "Toscane is het hart van de Italiaanse wijn, met Sangiovese in de hoofdrol. Ontdek de beste flessen.",
+    advice: "Toscane draait om de Sangiovese-druif: sappig rood fruit, frisse zuren en stevige tannine. Het levert klassiekers als Chianti, het krachtige Brunello di Montalcino en de moderne Super Tuscans uit Bolgheri op basis van Bordeaux-druiven. Heerlijk bij pasta, gegrild vlees en gerijpte kaas.",
+    faqQuestion: "Welke druif is typisch voor Toscane?",
+    match: ["toscane", "tuscany", "toscana", "brunello", "montalcino", "bolgheri", "nobile"],
+    map: [43.4, 11.2, 1.5],
+  },
+  {
+    slug: "chianti",
+    name: "Chianti",
+    country: "Italië",
+    h1: "Chianti: de beste flessen en prijzen",
+    intro: "Chianti is de bekendste rode wijn van Toscane, gemaakt van Sangiovese. Vergelijk de beste flessen.",
+    advice: "Chianti komt uit het heuvellandschap van Toscane en is gemaakt van overwegend Sangiovese. Verwacht sappige kers, een kruidige toets en frisse zuren die om eten vragen. Chianti Classico (met het zwarte haantje) komt uit het historische kerngebied en is doorgaans serieuzer en geconcentreerder.",
+    faqQuestion: "Wat is het verschil tussen Chianti en Chianti Classico?",
+    match: ["chianti"],
+    map: [43.45, 11.3, 0.7],
+  },
+  {
+    slug: "piemonte",
+    name: "Piemonte",
+    country: "Italië",
+    h1: "Wijn uit Piemonte: de beste flessen",
+    intro: "Piemonte is de thuisbasis van Barolo, Barbera en Gavi. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "Piemonte in het noordwesten van Italië maakt enkele van de grootste rode wijnen van het land. Nebbiolo levert de krachtige, tannerijke Barolo en Barbaresco, terwijl Barbera en Dolcetto soepeler en toegankelijker zijn. Voor wit is er de frisse Gavi en de zoete bubbel Moscato d'Asti.",
+    faqQuestion: "Welke wijnen komen uit Piemonte?",
+    match: ["piemonte", "piedmont", "langhe", "barolo", "barbaresco", "barbera", "gavi", "dolcetto", "nebbiolo d", "roero"],
+    map: [44.8, 8.0, 1.2],
+  },
+  {
+    slug: "barolo",
+    name: "Barolo",
+    country: "Italië",
+    h1: "Barolo: de beste flessen en prijzen",
+    intro: "Barolo is de koning van de Italiaanse wijn, gemaakt van Nebbiolo. Ontdek de beste flessen.",
+    advice: "Barolo komt uit Piemonte en wordt volledig van Nebbiolo gemaakt. Het is een krachtige, langlevende rode wijn met stevige tannine, hoge zuren en aroma's van kers, rozen, teer en truffel. Geef hem lucht of laat hem rijpen, en serveer bij rijke gerechten met wild, vlees en truffel.",
+    faqQuestion: "Van welke druif wordt Barolo gemaakt?",
+    match: ["barolo", "barbaresco"],
+    map: [44.62, 7.94, 0.4],
+  },
+  {
+    slug: "veneto",
+    name: "Veneto",
+    country: "Italië",
+    h1: "Wijn uit Veneto: de beste flessen",
+    intro: "Veneto rond Verona levert Valpolicella, Amarone, Soave en Prosecco. Ontdek de beste flessen.",
+    advice: "Veneto in het noordoosten is een van de productiefste wijnstreken van Italië. Rond Verona liggen de rode Valpolicella en de krachtige Amarone, gemaakt van ingedroogde druiven. Voor wit is er de frisse Soave, en in de heuvels eromheen wordt volop Prosecco gemaakt.",
+    faqQuestion: "Welke wijnen komen uit Veneto?",
+    match: ["veneto", "valpolicella", "amarone", "soave", "bardolino", "ripasso"],
+    map: [45.5, 11.5, 1.2],
+  },
+  {
+    slug: "valpolicella",
+    name: "Valpolicella",
+    country: "Italië",
+    h1: "Valpolicella: de beste flessen en prijzen",
+    intro: "Valpolicella is de sappige rode wijn uit de heuvels bij Verona. Vergelijk de beste flessen.",
+    advice: "Valpolicella wordt gemaakt van lokale druiven als Corvina en Rondinella, met sappige kers en frisse zuren. De Ripasso-stijl wordt over de Amarone-schillen hergist en is voller en warmer. Een veelzijdige rode wijn voor bij pasta, pizza en gegrild vlees.",
+    faqQuestion: "Wat is het verschil tussen Valpolicella en Ripasso?",
+    match: ["valpolicella", "ripasso"],
+    map: [45.55, 10.9, 0.6],
+  },
+  {
+    slug: "amarone",
+    name: "Amarone",
+    country: "Italië",
+    h1: "Amarone: de beste flessen en prijzen",
+    intro: "Amarone della Valpolicella is een krachtige rode wijn van ingedroogde druiven. Ontdek de beste flessen.",
+    advice: "Amarone is een van de grootste rode wijnen van Italië. De druiven worden na de oogst maandenlang gedroogd, waardoor de smaak zich concentreert tot rijk zwart fruit, pruim, chocolade en een fluwelige body met hoog alcohol. Een wijn voor bij stevige stoofgerechten, wild en gerijpte kaas.",
+    faqQuestion: "Hoe wordt Amarone gemaakt?",
+    match: ["amarone"],
+    map: [45.55, 10.9, 0.6],
+  },
+  {
+    slug: "prosecco",
+    name: "Prosecco",
+    country: "Italië",
+    h1: "Prosecco: de beste flessen en prijzen",
+    intro: "Prosecco is de populaire Italiaanse bubbel uit Veneto. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "Prosecco wordt gemaakt van de Glera-druif en krijgt zijn bubbels via een tweede gisting in een tank. Dat geeft een lichte, fruitige en toegankelijke bubbel met tonen van peer, appel en bloesem. Ideaal als aperitief of in een spritz, en doorgaans vriendelijker geprijsd dan Champagne.",
+    faqQuestion: "Wat is het verschil tussen Prosecco en Champagne?",
+    match: ["prosecco", "valdobbiadene"],
+    map: [45.9, 12.0, 0.7],
+  },
+  {
+    slug: "puglia",
+    name: "Puglia",
+    country: "Italië",
+    h1: "Wijn uit Puglia: de beste flessen",
+    intro: "Puglia, de hak van de Italiaanse laars, staat voor gulle reds van Primitivo en Negroamaro. Ontdek de beste flessen.",
+    advice: "Het warme, zonnige Puglia maakt rijpe, krachtige rode wijnen voor een mooie prijs. Primitivo geeft gulle wijnen met zoet zwart fruit en een kruidige toets, Negroamaro is wat steviger en donkerder. Volle, fluwelige reds voor bij gegrild vlees, pizza en stevige pasta.",
+    faqQuestion: "Welke druiven komen uit Puglia?",
+    match: ["puglia", "apulië", "apulie", "salento", "primitivo di manduria", "negroamaro"],
+    map: [40.8, 17.0, 1.5],
+  },
+  {
+    slug: "sicilie",
+    name: "Sicilië",
+    country: "Italië",
+    h1: "Wijn uit Sicilië: de beste flessen",
+    intro: "Sicilië maakt karaktervolle wijn van Nero d'Avola en de vulkaan-wijnen van de Etna. Ontdek de beste flessen.",
+    advice: "Sicilië is een wijneiland met een eigen karakter. Nero d'Avola levert volle, sappige rode wijnen met rijp fruit, terwijl de wijngaarden op de vulkaan Etna verrassend frisse, minerale rode en witte wijnen geven. Voor wit is er ook de frisse Grillo. Veel smaak voor een eerlijke prijs.",
+    faqQuestion: "Welke wijn komt van de Etna?",
+    match: ["sicilië", "sicilie", "sicilia", "etna", "nero d'avola", "nero d avola", "grillo"],
+    map: [37.5, 14.0, 1.5],
+  },
+  {
+    slug: "abruzzo",
+    name: "Abruzzo",
+    country: "Italië",
+    h1: "Wijn uit Abruzzo: de beste flessen",
+    intro: "Abruzzo staat voor de sappige Montepulciano d'Abruzzo. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "Abruzzo aan de oostkust van Italië is bekend om de Montepulciano d'Abruzzo: een soepele, donkere rode wijn met sappig zwart fruit, zachte tannine en een vriendelijke prijs. Voor wit is er de frisse Trebbiano. Een dankbare alledaagse wijn bij pasta, pizza en gegrild vlees.",
+    faqQuestion: "Wat is Montepulciano d'Abruzzo?",
+    match: ["abruzzo", "montepulciano d"],
+    map: [42.2, 13.8, 1.0],
+  },
+  // ---- Spanje ----
+  {
+    slug: "rioja",
+    name: "Rioja",
+    country: "Spanje",
+    h1: "Wijn uit Rioja: de beste flessen",
+    intro: "Rioja is de bekendste wijnstreek van Spanje, met Tempranillo in de hoofdrol. Ontdek de beste flessen.",
+    advice: "Rioja draait om de Tempranillo-druif en om rijping op eikenhout. De stijlen lopen van jong en fruitig (Joven) tot lang gerijpt (Crianza, Reserva, Gran Reserva), met tonen van rood fruit, vanille en kruiden naarmate de wijn ouder is. Een veelzijdige rode wijn bij vlees, tapas en stoofgerechten.",
+    faqQuestion: "Wat betekent Crianza en Reserva op een Rioja?",
+    match: ["rioja"],
+    map: [42.4, -2.5, 1.0],
+  },
+  {
+    slug: "ribera-del-duero",
+    name: "Ribera del Duero",
+    country: "Spanje",
+    h1: "Wijn uit Ribera del Duero: de beste flessen",
+    intro: "Ribera del Duero maakt krachtige rode wijnen van Tempranillo. Ontdek de beste flessen en prijzen.",
+    advice: "Ribera del Duero ligt langs de Duero-rivier en maakt enkele van de meest geconcentreerde rode wijnen van Spanje, eveneens van Tempranillo (hier vaak Tinto Fino genoemd). Het kille klimaat met grote dag-nachtverschillen geeft diepe, krachtige wijnen met stevige tannine en bewaarpotentieel.",
+    faqQuestion: "Wat is het verschil tussen Rioja en Ribera del Duero?",
+    match: ["ribera del duero", "ribera"],
+    map: [41.6, -3.7, 1.0],
+  },
+  {
+    slug: "cava",
+    name: "Cava",
+    country: "Spanje",
+    h1: "Cava: de beste flessen en prijzen",
+    intro: "Cava is de Spaanse bubbel volgens de traditionele methode. Ontdek de beste flessen en vergelijk de prijzen.",
+    advice: "Cava wordt net als Champagne gemaakt met een tweede gisting op fles, maar van Spaanse druiven als Macabeo, Parellada en Xarel-lo, vooral rond Penedès. Dat geeft fijne bubbels en een frisse, toegankelijke stijl voor een vriendelijke prijs. Een perfecte aperitief- en feestbubbel.",
+    faqQuestion: "Is Cava hetzelfde als Champagne?",
+    match: ["cava"],
+    map: [41.4, 1.7, 0.8],
+  },
+  // ---- Portugal ----
+  {
+    slug: "douro",
+    name: "Douro & Port",
+    country: "Portugal",
+    h1: "Wijn uit de Douro: Port en krachtige reds",
+    intro: "De Douro-vallei is de thuisbasis van Port en krachtige droge rode wijnen. Ontdek de beste flessen.",
+    advice: "De steile, terrasvormige wijngaarden van de Douro leveren zowel de beroemde zoete Port als steeds betere droge rode wijnen. Ze worden gemaakt van inheemse druiven als Touriga Nacional en geven krachtige, donkere wijnen met rijp fruit en kruidigheid. Port is rijk en zoet, mooi bij kaas en chocolade.",
+    faqQuestion: "Welke wijn komt uit de Douro?",
+    match: ["douro", "port", "porto", "touriga"],
+    map: [41.15, -7.6, 1.0],
+  },
+];
+
+export function getRegionGuide(slug: string): RegionGuide | undefined {
+  return REGION_GUIDES.find((r) => r.slug === slug);
+}

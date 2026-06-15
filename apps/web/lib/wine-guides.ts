@@ -24,6 +24,8 @@ export type CountryGuide = {
   faqQuestion: string;
   /** Country values as stored in the catalog, matched case-insensitively. */
   countries: string[];
+  /** [latitude, longitude, half-width in degrees] for the location map. */
+  map: [number, number, number];
 };
 
 export const GRAPE_GUIDES: GrapeGuide[] = [
@@ -153,6 +155,42 @@ export const GRAPE_GUIDES: GrapeGuide[] = [
     faqQuestion: "Is Primitivo hetzelfde als Zinfandel?",
     match: ["primitivo", "zinfandel"],
   },
+  {
+    slug: "nebbiolo",
+    name: "Nebbiolo",
+    h1: "Nebbiolo: smaak, kenmerken en de beste flessen",
+    intro: "Nebbiolo is de edele rode druif achter Barolo en Barbaresco. Ontdek de smaak en de beste flessen.",
+    advice: "Nebbiolo uit Piemonte is de druif van Barolo en Barbaresco: bleek van kleur, maar krachtig in smaak. Verwacht stevige tannine, hoge zuren en aroma's van kers, rozen, teer en truffel. Het is een wijn voor liefhebbers en voor de tafel, prachtig bij rijke gerechten met paddenstoelen, wild en truffel.",
+    faqQuestion: "Wat is Nebbiolo voor wijn?",
+    match: ["nebbiolo"],
+  },
+  {
+    slug: "verdejo",
+    name: "Verdejo",
+    h1: "Verdejo: smaak, kenmerken en de beste flessen",
+    intro: "Verdejo is de frisse witte druif uit Rueda in Spanje. Vergelijk de best beoordeelde flessen.",
+    advice: "Verdejo is de bekendste witte druif van Spanje, met Rueda als thuisbasis. Hij geeft een frisse, aromatische wijn met aroma's van citrus, witte perzik, venkel en een licht bittertje in de afdronk. Een prima alternatief voor Sauvignon Blanc en heerlijk bij vis, schaaldieren en tapas.",
+    faqQuestion: "Hoe smaakt Verdejo?",
+    match: ["verdejo"],
+  },
+  {
+    slug: "cabernet-franc",
+    name: "Cabernet Franc",
+    h1: "Cabernet Franc: smaak, kenmerken en de beste flessen",
+    intro: "Cabernet Franc is een elegante, kruidige rode druif uit de Loire en Bordeaux. Ontdek de beste flessen.",
+    advice: "Cabernet Franc is verfijnder en lichter dan Cabernet Sauvignon, met soepel tannine en aroma's van rood fruit, paprika en potlood. In de Loire (Chinon, Bourgueil) staat hij solo, in Bordeaux speelt hij een bijrol in de blend. Mooi bij gevogelte, kalfsvlees en gegrilde groente.",
+    faqQuestion: "Wat is Cabernet Franc voor wijn?",
+    match: ["cabernet franc"],
+  },
+  {
+    slug: "viognier",
+    name: "Viognier",
+    h1: "Viognier: smaak, kenmerken en de beste flessen",
+    intro: "Viognier is een volle, aromatische witte druif uit de Rhône. Vergelijk de best beoordeelde flessen.",
+    advice: "Viognier geeft een volle, parfumige witte wijn met lage zuren en weelderige aroma's van abrikoos, perzik en bloesem. De thuisbasis is de noordelijke Rhône (Condrieu), maar je vindt hem nu wereldwijd. Door zijn rondheid past Viognier mooi bij gevogelte, milde curry en romige gerechten.",
+    faqQuestion: "Hoe smaakt Viognier?",
+    match: ["viognier"],
+  },
 ];
 
 export const COUNTRY_GUIDES: CountryGuide[] = [
@@ -164,6 +202,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Frankrijk is het hart van de wijnwereld, met iconische regio's als Bordeaux (krachtige rode blends), Bourgogne (Pinot Noir en Chardonnay), de Rhône (Syrah, Grenache), de Loire (Sauvignon Blanc, Chenin) en Champagne. Franse wijn staat bekend om terroir, elegantie en bewaarpotentieel.",
     faqQuestion: "Wat kenmerkt Franse wijn?",
     countries: ["Frankrijk"],
+    map: [46.6, 2.6, 4.6],
   },
   {
     slug: "italie",
@@ -173,6 +212,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Italië heeft de grootste druivendiversiteit ter wereld. Bekende stijlen zijn Toscaanse Sangiovese (Chianti, Brunello), Piëmontese Nebbiolo (Barolo), Zuid-Italiaanse Primitivo, en mousserende Prosecco. Italiaanse wijnen hebben vaak frisse zuren die ze perfect bij eten maken.",
     faqQuestion: "Wat kenmerkt Italiaanse wijn?",
     countries: ["Italië"],
+    map: [42.6, 12.6, 4.6],
   },
   {
     slug: "spanje",
@@ -182,6 +222,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Spanje staat bekend om uitstekende prijs-kwaliteit. Tempranillo domineert in Rioja en Ribera del Duero, Garnacha levert warme reds, en in het noordwesten maakt Albariño frisse witte wijn. Cava is de Spaanse mousserende wijn. Veel Spaanse rode wijn rijpt op eikenhout (crianza, reserva).",
     faqQuestion: "Wat kenmerkt Spaanse wijn?",
     countries: ["Spanje"],
+    map: [40.0, -3.7, 5.2],
   },
   {
     slug: "duitsland",
@@ -191,6 +232,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Duitsland is het Riesling-land bij uitstek, met aromatische witte wijnen van kurkdroog tot edelzoet en altijd met levendige zuren. Regio's als de Moezel en de Rheingau leveren elegante, mineralige wijnen. Daarnaast wint Duitse Spätburgunder (Pinot Noir) steeds meer terrein.",
     faqQuestion: "Wat kenmerkt Duitse wijn?",
     countries: ["Duitsland"],
+    map: [50.6, 8.6, 3.6],
   },
   {
     slug: "portugal",
@@ -200,6 +242,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Portugal heeft een schat aan inheemse druiven. De Douro levert krachtige rode wijnen (en Port), terwijl Vinho Verde in het noorden frisse, lichte witte wijn maakt. Veel Portugese wijnen zijn blends en bieden uitstekende prijs-kwaliteit.",
     faqQuestion: "Wat kenmerkt Portugese wijn?",
     countries: ["Portugal"],
+    map: [39.8, -8.2, 2.6],
   },
   {
     slug: "zuid-afrika",
@@ -209,6 +252,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Zuid-Afrika maakt wijnen die elegantie en rijp fruit combineren. Chenin Blanc (lokaal 'Steen') is de witte specialiteit, en Pinotage is de eigen rode kruising. Rond Stellenbosch en Swartland komen veel topwijnen vandaan, vaak met sterke prijs-kwaliteit.",
     faqQuestion: "Wat kenmerkt Zuid-Afrikaanse wijn?",
     countries: ["Zuid-Afrika"],
+    map: [-33.6, 19.6, 2.6],
   },
   {
     slug: "argentinie",
@@ -218,6 +262,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Argentinië is wereldberoemd om Malbec: diepgekleurd, fluwelig en vol rijp zwart fruit. De hooggelegen wijngaarden rond Mendoza geven concentratie en frisheid. Daarnaast maakt het land aromatische witte Torrontés. Argentijnse wijn is een natuurlijke partner van steak en BBQ.",
     faqQuestion: "Wat kenmerkt Argentijnse wijn?",
     countries: ["Argentinië", "Argentinie"],
+    map: [-33.4, -68.9, 3.2],
   },
   {
     slug: "oostenrijk",
@@ -227,6 +272,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "Oostenrijk maakt strakke, mineralige witte wijnen, met Grüner Veltliner als handtekening: fris, met witte peper en citrus. Ook elegante Riesling en verfijnde rode wijnen (Blaufränkisch, Zweigelt) komen er vandaan. Grüner Veltliner is een uitstekende keuze bij vis en groente.",
     faqQuestion: "Wat kenmerkt Oostenrijkse wijn?",
     countries: ["Oostenrijk"],
+    map: [47.9, 15.6, 3.4],
   },
   {
     slug: "amerika",
@@ -236,6 +282,7 @@ export const COUNTRY_GUIDES: CountryGuide[] = [
     advice: "De Verenigde Staten, met Californië voorop, maken gulle wijnen met rijp fruit en een rondere stijl. Napa Valley is beroemd om krachtige Cabernet Sauvignon en volle Chardonnay, terwijl Zinfandel een typisch Amerikaanse rode specialiteit is. Verwacht overtuigende, toegankelijke wijnen.",
     faqQuestion: "Wat kenmerkt Amerikaanse wijn?",
     countries: ["Amerika", "Verenigde Staten", "Verenigde Staten van Amerika", "USA"],
+    map: [37.8, -121.5, 3.2],
   },
 ];
 

@@ -4,6 +4,7 @@ import { SITE_URL as BASE_URL } from "@/lib/site";
 import { FOOD_PAIRINGS } from "@/lib/food-pairings";
 import { GRAPE_GUIDES, COUNTRY_GUIDES } from "@/lib/wine-guides";
 import { COLLECTION_GUIDES } from "@/lib/wine-collections";
+import { REGION_GUIDES } from "@/lib/wine-regions";
 
 // Rendered at runtime so the production build never needs a database.
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/wijn-bij`, changeFrequency: "weekly", priority: 0.7 },
   { url: `${BASE_URL}/druiven`, changeFrequency: "weekly", priority: 0.7 },
   { url: `${BASE_URL}/wijn-uit`, changeFrequency: "weekly", priority: 0.7 },
+  { url: `${BASE_URL}/streek`, changeFrequency: "weekly", priority: 0.7 },
   { url: `${BASE_URL}/wijngids`, changeFrequency: "weekly", priority: 0.7 },
   { url: `${BASE_URL}/winkels`, changeFrequency: "weekly", priority: 0.6 },
   { url: `${BASE_URL}/over-ons`, changeFrequency: "monthly", priority: 0.4 },
@@ -27,6 +29,7 @@ const GUIDE_PAGES: MetadataRoute.Sitemap = [
   ...FOOD_PAIRINGS.map((p) => ({ url: `${BASE_URL}/wijn-bij/${p.slug}` })),
   ...GRAPE_GUIDES.map((g) => ({ url: `${BASE_URL}/druiven/${g.slug}` })),
   ...COUNTRY_GUIDES.map((c) => ({ url: `${BASE_URL}/wijn-uit/${c.slug}` })),
+  ...REGION_GUIDES.map((r) => ({ url: `${BASE_URL}/streek/${r.slug}` })),
   ...COLLECTION_GUIDES.map((c) => ({ url: `${BASE_URL}/wijngids/${c.slug}` })),
 ].map((e) => ({ ...e, changeFrequency: "weekly" as const, priority: 0.7 }));
 

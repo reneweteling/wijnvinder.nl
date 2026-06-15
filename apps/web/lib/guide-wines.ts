@@ -14,9 +14,11 @@ export async function fetchGuideWines(
 ): Promise<WineCardWine[]> {
   const rows = await db.canonicalWine.findMany({
     where: {
-      listings: { some: { available: true, shop: { enabled: true } } },
-      NOT: { name: { contains: "pakket", mode: "insensitive" } },
-      ...where,
+      AND: [
+        { listings: { some: { available: true, shop: { enabled: true } } } },
+        { NOT: { name: { contains: "pakket", mode: "insensitive" } } },
+        where,
+      ],
     },
     include: {
       producer: { select: { name: true } },
@@ -52,6 +54,7 @@ export async function fetchGuideWines(
 export type CollectionFilter = {
   wineTypes?: WineType[];
   priceMax?: number;
+  priceMin?: number;
   onSale?: boolean;
   minRating?: number;
 };
@@ -69,7 +72,10 @@ export async function fetchCollectionWines(
   limit = 12,
 ): Promise<WineCardWine[]> {
   const listingSome: Record<string, unknown> = { available: true, shop: { enabled: true } };
-  if (filter.priceMax != null) listingSome.price = { lte: filter.priceMax };
+  const priceWhere: Record<string, number> = {};
+  if (filter.priceMax != null) priceWhere.lte = filter.priceMax;
+  if (filter.priceMin != null) priceWhere.gte = filter.priceMin;
+  if (Object.keys(priceWhere).length) listingSome.price = priceWhere;
   if (filter.onSale) listingSome.originalPrice = { not: null };
 
   const where: CanonicalWineWhereInput = {
@@ -80,7 +86,9 @@ export async function fetchCollectionWines(
   };
 
   // Over-fetch when we still need to filter/sort on the promoted listing in JS.
-  const take = filter.priceMax != null || sort === "discount" ? limit * 5 : limit;
+  const needsJsFilter =
+    filter.priceMax != null || filter.priceMin != null || sort === "discount";
+  const take = needsJsFilter ? limit * 5 : limit;
 
   const rows = await db.canonicalWine.findMany({
     where,
@@ -126,6 +134,9 @@ export async function fetchCollectionWines(
 
   if (filter.priceMax != null) {
     mapped = mapped.filter((m) => m.price != null && m.price <= filter.priceMax!);
+  }
+  if (filter.priceMin != null) {
+    mapped = mapped.filter((m) => m.price != null && m.price >= filter.priceMin!);
   }
   if (filter.onSale) {
     mapped = mapped.filter((m) => m.discount > 0);
