@@ -32,7 +32,8 @@ export function Footer() {
                 { href: "/wijn-bij", label: "Wijn bij gerecht" },
                 { href: "/druiven", label: "Druivensoorten" },
                 { href: "/wijn-uit", label: "Wijn per land" },
-                { href: "/wijnen?aanbiedingen=1", label: "Aanbiedingen" },
+                { href: "/wijngids", label: "Wijngids & selecties" },
+                { href: "/wijngids/aanbiedingen", label: "Aanbiedingen" },
                 { href: "/winkels", label: "Winkels" },
                 { href: "/profiel", label: "Mijn profiel" },
               ].map((link) => (
