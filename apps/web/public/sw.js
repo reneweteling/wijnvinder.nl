@@ -1,4 +1,4 @@
-const CACHE_NAME = "wijnvinder-v13";
+const CACHE_NAME = "wijnvinder-v14";
 
 const PRECACHE_URLS = [
   "/offline",
@@ -19,9 +19,10 @@ function shouldBypass(url) {
   );
 }
 
-// Personal / auth / transactional pages: never served from a stale cache, so a
-// logged-in or just-changed state is always correct.
-function isPrivatePage(url) {
+// Pages that must always come fresh from the network, never a stale cache:
+// auth/personal pages, and the shop list which reflects admin shop toggles
+// immediately (showing a stale set of active shops is confusing).
+function isNetworkFirstPage(url) {
   const { pathname } = url;
   return (
     pathname.startsWith("/login") ||
@@ -30,7 +31,8 @@ function isPrivatePage(url) {
     pathname.startsWith("/favorieten") ||
     pathname.startsWith("/profiel") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/stats")
+    pathname.startsWith("/stats") ||
+    pathname.startsWith("/winkels")
   );
 }
 
@@ -86,8 +88,8 @@ self.addEventListener("fetch", (event) => {
   if (shouldBypass(url)) return;
 
   if (request.mode === "navigate") {
-    // Private pages stay network-first so auth/changed state is never stale.
-    if (isPrivatePage(url)) {
+    // These pages stay network-first so auth/changed state is never stale.
+    if (isNetworkFirstPage(url)) {
       event.respondWith(fetch(request).catch(offlineFallback));
       return;
     }
