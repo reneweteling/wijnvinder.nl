@@ -7,7 +7,7 @@ import { getProfileSnapshot, getServerProfileSnapshot, subscribeProfile } from "
 import { motion, AnimatePresence } from "framer-motion";
 import { Wine, ChevronDown } from "lucide-react";
 import { WineGrid } from "@/components/wines/wine-grid";
-import { WineFilters } from "@/components/wines/wine-filters";
+import { WineFilters, FilterTrigger } from "@/components/wines/wine-filters";
 import { SearchBar } from "@/components/wines/search-bar";
 import { SortControls } from "@/components/wines/sort-controls";
 import { EmptyState } from "@/components/wines/empty-state";
@@ -185,6 +185,7 @@ function WijnenContent() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const pageRef = useRef(1);
   const isInitialMount = useRef(true);
 
@@ -329,6 +330,8 @@ function WijnenContent() {
             onChange={setFilters}
             hasProfile={!!profile}
             onApplyProfile={handleApplyProfile}
+            mobileOpen={filtersOpen}
+            onMobileOpenChange={setFiltersOpen}
           />
 
           {/* Wine listing */}
@@ -339,12 +342,21 @@ function WijnenContent() {
             {/* Search */}
             <SearchBar value={query} onChange={setQuery} />
 
-            {/* Sort controls */}
-            <SortControls
-              value={sort}
-              onChange={setSort}
-              total={isLoading ? undefined : total}
-            />
+            {/* Sort controls + mobile filter trigger */}
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <SortControls
+                  value={sort}
+                  onChange={setSort}
+                  total={isLoading ? undefined : total}
+                />
+              </div>
+              <FilterTrigger
+                filters={filters}
+                onClick={() => setFiltersOpen(true)}
+                className="lg:hidden"
+              />
+            </div>
 
             {/* Error state */}
             {error && (

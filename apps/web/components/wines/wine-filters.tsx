@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Filter, X, SlidersHorizontal, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -220,37 +220,73 @@ function FilterPanel({
   );
 }
 
-export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: WineFiltersProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const activeCount =
+function activeFilterCount(filters: WineFilters): number {
+  return (
     filters.types.length +
     filters.grapes.length +
     filters.countries.length +
     (filters.priceMin > FILTER_DEFAULTS.priceMin || filters.priceMax < FILTER_DEFAULTS.priceMax ? 1 : 0) +
     (filters.minRating > FILTER_DEFAULTS.minRating ? 1 : 0) +
-    (filters.aanbiedingen ? 1 : 0);
+    (filters.aanbiedingen ? 1 : 0)
+  );
+}
+
+/** Mobile-only button that opens the filter drawer. Placed in normal flow by
+ *  the parent so it never overlaps the page content. */
+export function FilterTrigger({
+  filters,
+  onClick,
+  className,
+}: {
+  filters: WineFilters;
+  onClick: () => void;
+  className?: string;
+}) {
+  const activeCount = activeFilterCount(filters);
+  return (
+    <Button
+      variant="outline"
+      size="md"
+      onClick={onClick}
+      className={`flex items-center gap-2 shrink-0 ${className ?? ""}`}
+    >
+      <SlidersHorizontal className="h-4 w-4" />
+      Filters
+      {activeCount > 0 && (
+        <span className="ml-1 bg-burgundy text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {activeCount}
+        </span>
+      )}
+    </Button>
+  );
+}
+
+type WineFiltersContainerProps = WineFiltersProps & {
+  mobileOpen: boolean;
+  onMobileOpenChange: (open: boolean) => void;
+};
+
+export function WineFilters({
+  filters,
+  onChange,
+  hasProfile,
+  onApplyProfile,
+  mobileOpen,
+  onMobileOpenChange,
+}: WineFiltersContainerProps) {
+  // Lock background scroll while the drawer is open so the page behind does not
+  // scroll along with the filters.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
 
   return (
     <>
-      {/* Mobile trigger — rendered outside flex in parent, but kept here for self-containment */}
-      <div className="lg:hidden absolute top-0 right-0">
-        <Button
-          variant="outline"
-          size="md"
-          onClick={() => setMobileOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          Filters
-          {activeCount > 0 && (
-            <span className="ml-1 bg-burgundy text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {activeCount}
-            </span>
-          )}
-        </Button>
-      </div>
-
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-24 rounded-xl border border-border bg-card p-5 shadow-sm max-h-[calc(100vh-7rem)] overflow-y-auto">
@@ -268,11 +304,11 @@ export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: W
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => onMobileOpenChange(false)}
             />
             {/* Drawer */}
             <motion.div
-              className="fixed inset-y-0 right-0 w-80 max-w-full bg-card shadow-xl z-50 overflow-y-auto lg:hidden"
+              className="fixed inset-y-0 right-0 w-80 max-w-full bg-card shadow-xl z-50 overflow-y-auto overscroll-contain lg:hidden"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -282,7 +318,7 @@ export function WineFilters({ filters, onChange, hasProfile, onApplyProfile }: W
                 <FilterPanel
                   filters={filters}
                   onChange={onChange}
-                  onClose={() => setMobileOpen(false)}
+                  onClose={() => onMobileOpenChange(false)}
                   hasProfile={hasProfile}
                   onApplyProfile={onApplyProfile}
                 />
